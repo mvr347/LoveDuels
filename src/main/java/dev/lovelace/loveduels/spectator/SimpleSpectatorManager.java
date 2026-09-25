@@ -29,14 +29,17 @@ public final class SimpleSpectatorManager implements SpectatorManager {
     private final Map<UUID, Match> spectatingPlayers = new ConcurrentHashMap<>();
     private final Map<UUID, InventorySnapshot> spectatorSnapshots = new ConcurrentHashMap<>();
 
-    private final int freeSlots = 15;
-    private final long basePrice = 50;
-    private final long stepPrice = 25;
+    private final int freeSlots;
+    private final long basePrice;
+    private final long stepPrice;
 
     public SimpleSpectatorManager(Plugin plugin, LoveEconomyBridge economyBridge) {
         this.plugin = plugin;
         this.zoneGuard = new SpectatorZoneGuard(this);
         this.economyBridge = economyBridge;
+        this.freeSlots = Math.max(0, plugin.getConfig().getInt("spectators.free_slots", 15));
+        this.basePrice = Math.max(0L, plugin.getConfig().getLong("spectators.base_price", 50L));
+        this.stepPrice = Math.max(0L, plugin.getConfig().getLong("spectators.step_price", 25L));
     }
 
     public SpectatorZoneGuard getZoneGuard() {
@@ -94,7 +97,8 @@ public final class SimpleSpectatorManager implements SpectatorManager {
         player.setInvulnerable(true);
         player.setCollidable(false);
 
-        boolean canFly = player.hasPermission("loveduels.spectator.fly");
+        boolean allowFlyConfig = plugin.getConfig().getBoolean("spectators.allow_spectator_flight_with_permission", true);
+        boolean canFly = allowFlyConfig && player.hasPermission("loveduels.spectator.fly");
         player.setAllowFlight(canFly);
         player.setFlying(canFly);
 
@@ -129,13 +133,21 @@ public final class SimpleSpectatorManager implements SpectatorManager {
 
         zoneGuard.unregisterZone(uuid);
 
+        if (player.isInsideVehicle()) {
+            player.leaveVehicle();
+        }
+
         player.setInvisible(false);
         player.setInvulnerable(false);
         player.setCollidable(true);
+        player.setFlying(false);
+        player.setAllowFlight(false);
 
         InventorySnapshot snap = spectatorSnapshots.remove(uuid);
         if (snap != null) {
             snap.restore(player);
+        } else {
+            player.setGameMode(GameMode.SURVIVAL);
         }
 
         player.sendMessage(MiniMessage.miniMessage().deserialize("<gray>Вы покинули режим наблюдения."));
