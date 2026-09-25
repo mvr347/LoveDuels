@@ -1,0 +1,30 @@
+name: LoveDuels
+version: 1.0.0
+main: dev.lovelace.loveduels.LoveDuels
+api-version: '1.21'
+author: Lovelace
+description: Advanced 1v1 duels system with bets, custom Horse+Spear mechanics, Royal duels, and spectator zones.
+softdepend: [PlaceholderAPI, LoveCore, LoveLeaderboards, LoveBehavior]
+
+commands:
+  duel:
+    description: Main duels command
+    aliases: [дуэль, duels]
+    usage: /<command> [player|accept|deny|leave|spectate|top|stats|rematch]
+    permission: loveduels.use
+  loveduelsadmin:
+    description: Administration command for LoveDuels
+    aliases: [lda, dueladmin, дуэльадмин]
+    permission: loveduels.admin
+    usage: /<command> [arena|kit|give|forceend|sethonor|reload]
+
+permissions:
+  loveduels.use:
+    description: Allows using player duel commands and opening GUI
+    default: true
+  loveduels.spectator.fly:
+    description: Allows limited flight within the spectator zone
+    default: op
+  loveduels.admin:
+    description: Full access to administrative duel commands
+    default: op
