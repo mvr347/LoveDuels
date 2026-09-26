@@ -121,14 +121,17 @@
                         </goals>
                         <configuration>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <!--
+                              IMPORTANT: do NOT relocate org.sqlite.
+                              sqlite-jdbc ships JNI natives bound to the original
+                              package name (org.sqlite.core.NativeDB). Relocating
+                              breaks native linkage with UnsatisfiedLinkError.
+                              HikariCP and Caffeine are pure Java and safe to relocate.
+                            -->
                             <relocations>
                                 <relocation>
                                     <pattern>com.zaxxer.hikari</pattern>
                                     <shadedPattern>dev.lovelace.loveduels.libs.hikari</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.sqlite</pattern>
-                                    <shadedPattern>dev.lovelace.loveduels.libs.sqlite</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>com.github.benmanes.caffeine</pattern>
@@ -142,9 +145,13 @@
                                         <exclude>META-INF/*.SF</exclude>
                                         <exclude>META-INF/*.DSA</exclude>
                                         <exclude>META-INF/*.RSA</exclude>
+                                        <exclude>META-INF/MANIFEST.MF</exclude>
                                     </excludes>
                                 </filter>
                             </filters>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                            </transformers>
                         </configuration>
                     </execution>
                 </executions>
