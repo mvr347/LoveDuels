@@ -15,6 +15,7 @@ public final class ReadinessSession {
     private final UUID player2;
     private final AtomicBoolean ready1 = new AtomicBoolean(false);
     private final AtomicBoolean ready2 = new AtomicBoolean(false);
+    private final AtomicBoolean terminated = new AtomicBoolean(false);
     private final Runnable onBothReady;
     private final Consumer<UUID> onCancel;
     private Consumer<ReadinessSession> stateChangeListener;
@@ -30,7 +31,15 @@ public final class ReadinessSession {
         this.stateChangeListener = listener;
     }
 
+    public boolean isTerminated() {
+        return terminated.get();
+    }
+
     public void setReady(UUID uuid, boolean ready) {
+        if (terminated.get()) {
+            return;
+        }
+
         if (uuid.equals(player1)) {
             ready1.set(ready);
         } else if (uuid.equals(player2)) {
@@ -42,11 +51,16 @@ public final class ReadinessSession {
         }
 
         if (ready1.get() && ready2.get()) {
-            onBothReady.run();
+            if (terminated.compareAndSet(false, true)) {
+                onBothReady.run();
+            }
         }
     }
 
     public void toggleReady(UUID uuid) {
+        if (terminated.get()) {
+            return;
+        }
         if (uuid.equals(player1)) {
             setReady(uuid, !ready1.get());
         } else if (uuid.equals(player2)) {
@@ -77,6 +91,9 @@ public final class ReadinessSession {
     }
 
     public void cancel(UUID who) {
+        if (!terminated.compareAndSet(false, true)) {
+            return;
+        }
         onCancel.accept(who);
     }
 }

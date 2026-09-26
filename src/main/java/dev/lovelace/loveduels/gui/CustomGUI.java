@@ -67,6 +67,10 @@ public abstract class CustomGUI implements InventoryHolder {
         // Can be overridden by subclasses
     }
 
+    public void refresh() {
+        build();
+    }
+
     /**
      * Applies standard gui-gen-5 borders:
      * - Header: row 0 (and row 1 if size >= 45) filled with GRAY_STAINED_GLASS_PANE

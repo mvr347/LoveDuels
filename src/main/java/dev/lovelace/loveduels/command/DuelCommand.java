@@ -112,16 +112,29 @@ public final class DuelCommand implements CommandExecutor, TabCompleter {
                     challenger.getUniqueId(),
                     player.getUniqueId(),
                     () -> {
-                        // On both ready: start match!
-                        challenger.closeInventory();
-                        player.closeInventory();
-                        duelManager.getMatchManager().createAndStartMatch(
-                                challenger, player, req.type(), req.kitId(), req.bet(), req.royal()
-                        );
+                        // On both ready: close inventories on next tick and start match
+                        Bukkit.getScheduler().runTask(duelManager.getPlugin(), () -> {
+                            if (challenger.isOnline()) {
+                                challenger.closeInventory();
+                            }
+                            if (player.isOnline()) {
+                                player.closeInventory();
+                            }
+                            duelManager.getMatchManager().createAndStartMatch(
+                                    challenger, player, req.type(), req.kitId(), req.bet(), req.royal()
+                            );
+                        });
                     },
                     (cancelledBy) -> {
-                        challenger.closeInventory();
-                        player.closeInventory();
+                        // Close inventories on next tick to avoid recursive closeContainer loop
+                        Bukkit.getScheduler().runTask(duelManager.getPlugin(), () -> {
+                            if (challenger.isOnline() && challenger.getOpenInventory().getTopInventory().getHolder() instanceof ReadinessGUI) {
+                                challenger.closeInventory();
+                            }
+                            if (player.isOnline() && player.getOpenInventory().getTopInventory().getHolder() instanceof ReadinessGUI) {
+                                player.closeInventory();
+                            }
+                        });
                         // Refund money
                         if (req.bet().hasMoney()) {
                             duelManager.getEconomyBridge().give(challenger, req.bet().moneyBet());
@@ -135,12 +148,15 @@ public final class DuelCommand implements CommandExecutor, TabCompleter {
             );
 
             session.setStateChangeListener(s -> {
-                // Rebuild GUI when someone clicks ready
+                if (s.isTerminated()) {
+                    return;
+                }
+                // Refresh items without reopening inventory to prevent close events
                 if (challenger.getOpenInventory().getTopInventory().getHolder() instanceof ReadinessGUI r1) {
-                    r1.open();
+                    r1.refresh();
                 }
                 if (player.getOpenInventory().getTopInventory().getHolder() instanceof ReadinessGUI r2) {
-                    r2.open();
+                    r2.refresh();
                 }
             });
 

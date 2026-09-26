@@ -95,6 +95,9 @@ public final class ReadinessGUI extends CustomGUI {
 
     @Override
     public void handleClose() {
+        if (session.isTerminated()) {
+            return;
+        }
         // If player closes without ready, treat as cancel
         if (!session.isPlayer1Ready() || !session.isPlayer2Ready()) {
             session.cancel(player.getUniqueId());
