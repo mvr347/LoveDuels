@@ -96,8 +96,8 @@ public final class MatchProtectionListener implements Listener {
             return;
         }
 
-        if (match.getState() == MatchState.PREPARATION) {
-            // Cannot attack during preparation
+        if (match.getState() == MatchState.PREPARATION || match.getState() == MatchState.ARMISTICE) {
+            // Cannot attack during preparation or armistice
             event.setCancelled(true);
             return;
         }

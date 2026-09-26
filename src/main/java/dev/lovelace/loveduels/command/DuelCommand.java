@@ -50,7 +50,8 @@ public final class DuelCommand implements CommandExecutor, TabCompleter {
             case "spectate", "наблюдать", "spec" -> handleSpectate(player, args);
             case "top", "топ", "leaderboard" -> new LeaderboardGUI(player, duelManager).open();
             case "stats", "статистика" -> handleStats(player, args);
-            case "rematch", "реванш" -> handleRematch(player);
+            case "rematch", "реванш", "revenge", "месть" -> handleRematch(player);
+            case "forfeit", "surrender", "сдаться" -> handleForfeit(player);
             default -> {
                 // Check if args[0] is an online player name for fast challenge
                 Player target = Bukkit.getPlayerExact(args[0]);
@@ -260,10 +261,29 @@ public final class DuelCommand implements CommandExecutor, TabCompleter {
         new DuelSetupGUI(player, opp, duelManager, res.royal()).open();
     }
 
+    private void handleForfeit(Player player) {
+        Optional<Match> matchOpt = duelManager.getMatchManager().getMatch(player.getUniqueId());
+        if (matchOpt.isEmpty()) {
+            player.sendMessage(MiniMessage.miniMessage().deserialize("<red>Вы не находитесь в бою."));
+            return;
+        }
+
+        Match match = matchOpt.get();
+        if (match.isEnded()) {
+            player.sendMessage(MiniMessage.miniMessage().deserialize("<red>Бой уже завершён."));
+            return;
+        }
+
+        match.surrender(player);
+    }
+
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (args.length == 1) {
-            List<String> subs = List.of("accept", "deny", "leave", "spectate", "top", "stats", "rematch");
+            List<String> subs = List.of(
+                    "accept", "deny", "leave", "spectate", "top", "stats", "rematch", "forfeit", "surrender",
+                    "принять", "отклонить", "выйти", "наблюдать", "топ", "статистика", "реванш", "сдаться", "месть"
+            );
             List<String> res = new ArrayList<>();
             for (String s : subs) {
                 if (s.startsWith(args[0].toLowerCase())) res.add(s);

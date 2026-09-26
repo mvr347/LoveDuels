@@ -52,6 +52,8 @@ public interface Match {
 
     void end(UUID winnerId, MatchEndReason reason);
 
+    void surrender(Player player);
+
     void handleDisconnect(Player player);
 
     void registerDamage(Player attacker, Player victim, double damage);
