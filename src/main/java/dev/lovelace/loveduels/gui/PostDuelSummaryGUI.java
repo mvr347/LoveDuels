@@ -38,7 +38,7 @@ public final class PostDuelSummaryGUI extends CustomGUI {
         setItem(13, createOutcomeItem(isWinner), null);
 
         // Slot 15: REMATCH (Реванш) Button!
-        UUID opponentId = result.winnerId().equals(player.getUniqueId()) ? result.loserId() : result.winnerId();
+        UUID opponentId = result.getOpponentId(player.getUniqueId());
         Player opp = (opponentId != null) ? Bukkit.getPlayer(opponentId) : null;
 
         setItem(15, createRematchButton(opp), e -> {
@@ -56,12 +56,14 @@ public final class PostDuelSummaryGUI extends CustomGUI {
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
             meta.displayName(MiniMessage.miniMessage().deserialize("<gold><b>Боевая статистика</b></gold>").decoration(TextDecoration.ITALIC, false));
+            double myDmg = player.getUniqueId().equals(result.player1Id()) ? result.player1DamageDealt() : result.player2DamageDealt();
+            int myPts = player.getUniqueId().equals(result.player1Id()) ? result.player1Points() : result.player2Points();
             meta.lore(List.of(
                     MiniMessage.miniMessage().deserialize("<gray>Причина завершения: <white>" + result.reason().getDescription()).decoration(TextDecoration.ITALIC, false),
                     MiniMessage.miniMessage().deserialize("<gray>Длительность: <white>" + result.durationSeconds() + "с").decoration(TextDecoration.ITALIC, false),
                     Component.empty(),
-                    MiniMessage.miniMessage().deserialize("<gray>Нанесённый урон: <red>" + String.format("%.1f", isWinner ? result.player1DamageDealt() : result.player2DamageDealt()) + "❤").decoration(TextDecoration.ITALIC, false),
-                    MiniMessage.miniMessage().deserialize("<gray>Набранные очки: <yellow>" + (isWinner ? result.player1Points() : result.player2Points())).decoration(TextDecoration.ITALIC, false)
+                    MiniMessage.miniMessage().deserialize("<gray>Нанесённый урон: <red>" + String.format("%.1f", myDmg) + "❤").decoration(TextDecoration.ITALIC, false),
+                    MiniMessage.miniMessage().deserialize("<gray>Набранные очки: <yellow>" + myPts).decoration(TextDecoration.ITALIC, false)
             ));
             item.setItemMeta(meta);
         }
@@ -69,6 +71,24 @@ public final class PostDuelSummaryGUI extends CustomGUI {
     }
 
     private ItemStack createOutcomeItem(boolean isWinner) {
+        if (result.isDraw()) {
+            ItemStack item = new ItemStack(Material.CLOCK);
+            ItemMeta meta = item.getItemMeta();
+            if (meta != null) {
+                meta.displayName(MiniMessage.miniMessage().deserialize("<yellow><b>⌛ НИЧЬЯ</b></yellow>").decoration(TextDecoration.ITALIC, false));
+                String moneyStr = (result.royal() && result.reason() == dev.lovelace.loveduels.match.MatchEndReason.TIMEOUT)
+                        ? "<red>Ставки сгорели в казне"
+                        : "<green>Ставки возвращены";
+                meta.lore(List.of(
+                        MiniMessage.miniMessage().deserialize("<gray>Исход: <yellow>" + result.reason().getDescription()).decoration(TextDecoration.ITALIC, false),
+                        MiniMessage.miniMessage().deserialize("<gray>Деньги: " + moneyStr).decoration(TextDecoration.ITALIC, false),
+                        MiniMessage.miniMessage().deserialize("<gray>Честь: <white>Без изменений").decoration(TextDecoration.ITALIC, false)
+                ));
+                item.setItemMeta(meta);
+            }
+            return item;
+        }
+
         ItemStack item = new ItemStack(isWinner ? Material.EMERALD : Material.REDSTONE);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {

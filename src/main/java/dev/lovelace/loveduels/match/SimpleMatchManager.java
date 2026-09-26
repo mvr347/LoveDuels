@@ -83,7 +83,6 @@ public final class SimpleMatchManager implements MatchManager {
         this.royalManager = royalManager;
         this.spearItem = new SpearItem(plugin);
         this.chargeHandler = new SpearChargeHandler();
-        this.chargeHandler.loadFromConfig(plugin);
         this.staminaHandler = new HorseStaminaHandler();
     }
 

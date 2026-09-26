@@ -125,4 +125,25 @@ public final class RoyalDuelManager {
             discordSender.sendRoyalDuelEnded(winner.getName(), loser.getName(), totalMoney, honorWon);
         }
     }
+
+    /**
+     * Herald Announcement 4: Royal Duel ended with draw / timeout
+     */
+    public void broadcastTimeout(Player p1, Player p2, long burnedMoney) {
+        String msg = String.format(
+                "<gradient:#FFD700:#FFA500><b>👑 [КОРОЛЕВСКИЙ ГЛАШАТАЙ]</b></gradient>\n" +
+                "<gold>Время поединка между <white>%s</white> и <white>%s</white> истекло!\n" +
+                "<red><b>НИЧЬЯ!</b> Победитель не определён. Все ставки (%d монет) аннулированы и сгорели в казне!",
+                p1.getName(), p2.getName(), burnedMoney
+        );
+        Bukkit.broadcast(MiniMessage.miniMessage().deserialize(msg));
+
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 0.8f);
+        }
+
+        if (discordSender != null) {
+            discordSender.sendRoyalDuelDraw(p1.getName(), p2.getName(), burnedMoney);
+        }
+    }
 }

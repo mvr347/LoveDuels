@@ -11,12 +11,12 @@
     <packaging>jar</packaging>
 
     <name>LoveDuels</name>
-    <description>Advanced 1v1 duels plugin with custom mechanics, betting, and LoveCore integration for Paper 1.21.x (Java 25)</description>
+    <description>Advanced 1v1 duels plugin with custom mechanics, betting, and LoveCore integration for Paper 26.2 (Java 25)</description>
 
     <properties>
         <java.version>25</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <paper.version>1.21.4-R0.1-SNAPSHOT</paper.version>
+        <paper.version>26.2.build.129-stable</paper.version>
         <maven.compiler.source>25</maven.compiler.source>
         <maven.compiler.target>25</maven.compiler.target>
     </properties>

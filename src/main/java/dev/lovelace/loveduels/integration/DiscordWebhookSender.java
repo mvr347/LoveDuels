@@ -71,6 +71,27 @@ public final class DiscordWebhookSender {
         postAsync(json);
     }
 
+    public void sendRoyalDuelDraw(String p1, String p2, long burnedMoney) {
+        if (!isEnabled()) return;
+
+        String json = String.format("""
+            {
+              "embeds": [{
+                "title": "⌛ Королевская Дуэль завершилась ничьей!",
+                "color": 16753920,
+                "description": "Поединок между **%s** и **%s** завершился ничьей по истечении времени.",
+                "fields": [
+                  {"name": "🔥 Сгоревшие ставки", "value": "%d монет", "inline": true},
+                  {"name": "⚜ Честь", "value": "Без изменений", "inline": true}
+                ],
+                "footer": {"text": "LoveDuels • Королевские турниры"}
+              }]
+            }
+            """, escape(p1), escape(p2), burnedMoney);
+
+        postAsync(json);
+    }
+
     private void postAsync(String jsonPayload) {
         try {
             HttpRequest request = HttpRequest.newBuilder()

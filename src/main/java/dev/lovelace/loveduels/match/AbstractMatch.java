@@ -11,6 +11,7 @@ import dev.lovelace.loveduels.integration.LoveLeaderboardsBridge;
 import dev.lovelace.loveduels.royal.RoyalDuelManager;
 import dev.lovelace.loveduels.storage.DuelHistoryEntry;
 import dev.lovelace.loveduels.storage.PlayerStorage;
+import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.title.Title;
@@ -57,6 +58,8 @@ public abstract class AbstractMatch implements Match {
     protected long startTime;
     protected MatchResult result;
     protected BukkitTask actionBarTask;
+    protected BukkitTask timerTask;
+    protected BossBar timerBossBar;
 
     public AbstractMatch(
             Plugin plugin,
@@ -165,6 +168,9 @@ public abstract class AbstractMatch implements Match {
     public void addSpectator(Player player) {
         if (player != null) {
             spectators.add(player.getUniqueId());
+            if (timerBossBar != null) {
+                player.showBossBar(timerBossBar);
+            }
         }
     }
 
@@ -172,6 +178,9 @@ public abstract class AbstractMatch implements Match {
     public void removeSpectator(Player player) {
         if (player != null) {
             spectators.remove(player.getUniqueId());
+            if (timerBossBar != null) {
+                player.hideBossBar(timerBossBar);
+            }
         }
     }
 
@@ -241,9 +250,10 @@ public abstract class AbstractMatch implements Match {
         // Custom setup by subclass
         setupEquipment();
 
-        // 5 seconds preparation countdown
+        // Preparation countdown
+        int prepSeconds = Math.max(1, plugin.getConfig().getInt("settings.preparation_countdown_seconds", 5));
         new BukkitRunnable() {
-            int countdown = 5;
+            int countdown = prepSeconds;
 
             @Override
             public void run() {
@@ -253,22 +263,26 @@ public abstract class AbstractMatch implements Match {
                 }
 
                 if (countdown > 0) {
-                    Component numComp = MiniMessage.miniMessage().deserialize(
-                            "<yellow>Поединок начнётся через <gold><b>" + countdown + "</b></gold> сек!"
-                    );
                     Title title = Title.title(
                             MiniMessage.miniMessage().deserialize("<gold><b>" + countdown + "</b></gold>"),
                             MiniMessage.miniMessage().deserialize("<gray>Приготовьтесь к бою!"),
                             Title.Times.times(Duration.ZERO, Duration.ofMillis(1200), Duration.ofMillis(300))
                     );
 
-                    player1.showTitle(title);
-                    player2.showTitle(title);
-                    player1.playSound(player1.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.0f);
-                    player2.playSound(player2.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.0f);
+                    if (player1.isOnline()) {
+                        player1.showTitle(title);
+                        player1.playSound(player1.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.0f);
+                    }
+                    if (player2.isOnline()) {
+                        player2.showTitle(title);
+                        player2.playSound(player2.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1.0f, 1.0f);
+                    }
                     countdown--;
                 } else {
                     cancel();
+                    if (isEnded()) {
+                        return;
+                    }
                     state = MatchState.FIGHTING;
                     startTime = System.currentTimeMillis();
 
@@ -277,10 +291,14 @@ public abstract class AbstractMatch implements Match {
                             MiniMessage.miniMessage().deserialize("<yellow>Да победит сильнейший!"),
                             Title.Times.times(Duration.ofMillis(200), Duration.ofSeconds(1), Duration.ofMillis(400))
                     );
-                    player1.showTitle(fightTitle);
-                    player2.showTitle(fightTitle);
-                    player1.playSound(player1.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 0.8f, 1.2f);
-                    player2.playSound(player2.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 0.8f, 1.2f);
+                    if (player1.isOnline()) {
+                        player1.showTitle(fightTitle);
+                        player1.playSound(player1.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 0.8f, 1.2f);
+                    }
+                    if (player2.isOnline()) {
+                        player2.showTitle(fightTitle);
+                        player2.playSound(player2.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 0.8f, 1.2f);
+                    }
 
                     if (royal) {
                         royalManager.broadcastStart(player1, player2);
@@ -288,9 +306,142 @@ public abstract class AbstractMatch implements Match {
 
                     // Start Action Bar Task
                     actionBarTask = new DuelActionBarTask(AbstractMatch.this).runTaskTimer(plugin, 0L, 10L);
+
+                    // Start BossBar Countdown Task
+                    startTimerTask();
                 }
             }
         }.runTaskTimer(plugin, 0L, 20L);
+    }
+
+    @Override
+    public boolean hasRounds() {
+        return false;
+    }
+
+    @Override
+    public int getTimeLimitSeconds() {
+        int seconds;
+        if (hasRounds()) {
+            seconds = plugin.getConfig().getInt("settings.round_time_limit_seconds", 600);
+        } else {
+            seconds = plugin.getConfig().getInt("settings.match_time_limit_seconds", 720);
+        }
+        return Math.max(10, seconds);
+    }
+
+    @Override
+    public int getRemainingSeconds() {
+        if (startTime <= 0) return getTimeLimitSeconds();
+        long elapsed = (System.currentTimeMillis() - startTime) / 1000L;
+        return (int) Math.max(0, getTimeLimitSeconds() - elapsed);
+    }
+
+    private void startTimerTask() {
+        if (isEnded()) return;
+
+        int totalSeconds = getTimeLimitSeconds();
+        BossBar.Color initialColor = royal ? BossBar.Color.PURPLE : BossBar.Color.GREEN;
+        this.timerBossBar = BossBar.bossBar(
+                createBossBarTitle(totalSeconds),
+                1.0f,
+                initialColor,
+                BossBar.Overlay.PROGRESS
+        );
+
+        if (player1.isOnline()) player1.showBossBar(timerBossBar);
+        if (player2.isOnline()) player2.showBossBar(timerBossBar);
+        for (UUID specId : spectators) {
+            Player s = Bukkit.getPlayer(specId);
+            if (s != null && s.isOnline()) {
+                s.showBossBar(timerBossBar);
+            }
+        }
+
+        timerTask = new BukkitRunnable() {
+            private int lastSoundPlayedSecond = -1;
+
+            @Override
+            public void run() {
+                if (isEnded()) {
+                    cancel();
+                    return;
+                }
+
+                int remaining = getRemainingSeconds();
+                float progress = Math.max(0.0f, Math.min(1.0f, (float) remaining / totalSeconds));
+
+                timerBossBar.progress(progress);
+                timerBossBar.name(createBossBarTitle(remaining));
+                timerBossBar.color(getBossBarColor(remaining));
+
+                // Sound cues with duplicate/lag protection
+                if ((remaining == 60 || remaining == 30) && lastSoundPlayedSecond != remaining) {
+                    playTimerSound(Sound.BLOCK_NOTE_BLOCK_BELL, remaining == 60 ? 1.0f : 1.2f);
+                    lastSoundPlayedSecond = remaining;
+                } else if (remaining <= 10 && remaining > 0 && lastSoundPlayedSecond != remaining) {
+                    float pitch = 1.0f + (10 - remaining) * 0.1f;
+                    playTimerSound(Sound.BLOCK_NOTE_BLOCK_PLING, pitch);
+                    lastSoundPlayedSecond = remaining;
+                }
+
+                if (remaining <= 0) {
+                    cancel();
+                    end(null, MatchEndReason.TIMEOUT);
+                }
+            }
+        }.runTaskTimer(plugin, 20L, 20L);
+    }
+
+    private Component createBossBarTitle(int remainingSeconds) {
+        int safeSec = Math.max(0, remainingSeconds);
+        int min = safeSec / 60;
+        int sec = safeSec % 60;
+        String timeStr = String.format("%02d:%02d", min, sec);
+
+        if (royal) {
+            if (safeSec <= 30) {
+                return MiniMessage.miniMessage().deserialize(
+                        "<red>👑 <b>КОРОЛЕВСКАЯ ДУЭЛЬ</b> <dark_gray>•</dark_gray> До конца: <b>" + timeStr + "</b></red>"
+                );
+            }
+            return MiniMessage.miniMessage().deserialize(
+                    "<gradient:#FFD700:#FFA500>👑 <b>КОРОЛЕВСКАЯ ДУЭЛЬ</b></gradient> <dark_gray>•</dark_gray> <yellow>Время: <white><b>" + timeStr + "</b></white></yellow>"
+            );
+        } else {
+            String prefix = hasRounds() ? "Раунд" : "Бой";
+            if (safeSec <= 30) {
+                return MiniMessage.miniMessage().deserialize(
+                        "<red>⚠ <b>До завершения " + prefix.toLowerCase() + "а: " + timeStr + "</b></red>"
+                );
+            }
+            return MiniMessage.miniMessage().deserialize(
+                    "<gold>⚔ <b>" + prefix + "</b> <dark_gray>•</dark_gray> <yellow>Осталось: <white><b>" + timeStr + "</b></white></yellow>"
+            );
+        }
+    }
+
+    private BossBar.Color getBossBarColor(int remainingSeconds) {
+        if (royal) {
+            return (remainingSeconds <= 60) ? BossBar.Color.RED : BossBar.Color.PURPLE;
+        }
+        if (remainingSeconds <= 30) {
+            return BossBar.Color.RED;
+        } else if (remainingSeconds <= 120) {
+            return BossBar.Color.YELLOW;
+        }
+        return BossBar.Color.GREEN;
+    }
+
+    private void playTimerSound(Sound sound, float pitch) {
+        if (player1 != null && player1.isOnline()) player1.playSound(player1.getLocation(), sound, 0.8f, pitch);
+        if (player2 != null && player2.isOnline()) player2.playSound(player2.getLocation(), sound, 0.8f, pitch);
+        for (UUID specId : spectators) {
+            Player spec = Bukkit.getPlayer(specId);
+            if (spec != null && spec.isOnline()) {
+                spec.playSound(spec.getLocation(), sound, 0.8f, pitch);
+            }
+        }
     }
 
     protected void prepareFighter(Player player) {
@@ -319,6 +470,18 @@ public abstract class AbstractMatch implements Match {
         if (actionBarTask != null) {
             actionBarTask.cancel();
         }
+        if (timerTask != null) {
+            timerTask.cancel();
+        }
+
+        if (timerBossBar != null) {
+            if (player1 != null && player1.isOnline()) player1.hideBossBar(timerBossBar);
+            if (player2 != null && player2.isOnline()) player2.hideBossBar(timerBossBar);
+            for (UUID specId : spectators) {
+                Player s = Bukkit.getPlayer(specId);
+                if (s != null && s.isOnline()) s.hideBossBar(timerBossBar);
+            }
+        }
 
         cleanupCustomEntities();
 
@@ -329,16 +492,21 @@ public abstract class AbstractMatch implements Match {
         Player loser = (loserId != null) ? Bukkit.getPlayer(loserId) : null;
 
         // Calculate bets and rewards
-        long calcPrizeMoney = bet.totalMoneyPrizePool();
-        if (royal && calcPrizeMoney > 0) {
-            // Royal duel winner bonus: +25% bonus from royal treasury
-            long bonus = calcPrizeMoney / 4;
-            calcPrizeMoney += bonus;
-        }
+        long calcPrizeMoney = 0L;
+        int calcHonorDelta = 0;
 
-        int calcHonorDelta = bet.hasHonor() ? bet.honorBet() : 25;
-        if (royal) {
-            calcHonorDelta = (int) (calcHonorDelta * 1.5);
+        if (winnerId != null) {
+            calcPrizeMoney = bet.totalMoneyPrizePool();
+            if (royal && calcPrizeMoney > 0) {
+                // Royal duel winner bonus: +25% bonus from royal treasury
+                long bonus = calcPrizeMoney / 4;
+                calcPrizeMoney += bonus;
+            }
+
+            calcHonorDelta = bet.hasHonor() ? bet.honorBet() : 25;
+            if (royal) {
+                calcHonorDelta = (int) (calcHonorDelta * 1.5);
+            }
         }
 
         final long finalPrizeMoney = calcPrizeMoney;
@@ -346,6 +514,8 @@ public abstract class AbstractMatch implements Match {
 
         this.result = new MatchResult(
                 matchId,
+                player1Id,
+                player2Id,
                 winnerId,
                 loserId,
                 reason,
@@ -393,9 +563,81 @@ public abstract class AbstractMatch implements Match {
             ));
         }
 
-        if (royal && winner != null && loser != null) {
+        if (winner != null && loser != null && royal) {
             royalManager.broadcastWinner(winner, loser, finalPrizeMoney, finalHonorDelta);
             royalManager.clearActiveRoyalDuel(this);
+        } else if (winnerId == null) {
+            if (reason == MatchEndReason.TIMEOUT) {
+                // DRAW (НИЧЬЯ ПО ИСТЕЧЕНИИ ВРЕМЕНИ)
+                if (royal) {
+                    // Royal duel draw: bets are burned and vanish ("ставки пропадают и больше ничего")
+                    royalManager.broadcastTimeout(player1, player2, bet.totalMoneyPrizePool());
+                    royalManager.clearActiveRoyalDuel(this);
+
+                    Title drawTitle = Title.title(
+                            MiniMessage.miniMessage().deserialize("<gradient:#FFD700:#FFA500><b>НИЧЬЯ!</b></gradient>"),
+                            MiniMessage.miniMessage().deserialize("<red>Время вышло! Ставки сгорели."),
+                            Title.Times.times(Duration.ofMillis(200), Duration.ofSeconds(2), Duration.ofMillis(400))
+                    );
+                    if (player1.isOnline()) {
+                        player1.showTitle(drawTitle);
+                        player1.playSound(player1.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 0.8f);
+                        player1.sendMessage(MiniMessage.miniMessage().deserialize(
+                                "<gold>👑 <b>КОРОЛЕВСКАЯ НИЧЬЯ!</b> Время вышло. Победитель не определён, ставки сгорели в казне."
+                        ));
+                    }
+                    if (player2.isOnline()) {
+                        player2.showTitle(drawTitle);
+                        player2.playSound(player2.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 0.8f);
+                        player2.sendMessage(MiniMessage.miniMessage().deserialize(
+                                "<gold>👑 <b>КОРОЛЕВСКАЯ НИЧЬЯ!</b> Время вышло. Победитель не определён, ставки сгорели в казне."
+                        ));
+                    }
+                } else {
+                    // Normal duel draw: "а если обычные бои то просто ничего не происходит"
+                    // Refund staked money to both players
+                    if (bet.hasMoney()) {
+                        economyBridge.give(player1, bet.moneyBet());
+                        economyBridge.give(player2, bet.moneyBet());
+                    }
+
+                    Title drawTitle = Title.title(
+                            MiniMessage.miniMessage().deserialize("<yellow><b>НИЧЬЯ!</b></yellow>"),
+                            MiniMessage.miniMessage().deserialize("<gray>Время поединка истекло"),
+                            Title.Times.times(Duration.ofMillis(200), Duration.ofSeconds(2), Duration.ofMillis(400))
+                    );
+                    String refundMsg = bet.hasMoney() ? " <green>(Ставка " + bet.moneyBet() + " монет возвращена)</green>" : "";
+
+                    if (player1.isOnline()) {
+                        player1.showTitle(drawTitle);
+                        player1.playSound(player1.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 1.0f);
+                        player1.sendMessage(MiniMessage.miniMessage().deserialize(
+                                "<yellow>⚔ <b>НИЧЬЯ!</b> Время поединка истекло." + refundMsg
+                        ));
+                    }
+                    if (player2.isOnline()) {
+                        player2.showTitle(drawTitle);
+                        player2.playSound(player2.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 1.0f);
+                        player2.sendMessage(MiniMessage.miniMessage().deserialize(
+                                "<yellow>⚔ <b>НИЧЬЯ!</b> Время поединка истекло." + refundMsg
+                        ));
+                    }
+                }
+            } else {
+                // Admin force cancellation or server shutdown
+                if (royal) {
+                    royalManager.clearActiveRoyalDuel(this);
+                }
+                if (bet.hasMoney()) {
+                    economyBridge.give(player1, bet.moneyBet());
+                    economyBridge.give(player2, bet.moneyBet());
+                }
+                Component stopMsg = MiniMessage.miniMessage().deserialize(
+                        "<yellow>⚠ <b>Поединок остановлен администрацией/сервером.</b> Ставки возвращены."
+                );
+                if (player1.isOnline()) player1.sendMessage(stopMsg);
+                if (player2.isOnline()) player2.sendMessage(stopMsg);
+            }
         }
 
         // Log match to database history

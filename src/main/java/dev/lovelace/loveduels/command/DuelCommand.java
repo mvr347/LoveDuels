@@ -233,7 +233,7 @@ public final class DuelCommand implements CommandExecutor, TabCompleter {
         }
 
         MatchResult res = optRes.get();
-        UUID oppId = res.winnerId().equals(player.getUniqueId()) ? res.loserId() : res.winnerId();
+        UUID oppId = res.getOpponentId(player.getUniqueId());
         Player opp = (oppId != null) ? Bukkit.getPlayer(oppId) : null;
 
         if (opp == null || !opp.isOnline()) {

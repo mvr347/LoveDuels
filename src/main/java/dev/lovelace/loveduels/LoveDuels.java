@@ -27,8 +27,8 @@ public final class LoveDuels extends JavaPlugin {
         // Configure post-duel summary GUI callback
         duelManager.getMatchManager().setPostDuelSummaryOpener(res -> {
             Bukkit.getScheduler().runTask(this, () -> {
-                Player p1 = Bukkit.getPlayer(res.winnerId());
-                Player p2 = Bukkit.getPlayer(res.loserId());
+                Player p1 = Bukkit.getPlayer(res.player1Id());
+                Player p2 = Bukkit.getPlayer(res.player2Id());
                 if (p1 != null && p1.isOnline()) {
                     new PostDuelSummaryGUI(p1, res, duelManager).open();
                 }

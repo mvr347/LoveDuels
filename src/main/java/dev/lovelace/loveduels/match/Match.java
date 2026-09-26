@@ -69,4 +69,10 @@ public interface Match {
     boolean containsPlayer(UUID uuid);
 
     Player getOpponent(UUID uuid);
+
+    boolean hasRounds();
+
+    int getTimeLimitSeconds();
+
+    int getRemainingSeconds();
 }
