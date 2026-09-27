@@ -3,13 +3,10 @@ package dev.lovelace.loveduels.gui;
 import dev.lovelace.loveduels.core.DuelManager;
 import dev.lovelace.loveduels.match.MatchResult;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.List;
 import java.util.UUID;
@@ -37,7 +34,7 @@ public final class PostDuelSummaryGUI extends CustomGUI {
         // Slot 13: Outcome & Prizes
         setItem(13, createOutcomeItem(isWinner), null);
 
-        // Slot 15: REMATCH (Реванш) Button!
+        // Slot 15: REMATCH (Реванш) Button
         UUID opponentId = result.getOpponentId(player.getUniqueId());
         Player opp = (opponentId != null) ? Bukkit.getPlayer(opponentId) : null;
 
@@ -52,74 +49,61 @@ public final class PostDuelSummaryGUI extends CustomGUI {
     }
 
     private ItemStack createStatsItem(boolean isWinner) {
-        ItemStack item = new ItemStack(Material.BOOK);
-        ItemMeta meta = item.getItemMeta();
-        if (meta != null) {
-            meta.displayName(MiniMessage.miniMessage().deserialize("<gold><b>Боевая статистика</b></gold>").decoration(TextDecoration.ITALIC, false));
-            double myDmg = player.getUniqueId().equals(result.player1Id()) ? result.player1DamageDealt() : result.player2DamageDealt();
-            int myPts = player.getUniqueId().equals(result.player1Id()) ? result.player1Points() : result.player2Points();
-            meta.lore(List.of(
-                    MiniMessage.miniMessage().deserialize("<gray>Причина завершения: <white>" + result.reason().getDescription()).decoration(TextDecoration.ITALIC, false),
-                    MiniMessage.miniMessage().deserialize("<gray>Длительность: <white>" + result.durationSeconds() + "с").decoration(TextDecoration.ITALIC, false),
-                    Component.empty(),
-                    MiniMessage.miniMessage().deserialize("<gray>Нанесённый урон: <red>" + String.format("%.1f", myDmg) + "❤").decoration(TextDecoration.ITALIC, false),
-                    MiniMessage.miniMessage().deserialize("<gray>Набранные очки: <yellow>" + myPts).decoration(TextDecoration.ITALIC, false)
-            ));
-            item.setItemMeta(meta);
-        }
-        return item;
+        double myDmg = player.getUniqueId().equals(result.player1Id()) ? result.player1DamageDealt() : result.player2DamageDealt();
+        int myPts = player.getUniqueId().equals(result.player1Id()) ? result.player1Points() : result.player2Points();
+
+        String name = "<gold><b>Боевая статистика</b></gold>";
+        List<String> lore = List.of(
+                "<gray>Причина завершения: <white>" + result.reason().getDescription(),
+                "<gray>Длительность: <white>" + result.durationSeconds() + "с",
+                "",
+                "<gray>Нанесённый урон: <red>" + String.format("%.1f", myDmg) + "❤",
+                "<gray>Набранные очки: <yellow>" + myPts
+        );
+
+        return HeadTextures.head(HeadTextures.SCROLL, name, lore);
     }
 
     private ItemStack createOutcomeItem(boolean isWinner) {
         if (result.isDraw()) {
-            ItemStack item = new ItemStack(Material.CLOCK);
-            ItemMeta meta = item.getItemMeta();
-            if (meta != null) {
-                meta.displayName(MiniMessage.miniMessage().deserialize("<yellow><b>⌛ НИЧЬЯ</b></yellow>").decoration(TextDecoration.ITALIC, false));
-                String moneyStr = (result.royal() && result.reason() == dev.lovelace.loveduels.match.MatchEndReason.TIMEOUT)
-                        ? "<red>Ставки сгорели в казне"
-                        : "<green>Ставки возвращены";
-                meta.lore(List.of(
-                        MiniMessage.miniMessage().deserialize("<gray>Исход: <yellow>" + result.reason().getDescription()).decoration(TextDecoration.ITALIC, false),
-                        MiniMessage.miniMessage().deserialize("<gray>Деньги: " + moneyStr).decoration(TextDecoration.ITALIC, false),
-                        MiniMessage.miniMessage().deserialize("<gray>Честь: <white>Без изменений").decoration(TextDecoration.ITALIC, false)
-                ));
-                item.setItemMeta(meta);
-            }
-            return item;
+            String moneyStr = (result.royal() && result.reason() == dev.lovelace.loveduels.match.MatchEndReason.TIMEOUT)
+                    ? "<red>Ставки сгорели в казне"
+                    : "<green>Ставки возвращены";
+
+            String name = "<yellow><b>⌛ НИЧЬЯ</b></yellow>";
+            List<String> lore = List.of(
+                    "<gray>Исход: <yellow>" + result.reason().getDescription(),
+                    "<gray>Деньги: " + moneyStr,
+                    "<gray>Честь: <white>Без изменений"
+            );
+            return HeadTextures.head(HeadTextures.CLOCK, name, lore);
         }
 
-        ItemStack item = new ItemStack(isWinner ? Material.EMERALD : Material.REDSTONE);
-        ItemMeta meta = item.getItemMeta();
-        if (meta != null) {
-            String title = isWinner ? "<green><b>🏆 ВЫ ПОБЕДИЛИ!</b>" : "<red><b>💀 ПОРАЖЕНИЕ</b>";
-            meta.displayName(MiniMessage.miniMessage().deserialize(title).decoration(TextDecoration.ITALIC, false));
-
-            String moneyStr = isWinner ? "<green>+" + result.moneyPrizeWon() + " монет" : "<red>Потеряна ставка";
-            String honorStr = isWinner ? "<gold>+" + result.honorWon() : "<gray>-" + result.honorLost();
-
-            meta.lore(List.of(
-                    MiniMessage.miniMessage().deserialize("<gray>Деньги: " + moneyStr).decoration(TextDecoration.ITALIC, false),
-                    MiniMessage.miniMessage().deserialize("<gray>Честь: " + honorStr).decoration(TextDecoration.ITALIC, false)
-            ));
-            item.setItemMeta(meta);
+        if (isWinner) {
+            String name = "<green><b>🏆 ВЫ ПОБЕДИЛИ!</b>";
+            List<String> lore = List.of(
+                    "<gray>Деньги: <green>+" + result.moneyPrizeWon() + " монет",
+                    "<gray>Честь: <gold>+" + result.honorWon()
+            );
+            return HeadTextures.head(HeadTextures.TROPHY, name, lore);
+        } else {
+            String name = "<red><b>💀 ПОРАЖЕНИЕ</b>";
+            List<String> lore = List.of(
+                    "<gray>Деньги: <red>Потеряна ставка",
+                    "<gray>Честь: <gray>-" + result.honorLost()
+            );
+            return HeadTextures.head(HeadTextures.SKULL, name, lore);
         }
-        return item;
     }
 
     private ItemStack createRematchButton(Player opp) {
-        ItemStack item = new ItemStack(Material.BLAZE_ROD);
-        ItemMeta meta = item.getItemMeta();
-        if (meta != null) {
-            meta.displayName(MiniMessage.miniMessage().deserialize("<yellow><b>⚔ РЕВАНШ!</b></yellow>").decoration(TextDecoration.ITALIC, false));
-            meta.lore(List.of(
-                    MiniMessage.miniMessage().deserialize("<gray>Бросить повторный вызов игроку").decoration(TextDecoration.ITALIC, false),
-                    MiniMessage.miniMessage().deserialize("<gray>на тех же условиях.").decoration(TextDecoration.ITALIC, false),
-                    Component.empty(),
-                    MiniMessage.miniMessage().deserialize(opp != null && opp.isOnline() ? "<green>➤ Нажмите для предложения реванша" : "<red>Соперник офлайн").decoration(TextDecoration.ITALIC, false)
-            ));
-            item.setItemMeta(meta);
-        }
-        return item;
+        String name = "<yellow><b>⚔ РЕВАНШ!</b></yellow>";
+        List<String> lore = List.of(
+                "<gray>Бросить повторный вызов игроку",
+                "<gray>на тех же условиях поединка.",
+                "",
+                opp != null && opp.isOnline() ? "<green>➤ Нажмите для предложения реванша" : "<red>Соперник офлайн"
+        );
+        return HeadTextures.head(HeadTextures.SWORD, name, lore);
     }
 }

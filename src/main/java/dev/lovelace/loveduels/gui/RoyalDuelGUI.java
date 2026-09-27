@@ -1,13 +1,9 @@
 package dev.lovelace.loveduels.gui;
 
 import dev.lovelace.loveduels.core.DuelManager;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.List;
 
@@ -28,7 +24,7 @@ public final class RoyalDuelGUI extends CustomGUI {
         boolean serverActive = duelManager.getMatchManager().hasActiveRoyalDuel();
         long cd = duelManager.getCooldownManager().getRoyalTicketRemainingSeconds(player.getUniqueId());
 
-        // Overview Book (Slot 20)
+        // Overview Scroll (Slot 20)
         setItem(20, createOverviewItem(), null);
 
         // Status Item (Slot 22)
@@ -62,62 +58,43 @@ public final class RoyalDuelGUI extends CustomGUI {
     }
 
     private ItemStack createOverviewItem() {
-        ItemStack item = new ItemStack(Material.ENCHANTED_BOOK);
-        ItemMeta meta = item.getItemMeta();
-        if (meta != null) {
-            meta.displayName(MiniMessage.miniMessage().deserialize(
-                    "<gradient:#FFD700:#FFA500><b>Правила Королевской Дуэли</b></gradient>"
-            ).decoration(TextDecoration.ITALIC, false));
-            meta.lore(List.of(
-                    MiniMessage.miniMessage().deserialize("<gray>Самый престижный турнирный бой.").decoration(TextDecoration.ITALIC, false),
-                    Component.empty(),
-                    MiniMessage.miniMessage().deserialize("<yellow>▪ Обязательная ставка деньгами").decoration(TextDecoration.ITALIC, false),
-                    MiniMessage.miniMessage().deserialize("<yellow>▪ Серверные оповещения Глашатая").decoration(TextDecoration.ITALIC, false),
-                    MiniMessage.miniMessage().deserialize("<yellow>▪ Победитель забирает банк + <gold>25% бонус").decoration(TextDecoration.ITALIC, false),
-                    MiniMessage.miniMessage().deserialize("<yellow>▪ Увеличенный прирост Чести (<green>+150%</green>)").decoration(TextDecoration.ITALIC, false),
-                    MiniMessage.miniMessage().deserialize("<yellow>▪ Оповещение в канале Discord").decoration(TextDecoration.ITALIC, false),
-                    MiniMessage.miniMessage().deserialize("<yellow>▪ Ограничение: 1 дуэль на сервер одновременно").decoration(TextDecoration.ITALIC, false)
-            ));
-            item.setItemMeta(meta);
-        }
-        return item;
+        String name = "<gradient:#FFD700:#FFA500><b>Правила Королевской Дуэли</b></gradient>";
+        List<String> lore = List.of(
+                "<gray>Самый престижный турнирный бой.",
+                "",
+                "<yellow>▪ Обязательная ставка деньгами",
+                "<yellow>▪ Серверные оповещения Глашатая",
+                "<yellow>▪ Победитель забирает банк + <gold>25% бонус",
+                "<yellow>▪ Увеличенный прирост Чести (<green>+150%</green>)",
+                "<yellow>▪ Оповещение в канале Discord",
+                "<yellow>▪ Ограничение: 1 дуэль на сервер одновременно"
+        );
+        return HeadTextures.head(HeadTextures.SCROLL, name, lore);
     }
 
     private ItemStack createStatusItem(boolean hasTicket, boolean serverActive, long cd) {
-        ItemStack item = new ItemStack(hasTicket && !serverActive && cd <= 0 ? Material.EMERALD : Material.REDSTONE);
-        ItemMeta meta = item.getItemMeta();
-        if (meta != null) {
-            meta.displayName(MiniMessage.miniMessage().deserialize(
-                    "<gold><b>Статус готовности:</b></gold>"
-            ).decoration(TextDecoration.ITALIC, false));
+        boolean can = hasTicket && !serverActive && cd <= 0;
+        String ticketStr = hasTicket ? "<green>✔ В наличии" : "<red>✖ Отсутствует";
+        String arenaStr = serverActive ? "<red>✖ Занято (идёт бой)" : "<green>✔ Свободно";
+        String cdStr = cd <= 0 ? "<green>✔ Готов" : "<red>⏳ " + cd + "с";
 
-            String ticketStr = hasTicket ? "<green>✔ В наличии" : "<red>✖ Отсутствует";
-            String arenaStr = serverActive ? "<red>✖ Занято (идёт бой)" : "<green>✔ Свободно";
-            String cdStr = cd <= 0 ? "<green>✔ Готов" : "<red>⏳ " + cd + "с";
+        String name = "<gold><b>Статус готовности:</b></gold>";
+        List<String> lore = List.of(
+                "<gray>Наличие билета: " + ticketStr,
+                "<gray>Статус турнира: " + arenaStr,
+                "<gray>Кулдаун билета: " + cdStr
+        );
 
-            meta.lore(List.of(
-                    MiniMessage.miniMessage().deserialize("<gray>Наличие билета: " + ticketStr).decoration(TextDecoration.ITALIC, false),
-                    MiniMessage.miniMessage().deserialize("<gray>Статус турнира: " + arenaStr).decoration(TextDecoration.ITALIC, false),
-                    MiniMessage.miniMessage().deserialize("<gray>Кулдаун билета: " + cdStr).decoration(TextDecoration.ITALIC, false)
-            ));
-            item.setItemMeta(meta);
-        }
-        return item;
+        return HeadTextures.head(can ? HeadTextures.READY : HeadTextures.NOT_READY, name, lore);
     }
 
     private ItemStack createChallengeButtonItem(boolean hasTicket, boolean serverActive, long cd) {
         boolean can = hasTicket && !serverActive && cd <= 0;
-        ItemStack item = new ItemStack(can ? Material.NETHER_STAR : Material.BARRIER);
-        ItemMeta meta = item.getItemMeta();
-        if (meta != null) {
-            String name = can ? "<gradient:#FFD700:#FFA500><b>⚔ БРОСИТЬ КОРОЛЕВСКИЙ ВЫЗОВ</b></gradient>"
-                              : "<red><b>Недоступно для вызова</b></red>";
-            meta.displayName(MiniMessage.miniMessage().deserialize(name).decoration(TextDecoration.ITALIC, false));
-            meta.lore(List.of(
-                    MiniMessage.miniMessage().deserialize(can ? "<yellow>➤ Нажмите для выбора оппонента" : "<gray>Проверьте условия готовности").decoration(TextDecoration.ITALIC, false)
-            ));
-            item.setItemMeta(meta);
-        }
-        return item;
+        String name = can ? "<gradient:#FFD700:#FFA500><b>⚔ БРОСИТЬ КОРОЛЕВСКИЙ ВЫЗОВ</b></gradient>"
+                          : "<red><b>Недоступно для вызова</b></red>";
+        List<String> lore = List.of(
+                can ? "<yellow>➤ Нажмите для выбора оппонента" : "<gray>Проверьте условия готовности"
+        );
+        return HeadTextures.head(can ? HeadTextures.CROWN : HeadTextures.CANCEL, name, lore);
     }
 }
