@@ -387,7 +387,11 @@ public abstract class AbstractMatch implements Match {
 
                 if (remaining <= 0) {
                     cancel();
-                    end(null, MatchEndReason.TIMEOUT);
+                    if (isArmisticeApplicable()) {
+                        startArmistice();
+                    } else {
+                        end(null, MatchEndReason.TIMEOUT);
+                    }
                 }
             }
         }.runTaskTimer(plugin, 20L, 20L);
@@ -433,6 +437,88 @@ public abstract class AbstractMatch implements Match {
         return BossBar.Color.GREEN;
     }
 
+    protected boolean isArmisticeApplicable() {
+        if (!plugin.getConfig().getBoolean("armistice.enabled", true)) {
+            return false;
+        }
+        if (royal && plugin.getConfig().getBoolean("armistice.skip_royal", true)) {
+            return false;
+        }
+        return state == MatchState.FIGHTING && !isEnded();
+    }
+
+    protected void startArmistice() {
+        if (isEnded()) return;
+
+        state = MatchState.ARMISTICE;
+        int duration = Math.max(3, plugin.getConfig().getInt("armistice.duration_seconds", 15));
+        int surrenderPercent = Math.max(1, Math.min(100, plugin.getConfig().getInt("armistice.surrender_stake_percent", 25)));
+
+        Component armisticeTitle = MiniMessage.miniMessage().deserialize("<gradient:#FFD700:#FFFFFF><b>🏳 ПЕРЕМИРИЕ</b></gradient>");
+        Component armisticeSubtitle = MiniMessage.miniMessage().deserialize("<yellow>Урон заморожен. Сдайтесь (<white>/duel forfeit</white>) со скидкой " + surrenderPercent + "% или ждите ничьей</yellow>");
+        Title title = Title.title(armisticeTitle, armisticeSubtitle, Title.Times.times(Duration.ofMillis(200), Duration.ofSeconds(2), Duration.ofMillis(400)));
+
+        if (player1.isOnline()) {
+            player1.showTitle(title);
+            player1.playSound(player1.getLocation(), Sound.BLOCK_BEACON_ACTIVATE, 1.0f, 1.2f);
+            player1.sendMessage(MiniMessage.miniMessage().deserialize(
+                    "<gold>🏳 <b>Объявлено перемирие на " + duration + " сек!</b> Урон заморожен. Вы можете сдаться со скидкой (<white>/duel forfeit</white>) или дождаться ничьей."
+            ));
+        }
+        if (player2.isOnline()) {
+            player2.showTitle(title);
+            player2.playSound(player2.getLocation(), Sound.BLOCK_BEACON_ACTIVATE, 1.0f, 1.2f);
+            player2.sendMessage(MiniMessage.miniMessage().deserialize(
+                    "<gold>🏳 <b>Объявлено перемирие на " + duration + " сек!</b> Урон заморожен. Вы можете сдаться со скидкой (<white>/duel forfeit</white>) или дождаться ничьей."
+            ));
+        }
+
+        if (timerBossBar != null) {
+            timerBossBar.color(BossBar.Color.WHITE);
+            timerBossBar.progress(1.0f);
+            timerBossBar.name(createArmisticeBossBarTitle(duration));
+        }
+
+        timerTask = new BukkitRunnable() {
+            private int remaining = duration;
+
+            @Override
+            public void run() {
+                if (isEnded()) {
+                    cancel();
+                    return;
+                }
+
+                remaining--;
+                if (remaining <= 0) {
+                    cancel();
+                    end(null, MatchEndReason.TIMEOUT);
+                    return;
+                }
+
+                if (timerBossBar != null) {
+                    float progress = Math.max(0.0f, Math.min(1.0f, (float) remaining / duration));
+                    timerBossBar.progress(progress);
+                    timerBossBar.name(createArmisticeBossBarTitle(remaining));
+                }
+
+                if (remaining <= 5) {
+                    playTimerSound(Sound.BLOCK_NOTE_BLOCK_HAT, 1.2f);
+                }
+            }
+        }.runTaskTimer(plugin, 20L, 20L);
+    }
+
+    private Component createArmisticeBossBarTitle(int remainingSeconds) {
+        int safeSec = Math.max(0, remainingSeconds);
+        int min = safeSec / 60;
+        int sec = safeSec % 60;
+        String timeStr = String.format("%02d:%02d", min, sec);
+        return MiniMessage.miniMessage().deserialize(
+                "<gold>🏳 <b>ПЕРЕМИРИЕ</b> <dark_gray>•</dark_gray> <yellow>До ничьей: <white><b>" + timeStr + "</b></white></yellow>"
+        );
+    }
+
     private void playTimerSound(Sound sound, float pitch) {
         if (player1 != null && player1.isOnline()) player1.playSound(player1.getLocation(), sound, 0.8f, pitch);
         if (player2 != null && player2.isOnline()) player2.playSound(player2.getLocation(), sound, 0.8f, pitch);
@@ -461,7 +547,18 @@ public abstract class AbstractMatch implements Match {
     protected abstract void cleanupCustomEntities();
 
     @Override
+    public void surrender(Player player) {
+        if (isEnded() || !containsPlayer(player.getUniqueId())) {
+            return;
+        }
+        Player winner = getOpponent(player.getUniqueId());
+        UUID winnerId = (winner != null) ? winner.getUniqueId() : null;
+        end(winnerId, MatchEndReason.FORFEIT);
+    }
+
+    @Override
     public void end(UUID winnerId, MatchEndReason reason) {
+        boolean armisticeSurrender = (state == MatchState.ARMISTICE && reason == MatchEndReason.FORFEIT);
         if (!ended.compareAndSet(false, true)) {
             return;
         }
@@ -494,23 +591,38 @@ public abstract class AbstractMatch implements Match {
         // Calculate bets and rewards
         long calcPrizeMoney = 0L;
         int calcHonorDelta = 0;
+        long loserMoneyRefund = 0L;
 
         if (winnerId != null) {
-            calcPrizeMoney = bet.totalMoneyPrizePool();
-            if (royal && calcPrizeMoney > 0) {
-                // Royal duel winner bonus: +25% bonus from royal treasury
-                long bonus = calcPrizeMoney / 4;
-                calcPrizeMoney += bonus;
-            }
+            if (armisticeSurrender) {
+                int stakePercent = Math.max(1, Math.min(100, plugin.getConfig().getInt("armistice.surrender_stake_percent", 25)));
+                long loserBet = bet.moneyBet();
+                long penalizedStake = loserBet * stakePercent / 100L;
+                loserMoneyRefund = loserBet - penalizedStake;
+                calcPrizeMoney = loserBet + penalizedStake;
 
-            calcHonorDelta = bet.hasHonor() ? bet.honorBet() : 25;
-            if (royal) {
-                calcHonorDelta = (int) (calcHonorDelta * 1.5);
+                calcHonorDelta = bet.hasHonor() ? bet.honorBet() : 25;
+                if (plugin.getConfig().getBoolean("armistice.apply_to_honor", false)) {
+                    calcHonorDelta = calcHonorDelta * stakePercent / 100;
+                }
+            } else {
+                calcPrizeMoney = bet.totalMoneyPrizePool();
+                if (royal && calcPrizeMoney > 0) {
+                    // Royal duel winner bonus: +25% bonus from royal treasury
+                    long bonus = calcPrizeMoney / 4;
+                    calcPrizeMoney += bonus;
+                }
+
+                calcHonorDelta = bet.hasHonor() ? bet.honorBet() : 25;
+                if (royal) {
+                    calcHonorDelta = (int) (calcHonorDelta * 1.5);
+                }
             }
         }
 
         final long finalPrizeMoney = calcPrizeMoney;
         final int finalHonorDelta = calcHonorDelta;
+        final long finalLoserRefund = loserMoneyRefund;
 
         this.result = new MatchResult(
                 matchId,
@@ -543,24 +655,42 @@ public abstract class AbstractMatch implements Match {
             });
 
             winner.playSound(winner.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 1.0f, 1.0f);
-            winner.sendMessage(MiniMessage.miniMessage().deserialize(
-                    "<gold>⚔ <b>ПОБЕДА!</b> Вы победили в дуэли против <white>" + (loser != null ? loser.getName() : "противника") +
-                    "</white>! <green>(+" + finalPrizeMoney + " монет, +" + finalHonorDelta + " Чести)"
-            ));
+            if (armisticeSurrender) {
+                winner.sendMessage(MiniMessage.miniMessage().deserialize(
+                        "<gold>⚔ <b>ПОБЕДА!</b> Противник сдался во время перемирия! <green>(+" + finalPrizeMoney + " монет, +" + finalHonorDelta + " Чести)</green>"
+                ));
+            } else {
+                winner.sendMessage(MiniMessage.miniMessage().deserialize(
+                        "<gold>⚔ <b>ПОБЕДА!</b> Вы победили в дуэли против <white>" + (loser != null ? loser.getName() : "противника") +
+                        "</white>! <green>(+" + finalPrizeMoney + " монет, +" + finalHonorDelta + " Чести)</green>"
+                ));
+            }
         }
 
         if (loser != null && loser.isOnline()) {
+            if (finalLoserRefund > 0) {
+                economyBridge.give(loser, finalLoserRefund);
+            }
+            final long loserActualLoss = bet.moneyBet() - finalLoserRefund;
             playerStorage.getOrCreatePlayer(loserId, loser.getName()).thenAccept(data -> {
-                var updated = data.withLoss(finalHonorDelta, bet.moneyBet());
+                var updated = data.withLoss(finalHonorDelta, loserActualLoss);
                 playerStorage.savePlayer(updated);
                 leaderboardsBridge.syncPlayerData(updated);
             });
 
             loser.playSound(loser.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 0.8f);
-            loser.sendMessage(MiniMessage.miniMessage().deserialize(
-                    "<red>⚔ <b>ПОРАЖЕНИЕ!</b> Вы проиграли дуэль против <white>" + (winner != null ? winner.getName() : "противника") +
-                    "</white>. <gray>(-" + finalHonorDelta + " Чести)"
-            ));
+            if (armisticeSurrender) {
+                int stakePercent = plugin.getConfig().getInt("armistice.surrender_stake_percent", 25);
+                loser.sendMessage(MiniMessage.miniMessage().deserialize(
+                        "<red>🏳 <b>СДАЧА В ПЕРЕМИРИЕ!</b> Вы сдались. Списано " + stakePercent + "% ставки (-" + loserActualLoss +
+                        " монет), возвращено " + finalLoserRefund + " монет."
+                ));
+            } else {
+                loser.sendMessage(MiniMessage.miniMessage().deserialize(
+                        "<red>⚔ <b>ПОРАЖЕНИЕ!</b> Вы проиграли дуэль против <white>" + (winner != null ? winner.getName() : "противника") +
+                        "</white>. <gray>(-" + finalHonorDelta + " Чести)"
+                ));
+            }
         }
 
         if (winner != null && loser != null && royal) {

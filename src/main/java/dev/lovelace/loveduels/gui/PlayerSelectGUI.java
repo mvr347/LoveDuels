@@ -2,15 +2,11 @@ package dev.lovelace.loveduels.gui;
 
 import dev.lovelace.loveduels.core.DuelManager;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.SkullMeta;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public final class PlayerSelectGUI extends CustomGUI {
@@ -54,43 +50,36 @@ public final class PlayerSelectGUI extends CustomGUI {
             int slot = validSlots[i];
 
             setItem(slot, createOpponentHead(opp), e -> {
-                // Open duel configuration GUI with chosen opponent
                 new DuelSetupGUI(player, opp, duelManager, royal).open();
             });
         }
     }
 
     private ItemStack createOpponentHead(Player opp) {
-        ItemStack item = new ItemStack(Material.PLAYER_HEAD);
-        SkullMeta meta = (SkullMeta) item.getItemMeta();
-        if (meta != null) {
-            meta.setOwningPlayer(opp);
-            meta.displayName(MiniMessage.miniMessage().deserialize(
-                    "<gold><b>" + opp.getName() + "</b>"
-            ).decoration(TextDecoration.ITALIC, false));
+        Component name = MiniMessage.miniMessage().deserialize("<gold><b>" + opp.getName() + "</b>");
 
-            long cd = duelManager.getCooldownManager().getChallengeRemainingSeconds(player.getUniqueId(), opp.getUniqueId());
-            String cdInfo = cd > 0 ? "<red>Кулдаун вызова: " + cd + "с" : "<green>Готов к вызову!";
+        long cd = duelManager.getCooldownManager().getChallengeRemainingSeconds(player.getUniqueId(), opp.getUniqueId());
+        String cdInfo = cd > 0 ? "<red>Кулдаун вызова: " + cd + "с" : "<green>Готов к вызову!";
 
-            meta.lore(List.of(
-                    MiniMessage.miniMessage().deserialize("<gray>Здоровье: <red>" + (int) opp.getHealth() + "❤").decoration(TextDecoration.ITALIC, false),
-                    MiniMessage.miniMessage().deserialize("<gray>Пинг: <white>" + opp.getPing() + "ms").decoration(TextDecoration.ITALIC, false),
-                    MiniMessage.miniMessage().deserialize(cdInfo).decoration(TextDecoration.ITALIC, false),
-                    Component.empty(),
-                    MiniMessage.miniMessage().deserialize("<yellow>➤ Нажмите, чтобы настроить дуэль").decoration(TextDecoration.ITALIC, false)
-            ));
-            item.setItemMeta(meta);
-        }
-        return item;
+        List<Component> lore = List.of(
+                MiniMessage.miniMessage().deserialize("<gray>Здоровье: <red>" + (int) opp.getHealth() + "❤"),
+                MiniMessage.miniMessage().deserialize("<gray>Пинг: <white>" + opp.getPing() + "ms"),
+                MiniMessage.miniMessage().deserialize(cdInfo),
+                Component.empty(),
+                MiniMessage.miniMessage().deserialize("<yellow>➤ Нажмите, чтобы настроить дуэль")
+        );
+
+        return HeadTextures.playerHead(opp, name, lore);
     }
 
     private ItemStack createNoPlayersItem() {
-        ItemStack item = new ItemStack(Material.STRUCTURE_VOID);
-        var meta = item.getItemMeta();
-        if (meta != null) {
-            meta.displayName(MiniMessage.miniMessage().deserialize("<gray>Нет доступных игроков онлайн").decoration(TextDecoration.ITALIC, false));
-            item.setItemMeta(meta);
-        }
-        return item;
+        return HeadTextures.head(
+                HeadTextures.EYE,
+                "<gray>Нет доступных игроков онлайн",
+                List.of(
+                        "<gray>Все игроки либо оффлайн, либо уже в бою.",
+                        "<yellow>Пригласите кого-нибудь на сервер!"
+                )
+        );
     }
 }

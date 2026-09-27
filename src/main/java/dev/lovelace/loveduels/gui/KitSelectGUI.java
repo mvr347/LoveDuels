@@ -2,13 +2,9 @@ package dev.lovelace.loveduels.gui;
 
 import dev.lovelace.loveduels.core.DuelManager;
 import dev.lovelace.loveduels.kit.Kit;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,6 +29,15 @@ public final class KitSelectGUI extends CustomGUI {
         Collection<Kit> kits = duelManager.getKitManager().getAllKits();
         int[] slots = new int[]{20, 21, 22, 23, 24, 29, 30, 31, 32, 33};
 
+        if (kits.isEmpty()) {
+            setItem(22, HeadTextures.head(
+                    HeadTextures.CHEST,
+                    "<red><b>Наборы не найдены</b></red>",
+                    List.of("<gray>На сервере пока нет настроенных китов.")
+            ), null);
+            return;
+        }
+
         int idx = 0;
         for (Kit kit : kits) {
             if (idx >= slots.length) break;
@@ -51,19 +56,14 @@ public final class KitSelectGUI extends CustomGUI {
     }
 
     private ItemStack createKitItem(Kit kit) {
-        ItemStack item = (kit.icon() != null) ? kit.icon().clone() : new ItemStack(Material.IRON_SWORD);
-        ItemMeta meta = item.getItemMeta();
-        if (meta != null) {
-            meta.displayName(MiniMessage.miniMessage().deserialize(kit.displayName()).decoration(TextDecoration.ITALIC, false));
-            List<Component> lore = new ArrayList<>();
-            lore.add(MiniMessage.miniMessage().deserialize("<gray>Набор снаряжения: <white>" + kit.id()).decoration(TextDecoration.ITALIC, false));
-            lore.add(Component.empty());
-            lore.add(MiniMessage.miniMessage().deserialize("<yellow>Эффекты: <white>" + (kit.effects().isEmpty() ? "Нет" : kit.effects().size())).decoration(TextDecoration.ITALIC, false));
-            lore.add(Component.empty());
-            lore.add(MiniMessage.miniMessage().deserialize("<yellow>➤ Нажмите для выбора этого кита").decoration(TextDecoration.ITALIC, false));
-            meta.lore(lore);
-            item.setItemMeta(meta);
-        }
-        return item;
+        String name = "<aqua><b>" + kit.displayName() + "</b></aqua>";
+        List<String> lore = new ArrayList<>();
+        lore.add("<gray>Идентификатор: <white>" + kit.id());
+        lore.add("");
+        lore.add("<yellow>Эффекты: <white>" + (kit.effects().isEmpty() ? "Нет" : kit.effects().size() + " шт."));
+        lore.add("");
+        lore.add("<yellow>➤ Нажмите для выбора этого кита");
+
+        return HeadTextures.head(HeadTextures.CHEST, name, lore);
     }
 }

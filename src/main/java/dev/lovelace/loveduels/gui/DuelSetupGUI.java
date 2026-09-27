@@ -4,17 +4,17 @@ import dev.lovelace.loveduels.core.DuelBet;
 import dev.lovelace.loveduels.core.DuelManager;
 import dev.lovelace.loveduels.core.DuelRequest;
 import dev.lovelace.loveduels.core.DuelType;
+import dev.lovelace.loveduels.kit.Kit;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public final class DuelSetupGUI extends CustomGUI {
@@ -50,33 +50,73 @@ public final class DuelSetupGUI extends CustomGUI {
     protected void build() {
         applyStandardBorders(true, () -> new PlayerSelectGUI(player, duelManager, royal).open());
 
-        // Header indicator of opponent
+        // Header indicator of opponent (Slot 4)
         setItem(4, createOpponentInfoItem(), null);
 
-        // Row 2 (slots 19 to 25): Duel Type Selectors
+        // Row 2 (slots 19 to 23): Duel Type Selectors
         DuelType[] types = DuelType.values();
         int[] typeSlots = new int[]{19, 20, 21, 22, 23};
+        List<Kit> kits = new ArrayList<>(duelManager.getKitManager().getAllKits());
+
+        // Ensure default kit is picked if none selected
+        if (selectedKitId == null && !kits.isEmpty()) {
+            selectedKitId = kits.get(0).id();
+        }
+
         for (int i = 0; i < types.length && i < typeSlots.length; i++) {
             DuelType dt = types[i];
             int slot = typeSlots[i];
             boolean selected = (selectedType == dt);
 
-            setItem(slot, createTypeItem(dt, selected), e -> {
-                if (dt == DuelType.KIT && selectedKitId == null) {
-                    new KitSelectGUI(player, duelManager, kit -> {
-                        this.selectedKitId = kit.id();
-                        this.selectedType = DuelType.KIT;
-                        this.open();
-                    }).open();
-                } else {
-                    this.selectedType = dt;
+            if (dt == DuelType.KIT) {
+                setItem(slot, createKitTypeItem(selected, kits), e -> {
+                    if (selectedType != DuelType.KIT) {
+                        selectedType = DuelType.KIT;
+                        if (selectedKitId == null && !kits.isEmpty()) {
+                            selectedKitId = kits.get(0).id();
+                        }
+                        player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 1.2f);
+                        build();
+                        return;
+                    }
+
+                    // Cycle kit with LMB (next) / RMB (previous)
+                    if (kits.isEmpty()) {
+                        player.sendMessage(MiniMessage.miniMessage().deserialize("<red>❌ Нет настроенных китов на сервере!"));
+                        player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                        return;
+                    }
+
+                    int curIdx = 0;
+                    for (int k = 0; k < kits.size(); k++) {
+                        if (kits.get(k).id().equalsIgnoreCase(selectedKitId)) {
+                            curIdx = k;
+                            break;
+                        }
+                    }
+
+                    if (e.isRightClick()) {
+                        int prevIdx = (curIdx - 1 + kits.size()) % kits.size();
+                        selectedKitId = kits.get(prevIdx).id();
+                    } else {
+                        int nextIdx = (curIdx + 1) % kits.size();
+                        selectedKitId = kits.get(nextIdx).id();
+                    }
+
+                    player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 1.3f);
                     build();
-                }
-            });
+                });
+            } else {
+                setItem(slot, createTypeItem(dt, selected), e -> {
+                    this.selectedType = dt;
+                    player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 1.0f);
+                    build();
+                });
+            }
         }
 
-        // Row 3 (slots 28 to 34): Stakes and Send Challenge
-        // Money bet adjuster
+        // Row 3 (slots 28 to 34): Stakes and Actions
+        // Money bet adjuster (Slot 29)
         setItem(29, createMoneyBetItem(), e -> {
             if (e.isRightClick()) {
                 moneyBet = royal ? 500L : 0L;
@@ -85,10 +125,11 @@ public final class DuelSetupGUI extends CustomGUI {
             } else {
                 moneyBet += 250L;
             }
+            player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.8f, 1.2f);
             build();
         });
 
-        // Honor bet adjuster
+        // Honor bet adjuster (Slot 30)
         setItem(30, createHonorBetItem(), e -> {
             if (e.isRightClick()) {
                 honorBet = 0;
@@ -97,6 +138,7 @@ public final class DuelSetupGUI extends CustomGUI {
             } else {
                 honorBet += 10;
             }
+            player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.8f, 1.4f);
             build();
         });
 
@@ -107,6 +149,7 @@ public final class DuelSetupGUI extends CustomGUI {
         setItem(32, createResetBetsItem(), e -> {
             moneyBet = royal ? 500L : 0L;
             honorBet = 0;
+            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.8f);
             build();
         });
     }
@@ -256,95 +299,102 @@ public final class DuelSetupGUI extends CustomGUI {
     }
 
     private ItemStack createOpponentInfoItem() {
-        ItemStack item = new ItemStack(Material.PLAYER_HEAD);
-        var meta = (org.bukkit.inventory.meta.SkullMeta) item.getItemMeta();
-        if (meta != null) {
-            meta.setOwningPlayer(opponent);
-            meta.displayName(MiniMessage.miniMessage().deserialize(
-                    "<gold><b>Соперник: " + opponent.getName() + "</b>"
-            ).decoration(TextDecoration.ITALIC, false));
-            item.setItemMeta(meta);
-        }
-        return item;
+        return HeadTextures.playerHead(opponent,
+                MiniMessage.miniMessage().deserialize("<gold><b>Соперник: " + opponent.getName() + "</b>"),
+                List.of(
+                        MiniMessage.miniMessage().deserialize("<gray>Здоровье: <red>" + (int) opponent.getHealth() + "❤"),
+                        MiniMessage.miniMessage().deserialize("<gray>Пинг: <white>" + opponent.getPing() + "ms")
+                )
+        );
     }
 
     private ItemStack createTypeItem(DuelType dt, boolean selected) {
-        ItemStack item = new ItemStack(dt.getIcon());
-        ItemMeta meta = item.getItemMeta();
-        if (meta != null) {
-            String name = (selected ? "<green>✔ " : "<gray>") + dt.getDisplayNameMiniMessage();
-            meta.displayName(MiniMessage.miniMessage().deserialize(name).decoration(TextDecoration.ITALIC, false));
-            meta.lore(List.of(
-                    MiniMessage.miniMessage().deserialize("<gray>" + dt.getDescription()).decoration(TextDecoration.ITALIC, false),
-                    Component.empty(),
-                    MiniMessage.miniMessage().deserialize(selected ? "<green><b>ВЫБРАНО</b>" : "<yellow>➤ Нажмите для выбора").decoration(TextDecoration.ITALIC, false)
-            ));
-            item.setItemMeta(meta);
+        String headTexture = switch (dt) {
+            case SWORD -> HeadTextures.SWORD;
+            case BOW -> HeadTextures.BOW;
+            case HORSE_SPEAR -> HeadTextures.HORSE;
+            case OWN_INVENTORY -> HeadTextures.BACKPACK;
+            default -> HeadTextures.SWORD;
+        };
+
+        String name = (selected ? "<green>✔ " : "<gray>") + dt.getDisplayNameMiniMessage();
+        List<String> lore = List.of(
+                "<gray>" + dt.getDescription(),
+                "",
+                selected ? "<green><b>ВЫБРАНО</b>" : "<yellow>➤ Нажмите для выбора"
+        );
+        return HeadTextures.head(headTexture, name, lore);
+    }
+
+    private ItemStack createKitTypeItem(boolean selected, List<Kit> kits) {
+        String name = (selected ? "<green>✔ " : "<gray>") + DuelType.KIT.getDisplayNameMiniMessage();
+
+        List<String> lore = new ArrayList<>();
+        lore.add("<gray>Сражение с готовым набором предметов.");
+        lore.add("");
+
+        if (kits.isEmpty()) {
+            lore.add("<red>❌ Нет настроенных китов на сервере");
+        } else {
+            int curIdx = 0;
+            for (int k = 0; k < kits.size(); k++) {
+                if (kits.get(k).id().equalsIgnoreCase(selectedKitId)) {
+                    curIdx = k;
+                    break;
+                }
+            }
+            Kit curKit = kits.get(curIdx);
+            lore.add("<aqua>Выбранный кит: <yellow><b>«" + curKit.displayName() + "»</b></yellow> <dark_gray>(" + (curIdx + 1) + "/" + kits.size() + ")</dark_gray></aqua>");
+            lore.add("");
+            lore.add("<gray>Управление набором:");
+            lore.add("<yellow>▸ ЛКМ:</yellow> <white>Следующий кит ▶</white>");
+            lore.add("<yellow>▸ ПКМ:</yellow> <white>◀ Предыдущий кит</white>");
         }
-        return item;
+
+        lore.add("");
+        lore.add(selected ? "<green><b>ВЫБРАНО</b>" : "<yellow>➤ Нажмите для выбора режима");
+
+        return HeadTextures.head(HeadTextures.CHEST, name, lore);
     }
 
     private ItemStack createMoneyBetItem() {
-        ItemStack item = new ItemStack(Material.GOLD_INGOT);
-        ItemMeta meta = item.getItemMeta();
-        if (meta != null) {
-            meta.displayName(MiniMessage.miniMessage().deserialize(
-                    "<gold><b>Ставка деньгами: <green>" + moneyBet + " монет</b></gold>"
-            ).decoration(TextDecoration.ITALIC, false));
-            meta.lore(List.of(
-                    MiniMessage.miniMessage().deserialize("<gray>Ваш баланс: <white>" + duelManager.getEconomyBridge().getBalance(player) + " монет").decoration(TextDecoration.ITALIC, false),
-                    Component.empty(),
-                    MiniMessage.miniMessage().deserialize("<yellow>ЛКМ: <white>+250 монет").decoration(TextDecoration.ITALIC, false),
-                    MiniMessage.miniMessage().deserialize("<yellow>Shift+ЛКМ: <white>+1000 монет").decoration(TextDecoration.ITALIC, false),
-                    MiniMessage.miniMessage().deserialize("<red>ПКМ: <white>Сбросить ставку").decoration(TextDecoration.ITALIC, false)
-            ));
-            item.setItemMeta(meta);
-        }
-        return item;
+        String name = "<gold><b>Ставка деньгами: <green>" + moneyBet + " монет</b></gold>";
+        List<String> lore = List.of(
+                "<gray>Ваш баланс: <white>" + duelManager.getEconomyBridge().getBalance(player) + " монет",
+                "",
+                "<yellow>ЛКМ: <white>+250 монет",
+                "<yellow>Shift+ЛКМ: <white>+1000 монет",
+                "<red>ПКМ: <white>Сбросить ставку"
+        );
+        return HeadTextures.head(HeadTextures.COIN, name, lore);
     }
 
     private ItemStack createHonorBetItem() {
-        ItemStack item = new ItemStack(Material.EXPERIENCE_BOTTLE);
-        ItemMeta meta = item.getItemMeta();
-        if (meta != null) {
-            meta.displayName(MiniMessage.miniMessage().deserialize(
-                    "<yellow><b>Ставка Честью: <gold>" + honorBet + " очков</b></yellow>"
-            ).decoration(TextDecoration.ITALIC, false));
-            meta.lore(List.of(
-                    MiniMessage.miniMessage().deserialize("<gray>Рейтинг победителя вырастет,").decoration(TextDecoration.ITALIC, false),
-                    MiniMessage.miniMessage().deserialize("<gray>а проигравший потеряет Честь.").decoration(TextDecoration.ITALIC, false),
-                    Component.empty(),
-                    MiniMessage.miniMessage().deserialize("<yellow>ЛКМ: <white>+10 Чести").decoration(TextDecoration.ITALIC, false),
-                    MiniMessage.miniMessage().deserialize("<yellow>Shift+ЛКМ: <white>+50 Чести").decoration(TextDecoration.ITALIC, false),
-                    MiniMessage.miniMessage().deserialize("<red>ПКМ: <white>Сбросить ставку").decoration(TextDecoration.ITALIC, false)
-            ));
-            item.setItemMeta(meta);
-        }
-        return item;
+        String name = "<yellow><b>Ставка Честью: <gold>" + honorBet + " очков</b></yellow>";
+        List<String> lore = List.of(
+                "<gray>Рейтинг победителя вырастет,",
+                "<gray>а проигравший потеряет Честь.",
+                "",
+                "<yellow>ЛКМ: <white>+10 Чести",
+                "<yellow>Shift+ЛКМ: <white>+50 Чести",
+                "<red>ПКМ: <white>Сбросить ставку"
+        );
+        return HeadTextures.head(HeadTextures.STAR, name, lore);
     }
 
     private ItemStack createSendButton() {
-        ItemStack item = new ItemStack(Material.EMERALD_BLOCK);
-        ItemMeta meta = item.getItemMeta();
-        if (meta != null) {
-            meta.displayName(MiniMessage.miniMessage().deserialize(
-                    "<green><b>⚔ ОТПРАВИТЬ ВЫЗОВ</b></green>"
-            ).decoration(TextDecoration.ITALIC, false));
-            meta.lore(List.of(
-                    MiniMessage.miniMessage().deserialize("<gray>Нажмите, чтобы отправить приглашение.").decoration(TextDecoration.ITALIC, false)
-            ));
-            item.setItemMeta(meta);
-        }
-        return item;
+        String name = "<green><b>⚔ ОТПРАВИТЬ ВЫЗОВ</b></green>";
+        List<String> lore = List.of(
+                "<gray>Нажмите, чтобы отправить приглашение сопернику."
+        );
+        return HeadTextures.head(HeadTextures.SWORD, name, lore);
     }
 
     private ItemStack createResetBetsItem() {
-        ItemStack item = new ItemStack(Material.REDSTONE);
-        ItemMeta meta = item.getItemMeta();
-        if (meta != null) {
-            meta.displayName(MiniMessage.miniMessage().deserialize("<red>Сбросить все ставки</red>").decoration(TextDecoration.ITALIC, false));
-            item.setItemMeta(meta);
-        }
-        return item;
+        String name = "<red><b>Сбросить все ставки</b></red>";
+        List<String> lore = List.of(
+                "<gray>Обнулить ставку золотом и честью"
+        );
+        return HeadTextures.head(HeadTextures.RESET, name, lore);
     }
 }

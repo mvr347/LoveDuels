@@ -148,27 +148,11 @@ public abstract class CustomGUI implements InventoryHolder {
     }
 
     protected ItemStack createBackButton() {
-        ItemStack item = new ItemStack(Material.ARROW);
-        ItemMeta meta = item.getItemMeta();
-        if (meta != null) {
-            meta.displayName(MiniMessage.miniMessage().deserialize(
-                    "<yellow><b>← Назад</b>"
-            ).decoration(TextDecoration.ITALIC, false));
-            item.setItemMeta(meta);
-        }
-        return item;
+        return HeadTextures.head(HeadTextures.BACK, "<yellow><b>← Назад</b>", List.of("<gray>Вернуться в предыдущее меню"));
     }
 
     protected ItemStack createCloseButton() {
-        ItemStack item = new ItemStack(Material.BARRIER);
-        ItemMeta meta = item.getItemMeta();
-        if (meta != null) {
-            meta.displayName(MiniMessage.miniMessage().deserialize(
-                    "<red><b>✖ Закрыть</b>"
-            ).decoration(TextDecoration.ITALIC, false));
-            item.setItemMeta(meta);
-        }
-        return item;
+        return HeadTextures.head(HeadTextures.CLOSE, "<red><b>✖ Закрыть</b>", List.of("<gray>Закрыть данное окно"));
     }
 
     @Override

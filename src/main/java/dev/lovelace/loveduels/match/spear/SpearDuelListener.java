@@ -57,7 +57,7 @@ public final class SpearDuelListener implements Listener {
         ItemStack item = player.getInventory().getItemInMainHand();
         if (!spearItem.isSpear(item)) return;
 
-        if (match.getState() == MatchState.PREPARATION) {
+        if (match.getState() == MatchState.PREPARATION || match.getState() == MatchState.ARMISTICE) {
             event.setCancelled(true);
             return;
         }
