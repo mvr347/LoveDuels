@@ -642,11 +642,17 @@ public abstract class AbstractMatch implements Match {
                 royal
         );
 
+        // Money is paid by UUID: the Bukkit lookup above is null for an offline fighter, and the
+        // stake is already charged - the bridge queues the payout until they are back online.
+        if (winnerId != null && finalPrizeMoney > 0) {
+            economyBridge.giveTo(winnerId, finalPrizeMoney);
+        }
+        if (loserId != null && finalLoserRefund > 0) {
+            economyBridge.giveTo(loserId, finalLoserRefund);
+        }
+
         // Process winner rewards & loser penalties
         if (winner != null && winner.isOnline()) {
-            if (finalPrizeMoney > 0) {
-                economyBridge.give(winner, finalPrizeMoney);
-            }
             playerStorage.getOrCreatePlayer(winnerId, winner.getName()).thenAccept(data -> {
                 var updated = data.withWin(finalHonorDelta, finalPrizeMoney, royal);
                 playerStorage.savePlayer(updated);
@@ -668,9 +674,6 @@ public abstract class AbstractMatch implements Match {
         }
 
         if (loser != null && loser.isOnline()) {
-            if (finalLoserRefund > 0) {
-                economyBridge.give(loser, finalLoserRefund);
-            }
             final long loserActualLoss = bet.moneyBet() - finalLoserRefund;
             playerStorage.getOrCreatePlayer(loserId, loser.getName()).thenAccept(data -> {
                 var updated = data.withLoss(finalHonorDelta, loserActualLoss);
@@ -769,6 +772,9 @@ public abstract class AbstractMatch implements Match {
                 if (player2.isOnline()) player2.sendMessage(stopMsg);
             }
         }
+
+        // Every stake of this duel has been paid out, refunded or burned above.
+        economyBridge.releaseEscrow(player1Id);
 
         // Log match to database history
         playerStorage.logHistory(new DuelHistoryEntry(

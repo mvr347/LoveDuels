@@ -122,6 +122,28 @@ public final class Database {
             stmt.executeUpdate("CREATE INDEX IF NOT EXISTS idx_history_player2 ON history(player2);");
             stmt.executeUpdate("CREATE INDEX IF NOT EXISTS idx_history_timestamp ON history(timestamp DESC);");
 
+            // Coins owed to players who were offline (or whose economy was unavailable) when a duel paid out.
+            stmt.executeUpdate("""
+                CREATE TABLE IF NOT EXISTS pending_payouts (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    uuid VARCHAR(36) NOT NULL,
+                    amount BIGINT NOT NULL,
+                    created_at BIGINT NOT NULL
+                );
+            """);
+            stmt.executeUpdate("CREATE INDEX IF NOT EXISTS idx_pending_payouts_uuid ON pending_payouts(uuid);");
+
+            // Stakes already charged for a duel that has not finished yet; whatever is left after a hard
+            // crash is refunded on the next start (see PayoutStore#recoverEscrow).
+            stmt.executeUpdate("""
+                CREATE TABLE IF NOT EXISTS pending_escrow (
+                    challenger VARCHAR(36) PRIMARY KEY,
+                    target VARCHAR(36) NOT NULL,
+                    amount_each BIGINT NOT NULL,
+                    created_at BIGINT NOT NULL
+                );
+            """);
+
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "Failed to initialize LoveDuels database schema", e);
             throw new RuntimeException(e);
@@ -147,6 +169,19 @@ public final class Database {
                 throw new CompletionException(e);
             }
         }, asyncExecutor);
+    }
+
+    /**
+     * Runs a small statement on the calling thread under the same write lock as {@link #executeAsync}.
+     * Used only for money bookkeeping, where the row must be durable before the caller continues
+     * (and where the plugin may already be shutting down, so a queued async task could be dropped).
+     */
+    public <T> T querySync(SqlFunction<Connection, T> action) throws SQLException {
+        synchronized (writeLock) {
+            try (Connection conn = dataSource.getConnection()) {
+                return action.apply(conn);
+            }
+        }
     }
 
     public CompletableFuture<Void> executeAsync(SqlConsumer<Connection> action) {

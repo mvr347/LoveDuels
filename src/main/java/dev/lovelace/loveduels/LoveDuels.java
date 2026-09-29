@@ -6,6 +6,7 @@ import dev.lovelace.loveduels.core.DuelManager;
 import dev.lovelace.loveduels.gui.GuiListener;
 import dev.lovelace.loveduels.gui.PostDuelSummaryGUI;
 import dev.lovelace.loveduels.integration.LoveDuelsPlaceholderExpansion;
+import dev.lovelace.loveduels.integration.PayoutListener;
 import dev.lovelace.loveduels.match.Match;
 import dev.lovelace.loveduels.match.MatchEndReason;
 import dev.lovelace.loveduels.match.MatchProtectionListener;
@@ -40,6 +41,9 @@ public final class LoveDuels extends JavaPlugin {
 
         // Register event listeners
         var pm = getServer().getPluginManager();
+        PayoutListener payoutListener = new PayoutListener(this, duelManager.getEconomyBridge());
+        pm.registerEvents(payoutListener, this);
+        payoutListener.deliverToOnlinePlayers();
         pm.registerEvents(new GuiListener(), this);
         pm.registerEvents(new MatchProtectionListener(this, duelManager.getMatchManager(), duelManager.getSpectatorManager()), this);
         pm.registerEvents(new SpearDuelListener(
