@@ -191,8 +191,10 @@ public final class DuelCommand implements CommandExecutor, TabCompleter {
                             duelManager.getEconomyBridge().give(player, req.bet().moneyBet());
                             duelManager.getEconomyBridge().releaseEscrow(challenger.getUniqueId());
                         }
-                        Player canceller = Bukkit.getPlayer(cancelledBy);
-                        String cName = (canceller != null) ? canceller.getName() : "Один из бойцов";
+                        // cancelledBy is null when the session expired without both fighters confirming
+                        Player canceller = cancelledBy != null ? Bukkit.getPlayer(cancelledBy) : null;
+                        String cName = (canceller != null) ? canceller.getName()
+                                : (cancelledBy == null ? "время ожидания подтверждения истекло" : "Один из бойцов");
                         challenger.sendMessage(MiniMessage.miniMessage().deserialize("<red>✖ Дуэль была отменена (" + cName + ")."));
                         player.sendMessage(MiniMessage.miniMessage().deserialize("<red>✖ Дуэль была отменена (" + cName + ")."));
                     }
