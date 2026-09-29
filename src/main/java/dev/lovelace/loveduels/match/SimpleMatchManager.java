@@ -166,6 +166,7 @@ public final class SimpleMatchManager implements MatchManager {
             if (bet.hasMoney()) {
                 economyBridge.give(p1, bet.moneyBet());
                 economyBridge.give(p2, bet.moneyBet());
+                economyBridge.releaseEscrow(p1.getUniqueId());
             }
             return;
         }
@@ -194,6 +195,7 @@ public final class SimpleMatchManager implements MatchManager {
                 if (bet.hasMoney()) {
                     economyBridge.give(p1, bet.moneyBet());
                     economyBridge.give(p2, bet.moneyBet());
+                    economyBridge.releaseEscrow(p1.getUniqueId());
                 }
                 return;
             }

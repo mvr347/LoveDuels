@@ -140,9 +140,18 @@ public final class DuelCommand implements CommandExecutor, TabCompleter {
                 return;
             }
 
-            // Charge both players
-            duelManager.getEconomyBridge().charge(player, money);
-            duelManager.getEconomyBridge().charge(challenger, money);
+            // Charge both players. has() was true a moment ago, but charge() is the authority: if the
+            // second one fails, give the first one's stake back instead of starting an unfunded duel.
+            if (!duelManager.getEconomyBridge().charge(player, money)) {
+                player.sendMessage(MiniMessage.miniMessage().deserialize("<red>❌ Не удалось списать ставку (<gold>" + money + " монет</gold>)!"));
+                return;
+            }
+            if (!duelManager.getEconomyBridge().charge(challenger, money)) {
+                duelManager.getEconomyBridge().give(player, money);
+                player.sendMessage(MiniMessage.miniMessage().deserialize("<red>❌ У соперника не удалось списать ставку. Ваша ставка возвращена."));
+                return;
+            }
+            duelManager.getEconomyBridge().holdEscrow(challenger.getUniqueId(), player.getUniqueId(), money);
         }
 
         duelManager.getMatchManager().removePendingRequest(player.getUniqueId());
@@ -180,6 +189,7 @@ public final class DuelCommand implements CommandExecutor, TabCompleter {
                         if (req.bet().hasMoney()) {
                             duelManager.getEconomyBridge().give(challenger, req.bet().moneyBet());
                             duelManager.getEconomyBridge().give(player, req.bet().moneyBet());
+                            duelManager.getEconomyBridge().releaseEscrow(challenger.getUniqueId());
                         }
                         Player canceller = Bukkit.getPlayer(cancelledBy);
                         String cName = (canceller != null) ? canceller.getName() : "Один из бойцов";

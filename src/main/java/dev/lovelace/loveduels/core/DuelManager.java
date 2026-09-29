@@ -14,6 +14,7 @@ import dev.lovelace.loveduels.royal.RoyalDuelManager;
 import dev.lovelace.loveduels.spectator.SimpleSpectatorManager;
 import dev.lovelace.loveduels.spectator.SpectatorManager;
 import dev.lovelace.loveduels.storage.Database;
+import dev.lovelace.loveduels.storage.PayoutStore;
 import dev.lovelace.loveduels.storage.PlayerStorage;
 import dev.lovelace.loveduels.storage.SqlitePlayerStorage;
 import org.bukkit.plugin.Plugin;
@@ -51,7 +52,13 @@ public final class DuelManager {
         this.kitManager = new SimpleKitManager(plugin);
         this.kitManager.loadKits();
 
-        this.economyBridge = new LoveEconomyBridge();
+        PayoutStore payoutStore = new PayoutStore(database, plugin.getLogger());
+        int orphaned = payoutStore.recoverEscrow();
+        if (orphaned > 0) {
+            plugin.getLogger().warning("Refunding " + orphaned + " duel(s) that were still running when the server stopped; "
+                    + "stakes are paid out when the fighters join.");
+        }
+        this.economyBridge = new LoveEconomyBridge(payoutStore);
         this.behaviorBridge = new LoveBehaviorBridge(plugin.getLogger());
         this.leaderboardsBridge = new LoveLeaderboardsBridge();
 
