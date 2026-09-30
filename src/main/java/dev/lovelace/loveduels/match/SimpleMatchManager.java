@@ -49,7 +49,6 @@ public final class SimpleMatchManager implements MatchManager {
             .expireAfterWrite(Duration.ofSeconds(60))
             .maximumSize(2000)
             .build();
-    // Built in the constructor: its removal listener needs the plugin instance.
     private final Cache<UUID, ReadinessSession> pendingReadiness;
     private final Cache<UUID, MatchResult> lastMatchResults = Caffeine.newBuilder()
             .expireAfterWrite(Duration.ofMinutes(15))
@@ -71,22 +70,15 @@ public final class SimpleMatchManager implements MatchManager {
             RoyalDuelManager royalManager
     ) {
         this.plugin = plugin;
-        // A readiness session that nobody confirms used to just vanish from the cache after 2 minutes while
-        // both stakes stayed charged. Cancelling it on eviction runs the normal cancel path, which refunds
-        // both fighters and releases the escrow row. Both players map to the same session; cancel() is
-        // idempotent, so the second removal is a no-op.
         this.pendingReadiness = Caffeine.newBuilder()
                 .expireAfterWrite(Duration.ofMinutes(2))
                 .maximumSize(1000)
                 .removalListener((UUID key, ReadinessSession session, com.github.benmanes.caffeine.cache.RemovalCause cause) -> {
                     if (session != null && cause.wasEvicted() && plugin.isEnabled()) {
-                        // Caffeine runs listeners off the main thread; the cancel callback touches Bukkit.
                         Bukkit.getScheduler().runTask(plugin, () -> session.cancel(null));
                     }
                 })
                 .build();
-        // Expiry is evaluated lazily, on cache activity. Force it regularly so a stale session is refunded
-        // within seconds instead of at the next unrelated duel request.
         Bukkit.getScheduler().runTaskTimer(plugin, pendingReadiness::cleanUp, 400L, 400L);
         this.arenaManager = arenaManager;
         this.kitManager = kitManager;
@@ -103,6 +95,10 @@ public final class SimpleMatchManager implements MatchManager {
 
     public void setPostDuelSummaryOpener(Consumer<MatchResult> opener) {
         this.postDuelSummaryOpener = opener;
+    }
+
+    public CooldownManager getCooldownManager() {
+        return cooldownManager;
     }
 
     public void setSpectatorManager(SpectatorManager spectatorManager) {
@@ -255,7 +251,6 @@ public final class SimpleMatchManager implements MatchManager {
             return;
         }
 
-        // Cancel readiness session and refund if player leaves during readiness
         Optional<ReadinessSession> readinessOpt = getReadinessSession(player.getUniqueId());
         if (readinessOpt.isPresent()) {
             readinessOpt.get().cancel(player.getUniqueId());
