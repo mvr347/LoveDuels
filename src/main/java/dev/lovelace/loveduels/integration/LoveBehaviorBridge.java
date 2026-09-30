@@ -1,15 +1,20 @@
 package dev.lovelace.loveduels.integration;
 
+import dev.lovelace.lovecore.api.LoveCore;
+import dev.lovelace.lovecore.api.social.BehaviorLevels;
+import dev.lovelace.lovecore.api.social.ReputationOracle;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.ServicesManager;
 
 import java.lang.reflect.Method;
+import java.util.Locale;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Logger;
 
 /**
- * Reflection and ServicesManager bridge to LoveBehavior.
- * Modifies politeness/reputation points when players flee from combat or abuse duels.
+ * Bridge to LoveBehavior and LoveCore social services.
+ * Изгой = ReputationOracle.Tier.OUTCAST or politenessLevel &lt;= 0.
  */
 public final class LoveBehaviorBridge {
 
@@ -21,7 +26,115 @@ public final class LoveBehaviorBridge {
     }
 
     public boolean isAvailable() {
-        return findApiInstance() != null;
+        return LoveCore.service(ReputationOracle.class).isPresent()
+                || LoveCore.service(BehaviorLevels.class).isPresent()
+                || findApiInstance() != null;
+    }
+
+    public boolean isOutcast(UUID playerId) {
+        if (playerId == null) return false;
+
+        Optional<ReputationOracle> oracle = LoveCore.service(ReputationOracle.class);
+        if (oracle.isPresent()) {
+            try {
+                return oracle.get().tier(playerId) == ReputationOracle.Tier.OUTCAST;
+            } catch (Throwable t) {
+                logger.fine("ReputationOracle.tier failed: " + t.getMessage());
+            }
+        }
+
+        Optional<BehaviorLevels> levels = LoveCore.service(BehaviorLevels.class);
+        if (levels.isPresent()) {
+            try {
+                return levels.get().politenessLevel(playerId) <= 0;
+            } catch (Throwable t) {
+                logger.fine("BehaviorLevels.politenessLevel failed: " + t.getMessage());
+            }
+        }
+
+        Object api = findApiInstance();
+        if (api != null) {
+            try {
+                for (Method m : api.getClass().getMethods()) {
+                    if (m.getName().equalsIgnoreCase("getPolitenessLevel") && m.getParameterCount() == 1) {
+                        Object r = m.invoke(api, playerId);
+                        if (r instanceof Number n) return n.intValue() <= 0;
+                        if (r instanceof String s) {
+                            String lower = s.toLowerCase(Locale.ROOT);
+                            return lower.contains("изгой") || lower.contains("outcast") || lower.contains("terrible");
+                        }
+                    }
+                    if (m.getName().equalsIgnoreCase("getPolitenessPoints") && m.getParameterCount() == 1) {
+                        Object r = m.invoke(api, playerId);
+                        if (r instanceof Number n) return n.intValue() <= 0;
+                    }
+                }
+            } catch (Exception e) {
+                logger.fine("LoveBehavior outcast check failed: " + e.getMessage());
+            }
+        }
+        return false;
+    }
+
+    public int getPolitenessLevel(UUID playerId) {
+        if (playerId == null) return 3;
+        return LoveCore.service(BehaviorLevels.class)
+                .map(l -> {
+                    try {
+                        return l.politenessLevel(playerId);
+                    } catch (Throwable t) {
+                        return 3;
+                    }
+                })
+                .orElse(3);
+    }
+
+    public boolean punishFleeing(UUID player, int penaltyPoints) {
+        if (player == null || penaltyPoints == 0) return false;
+
+        Optional<ReputationOracle> oracle = LoveCore.service(ReputationOracle.class);
+        if (oracle.isPresent()) {
+            try {
+                oracle.get().modify(player, -Math.abs(penaltyPoints));
+                return true;
+            } catch (Throwable t) {
+                logger.warning("ReputationOracle.modify failed for " + player + ": " + t.getMessage());
+            }
+        }
+
+        Object api = findApiInstance();
+        if (api == null) return false;
+
+        try {
+            Class<?> cls = api.getClass();
+            for (Method m : cls.getMethods()) {
+                if ((m.getName().equalsIgnoreCase("addPolitenessPoints")
+                        || m.getName().equalsIgnoreCase("modifyPolitenessPoints"))
+                        && m.getParameterCount() == 2
+                        && m.getParameterTypes()[0].equals(UUID.class)) {
+                    m.invoke(api, player, -Math.abs(penaltyPoints));
+                    return true;
+                }
+            }
+            Method getMethod = null;
+            Method setMethod = null;
+            for (Method m : cls.getMethods()) {
+                if (m.getName().equalsIgnoreCase("getPolitenessPoints") && m.getParameterCount() == 1) {
+                    getMethod = m;
+                } else if (m.getName().equalsIgnoreCase("setPolitenessPoints") && m.getParameterCount() == 2) {
+                    setMethod = m;
+                }
+            }
+            if (getMethod != null && setMethod != null) {
+                int current = (int) getMethod.invoke(api, player);
+                int updated = Math.max(0, current - Math.abs(penaltyPoints));
+                setMethod.invoke(api, player, updated);
+                return true;
+            }
+        } catch (Exception e) {
+            logger.warning("Failed to deduct LoveBehavior points for " + player + ": " + e.getMessage());
+        }
+        return false;
     }
 
     private Object findApiInstance() {
@@ -34,52 +147,8 @@ public final class LoveBehaviorBridge {
                 }
             }
         } catch (Throwable t) {
-            logger.fine("LoveBehavior service lookup error: " + t.getMessage());
+            logger.fine("LoveBehavior service lookup: " + t.getMessage());
         }
         return null;
-    }
-
-    /**
-     * Deducts politeness/reputation points for dishonorable conduct (e.g. -150 points).
-     */
-    public boolean punishFleeing(UUID player, int penaltyPoints) {
-        Object api = findApiInstance();
-        if (api == null || player == null) return false;
-
-        try {
-            Class<?> cls = api.getClass();
-
-            // Try modify/add method with negative delta
-            for (Method m : cls.getMethods()) {
-                if ((m.getName().equalsIgnoreCase("addPolitenessPoints") ||
-                        m.getName().equalsIgnoreCase("modifyPolitenessPoints")) &&
-                        m.getParameterCount() == 2 &&
-                        m.getParameterTypes()[0].equals(UUID.class)) {
-                    m.invoke(api, player, -Math.abs(penaltyPoints));
-                    return true;
-                }
-            }
-
-            // Fallback: get and set
-            Method getMethod = null;
-            Method setMethod = null;
-            for (Method m : cls.getMethods()) {
-                if (m.getName().equalsIgnoreCase("getPolitenessPoints") && m.getParameterCount() == 1) {
-                    getMethod = m;
-                } else if (m.getName().equalsIgnoreCase("setPolitenessPoints") && m.getParameterCount() == 2) {
-                    setMethod = m;
-                }
-            }
-
-            if (getMethod != null && setMethod != null) {
-                int current = (int) getMethod.invoke(api, player);
-                int updated = Math.max(0, current - Math.abs(penaltyPoints));
-                setMethod.invoke(api, player, updated);
-                return true;
-            }
-        } catch (Exception e) {
-            logger.warning("Failed to deduct LoveBehavior points for " + player + ": " + e.getMessage());
-        }
-        return false;
     }
 }
