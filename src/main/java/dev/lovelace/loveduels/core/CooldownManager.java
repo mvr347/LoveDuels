@@ -11,23 +11,68 @@ import java.util.UUID;
  */
 public final class CooldownManager {
 
-    // Key: sender UUID + ":" + target UUID -> timestamp when cooldown expires
     private final Cache<String, Long> challengeCooldowns = Caffeine.newBuilder()
             .expireAfterWrite(Duration.ofMinutes(15))
             .maximumSize(50000)
             .build();
 
-    // Key: player UUID -> timestamp when royal ticket cooldown expires
     private final Cache<UUID, Long> royalTicketCooldowns = Caffeine.newBuilder()
             .expireAfterWrite(Duration.ofHours(2))
             .maximumSize(10000)
             .build();
 
-    /**
-     * Checks if sender has an active cooldown to challenge the target player.
-     *
-     * @return remaining seconds, or 0 if no cooldown
-     */
+    private final Cache<UUID, BloodRevengeOffer> bloodRevengeOffers = Caffeine.newBuilder()
+            .expireAfterWrite(Duration.ofMinutes(2))
+            .maximumSize(5000)
+            .build();
+
+    private final Cache<String, Integer> rematchChainCounts = Caffeine.newBuilder()
+            .expireAfterWrite(Duration.ofMinutes(30))
+            .maximumSize(20000)
+            .build();
+
+    public record BloodRevengeOffer(
+            UUID challengerId,
+            UUID targetId,
+            long moneyBet,
+            int honorBet,
+            DuelType type,
+            String kitId,
+            boolean royal,
+            long expiresAtMs
+    ) {
+        public boolean isExpired() {
+            return System.currentTimeMillis() > expiresAtMs;
+        }
+    }
+
+    private static String pairKey(UUID a, UUID b) {
+        if (a == null || b == null) return "null";
+        String sa = a.toString();
+        String sb = b.toString();
+        return sa.compareTo(sb) <= 0 ? sa + ":" + sb : sb + ":" + sa;
+    }
+
+    public int getRematchCount(UUID a, UUID b) {
+        Integer c = rematchChainCounts.getIfPresent(pairKey(a, b));
+        return c == null ? 0 : c;
+    }
+
+    public boolean canRematch(UUID a, UUID b, int maxRematches) {
+        if (maxRematches <= 0) return false;
+        return getRematchCount(a, b) < maxRematches;
+    }
+
+    public void incrementRematch(UUID a, UUID b) {
+        String key = pairKey(a, b);
+        Integer cur = rematchChainCounts.getIfPresent(key);
+        rematchChainCounts.put(key, (cur == null ? 0 : cur) + 1);
+    }
+
+    public void clearRematchChain(UUID a, UUID b) {
+        rematchChainCounts.invalidate(pairKey(a, b));
+    }
+
     public long getChallengeRemainingSeconds(UUID sender, UUID target) {
         String key = sender.toString() + ":" + target.toString();
         Long expiry = challengeCooldowns.getIfPresent(key);
@@ -46,11 +91,6 @@ public final class CooldownManager {
         challengeCooldowns.put(key, System.currentTimeMillis() + (durationSeconds * 1000L));
     }
 
-    /**
-     * Checks if player has an active cooldown on royal duel tickets.
-     *
-     * @return remaining seconds, or 0 if no cooldown
-     */
     public long getRoyalTicketRemainingSeconds(UUID player) {
         Long expiry = royalTicketCooldowns.getIfPresent(player);
         if (expiry == null) return 0;
@@ -67,15 +107,30 @@ public final class CooldownManager {
         royalTicketCooldowns.put(player, System.currentTimeMillis() + (durationSeconds * 1000L));
     }
 
-    /**
-     * Formats remaining seconds into readable Russian string (e.g., "9м 45с" or "55с").
-     */
+    public void putBloodRevenge(BloodRevengeOffer offer) {
+        if (offer == null || offer.challengerId() == null) return;
+        bloodRevengeOffers.put(offer.challengerId(), offer);
+    }
+
+    public BloodRevengeOffer getBloodRevenge(UUID challengerId) {
+        BloodRevengeOffer o = bloodRevengeOffers.getIfPresent(challengerId);
+        if (o == null) return null;
+        if (o.isExpired()) {
+            bloodRevengeOffers.invalidate(challengerId);
+            return null;
+        }
+        return o;
+    }
+
+    public void clearBloodRevenge(UUID challengerId) {
+        if (challengerId != null) bloodRevengeOffers.invalidate(challengerId);
+    }
+
     public static String formatDuration(long totalSeconds) {
         if (totalSeconds <= 0) return "0с";
         long hours = totalSeconds / 3600;
         long minutes = (totalSeconds % 3600) / 60;
         long seconds = totalSeconds % 60;
-
         StringBuilder sb = new StringBuilder();
         if (hours > 0) sb.append(hours).append("ч ");
         if (minutes > 0 || hours > 0) sb.append(minutes).append("м ");
