@@ -1,7 +1,6 @@
 package dev.lovelace.loveduels.command;
 
 import dev.lovelace.loveduels.core.ChallengeMode;
-import dev.lovelace.loveduels.core.DuelBet;
 import dev.lovelace.loveduels.core.DuelManager;
 import dev.lovelace.loveduels.core.DuelRequest;
 import dev.lovelace.loveduels.gui.DuelSetupGUI;
@@ -105,10 +104,6 @@ public final class DuelCommand implements CommandExecutor, TabCompleter {
                 .hoverEvent(HoverEvent.showText(mm.deserialize("<yellow>" + cmd + "</yellow>")));
     }
 
-    /**
-     * Принятие: открываем обоим StakeConfirmGUI.
-     * Списание денег — только когда оба нажали «Готов».
-     */
     private void handleAccept(Player player, String[] args) {
         Optional<DuelRequest> optReq = duelManager.getMatchManager().getPendingRequest(player.getUniqueId());
         if (optReq.isEmpty()) {
@@ -132,6 +127,18 @@ public final class DuelCommand implements CommandExecutor, TabCompleter {
 
         duelManager.getMatchManager().removePendingRequest(player.getUniqueId());
 
+        // Тренировка: без меню ставок — сразу старт
+        if (req.isTraining()) {
+            challenger.sendMessage(MiniMessage.miniMessage().deserialize(
+                    "<aqua>" + player.getName() + " принял тренировочный вызов. Старт."
+            ));
+            player.sendMessage(MiniMessage.miniMessage().deserialize("<aqua>Тренировка начинается."));
+            duelManager.getMatchManager().createAndStartMatch(
+                    challenger, player, req.type(), req.kitId(), req.bet(), false
+            );
+            return;
+        }
+
         StakeConfirmSession session = new StakeConfirmSession(
                 req,
                 (acceptedReq, finalBet) -> Bukkit.getScheduler().runTask(duelManager.getPlugin(), () -> {
@@ -144,7 +151,7 @@ public final class DuelCommand implements CommandExecutor, TabCompleter {
                     }
 
                     long money = finalBet.moneyBet();
-                    if (money > 0 && !acceptedReq.isTraining()) {
+                    if (money > 0) {
                         if (!duelManager.getEconomyBridge().has(p1, money)
                                 || !duelManager.getEconomyBridge().has(p2, money)) {
                             p1.sendMessage(MiniMessage.miniMessage().deserialize("<red>Недостаточно средств — дуэль отменена."));
@@ -191,19 +198,17 @@ public final class DuelCommand implements CommandExecutor, TabCompleter {
             refreshStakeGui(player);
         });
 
-        // reuse readiness cache slots for stake sessions
-        if (duelManager.getMatchManager() instanceof dev.lovelace.loveduels.match.SimpleMatchManager smm) {
-            // store via existing readiness map using a thin adapter is overkill — keep session only in GUI listeners
-        }
-
         new StakeConfirmGUI(challenger, duelManager, session).open();
         new StakeConfirmGUI(player, duelManager, session).open();
 
-        challenger.sendMessage(MiniMessage.miniMessage().deserialize(
-                "<green>" + player.getName() + " принял вызов. Подтвердите ставки."
-        ));
+        String msg = req.royal()
+                ? "<gradient:#FFD700:#C9A227>" + player.getName() + " принял королевский вызов. Подтвердите ставки.</gradient>"
+                : "<green>" + player.getName() + " принял вызов. Подтвердите ставки.";
+        challenger.sendMessage(MiniMessage.miniMessage().deserialize(msg));
         player.sendMessage(MiniMessage.miniMessage().deserialize(
-                "<green>Вызов принят. Подтвердите ставки в меню."
+                req.royal()
+                        ? "<gradient:#FFD700:#C9A227>Подтвердите королевские ставки в меню.</gradient>"
+                        : "<green>Вызов принят. Подтвердите ставки в меню."
         ));
     }
 

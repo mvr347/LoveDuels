@@ -19,8 +19,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Оба бойца видят параметры, правят денежную ставку (если не тренировка),
- * нажимают «Готов» или «Отмена». При готовности обоих — старт.
+ * Подтверждение ставок (не для тренировки).
+ * Королевская: минимум 1 золотая монета.
  */
 public final class StakeConfirmGUI extends CustomGUI {
 
@@ -29,9 +29,17 @@ public final class StakeConfirmGUI extends CustomGUI {
     private int selectedDenomIndex = 0;
 
     public StakeConfirmGUI(Player viewer, DuelManager duelManager, StakeConfirmSession session) {
-        super(viewer, 27, MiniMessage.miniMessage().deserialize("<gold>Подтверждение дуэли</gold>"));
+        super(viewer, 27, MiniMessage.miniMessage().deserialize(
+                session.getRequest().royal()
+                        ? "<gradient:#FFD700:#C9A227>Королевское подтверждение</gradient>"
+                        : "<gold>Подтверждение дуэли</gold>"
+        ));
         this.duelManager = duelManager;
         this.session = session;
+    }
+
+    private long minMoney() {
+        return session.getRequest().royal() ? CoinFormat.goldUnit() : 0L;
     }
 
     @Override
@@ -41,62 +49,58 @@ public final class StakeConfirmGUI extends CustomGUI {
         Player p1 = Bukkit.getPlayer(session.getPlayer1());
         Player p2 = Bukkit.getPlayer(session.getPlayer2());
         DuelType type = session.getRequest().type();
+        boolean royal = session.getRequest().royal();
 
         setItem(11, createStatusItem(p1, session.isReady(session.getPlayer1())), null);
         setItem(15, createStatusItem(p2, session.isReady(session.getPlayer2())), null);
 
-        // Инфо о режиме
-        setItem(4, HeadTextures.head(HeadTextures.SCROLL,
-                "<gold>Параметры</gold>",
-                List.of(
-                        "<gray>Режим: </gray>" + type.getDisplayNameMiniMessage(),
-                        session.isTraining()
-                                ? "<aqua>Тренировка — без ставок</aqua>"
-                                : "<gray>Честь: <yellow>" + session.getHonorBet() + "</yellow>",
-                        session.getRequest().royal()
-                                ? "<gradient:#C9A227:#E8D48B>Королевская дуэль</gradient>"
-                                : ""
-                )
+        List<String> infoLore = new ArrayList<>();
+        infoLore.add("<gray>Режим: </gray>" + type.getDisplayNameMiniMessage());
+        infoLore.add("<gray>Честь: <yellow>" + session.getHonorBet() + "</yellow>");
+        if (royal) {
+            infoLore.add("<gradient:#FFD700:#C9A227>Королевская дуэль</gradient>");
+            infoLore.add("<gray>Минимум ставки: 1 золотая</gray>");
+        }
+        setItem(4, HeadTextures.head(royal ? HeadTextures.CROWN : HeadTextures.SCROLL,
+                royal ? "<gradient:#FFD700:#C9A227>Параметры</gradient>" : "<gold>Параметры</gold>",
+                infoLore
         ), null);
 
-        if (!session.isTraining()) {
-            setItem(13, createMoneyItem(), e -> {
-                List<Denomination> dens = denominations();
-                if (dens.isEmpty()) {
-                    long m = session.getMoneyBet();
-                    if (e.isRightClick()) session.setMoneyBet(Math.max(0, m - 1));
-                    else session.setMoneyBet(m + 1);
-                } else {
-                    if (selectedDenomIndex >= dens.size()) selectedDenomIndex = 0;
-                    if (e.isShiftClick()) {
-                        selectedDenomIndex = (selectedDenomIndex + 1) % dens.size();
-                        build();
-                        return;
-                    }
-                    long unit = dens.get(selectedDenomIndex).value();
-                    long m = session.getMoneyBet();
-                    if (e.isRightClick()) session.setMoneyBet(Math.max(0, m - unit));
-                    else session.setMoneyBet(m + unit);
-                }
-                player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 1.1f);
-            });
-        } else {
-            setItem(13, HeadTextures.head(HeadTextures.READY,
-                    "<aqua>Без ставок</aqua>",
-                    List.of("<gray>Тренировочный бой")
-            ), null);
-        }
-
-        boolean myReady = session.isReady(player.getUniqueId());
-        setItem(22, createReadyButton(myReady), e -> {
-            if (!session.isTraining() && session.getMoneyBet() > 0) {
-                if (!duelManager.getEconomyBridge().has(player, session.getMoneyBet())) {
-                    player.sendMessage(MiniMessage.miniMessage().deserialize(
-                            "<red>Недостаточно средств для ставки."
-                    ));
-                    player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+        setItem(13, createMoneyItem(royal), e -> {
+            long min = minMoney();
+            List<Denomination> dens = denominations();
+            if (dens.isEmpty()) {
+                long m = session.getMoneyBet();
+                if (e.isRightClick()) session.setMoneyBet(Math.max(min, m - 1));
+                else if (!e.isShiftClick()) session.setMoneyBet(m + 1);
+            } else {
+                if (selectedDenomIndex >= dens.size()) selectedDenomIndex = 0;
+                if (e.isShiftClick()) {
+                    selectedDenomIndex = (selectedDenomIndex + 1) % dens.size();
+                    build();
                     return;
                 }
+                long unit = dens.get(selectedDenomIndex).value();
+                long m = session.getMoneyBet();
+                if (e.isRightClick()) session.setMoneyBet(Math.max(min, m - unit));
+                else session.setMoneyBet(m + unit);
+            }
+            // clamp royal
+            if (session.getMoneyBet() < min) session.setMoneyBet(min);
+            player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 1.1f);
+        });
+
+        boolean myReady = session.isReady(player.getUniqueId());
+        setItem(22, createReadyButton(myReady, royal), e -> {
+            long need = session.getMoneyBet();
+            if (need > 0 && !duelManager.getEconomyBridge().has(player, need)) {
+                player.sendMessage(MiniMessage.miniMessage().deserialize("<red>Недостаточно средств для ставки."));
+                player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
+                return;
+            }
+            if (royal && need < minMoney()) {
+                player.sendMessage(MiniMessage.miniMessage().deserialize("<red>Минимум: 1 золотая монета."));
+                return;
             }
             session.toggleReady(player.getUniqueId());
             player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 1.0f);
@@ -117,10 +121,15 @@ public final class StakeConfirmGUI extends CustomGUI {
         );
     }
 
-    private ItemStack createMoneyItem() {
+    private ItemStack createMoneyItem(boolean royal) {
         List<String> lore = new ArrayList<>();
-        lore.add("<gray>Общая ставка (на каждого):</gray>");
-        Optional<LoveEconomy> eco = tryEconomy();
+        if (royal) {
+            lore.add("<gradient:#FFD700:#C9A227>Королевская ставка</gradient>");
+            lore.add("<gray>Не ниже 1 золотой монеты</gray>");
+            lore.add("");
+        }
+        lore.add("<gray>Ставка (на каждого):</gray>");
+        Optional<LoveEconomy> eco = CoinFormat.tryEconomy();
         if (eco.isPresent()) {
             for (Component line : CoinFormat.formatGlyphLines(eco.get(), session.getMoneyBet())) {
                 lore.add(MiniMessage.miniMessage().serialize(line));
@@ -138,19 +147,23 @@ public final class StakeConfirmGUI extends CustomGUI {
         }
         lore.add("");
         lore.add("<dark_gray>Смена ставки сбрасывает готовность</dark_gray>");
-        return HeadTextures.head(HeadTextures.COIN, "<gold>Ставка монетами</gold>", lore);
+        return HeadTextures.head(royal ? HeadTextures.CROWN : HeadTextures.COIN,
+                royal ? "<gradient:#FFD700:#C9A227>Ставка монетами</gradient>" : "<gold>Ставка монетами</gold>",
+                lore);
     }
 
-    private ItemStack createReadyButton(boolean ready) {
+    private ItemStack createReadyButton(boolean ready, boolean royal) {
         String tex = ready ? HeadTextures.READY : HeadTextures.NOT_READY;
         String name = ready
                 ? "<green>Вы готовы</green> <dark_gray>(клик — отменить)</dark_gray>"
-                : "<yellow>Нажмите: готов</yellow>";
+                : (royal
+                    ? "<gradient:#FFD700:#C9A227>Готов к королевскому поединку</gradient>"
+                    : "<yellow>Нажмите: готов</yellow>");
         return HeadTextures.head(tex, name, List.of("<gray>Когда оба готовы — старт"));
     }
 
     private List<Denomination> denominations() {
-        Optional<LoveEconomy> eco = tryEconomy();
+        Optional<LoveEconomy> eco = CoinFormat.tryEconomy();
         if (eco.isEmpty()) return List.of();
         List<Denomination> dens = new ArrayList<>(eco.get().denominations());
         dens.sort(Comparator.comparingLong(Denomination::value));
@@ -158,19 +171,9 @@ public final class StakeConfirmGUI extends CustomGUI {
         return dens;
     }
 
-    private static Optional<LoveEconomy> tryEconomy() {
-        if (!org.bukkit.Bukkit.getPluginManager().isPluginEnabled("LoveCore")) return Optional.empty();
-        try {
-            return dev.lovelace.lovecore.api.LoveCore.service(LoveEconomy.class);
-        } catch (Throwable t) {
-            return Optional.empty();
-        }
-    }
-
     @Override
     public void handleClose() {
         if (session.isTerminated()) return;
-        // закрытие окна = отмена, если ещё не оба готовы
         if (!session.isReady(session.getPlayer1()) || !session.isReady(session.getPlayer2())) {
             session.cancel(player.getUniqueId());
         }

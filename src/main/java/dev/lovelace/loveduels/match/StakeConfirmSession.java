@@ -2,6 +2,7 @@ package dev.lovelace.loveduels.match;
 
 import dev.lovelace.loveduels.core.DuelBet;
 import dev.lovelace.loveduels.core.DuelRequest;
+import dev.lovelace.loveduels.util.CoinFormat;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -11,8 +12,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
- * Оба игрока подтверждают денежную ставку (и готовность) перед стартом.
- * Ставка деньгами синхронизирована: любой может менять, пока оба не готовы.
+ * Оба игрока подтверждают денежную ставку перед стартом (не для training).
  */
 public final class StakeConfirmSession {
 
@@ -37,8 +37,13 @@ public final class StakeConfirmSession {
         this.request = Objects.requireNonNull(request);
         this.player1 = request.senderId();
         this.player2 = request.targetId();
-        this.moneyBet = new AtomicLong(Math.max(0L, request.bet().moneyBet()));
-        this.honorBet = request.isTraining() ? 0 : Math.max(0, request.bet().honorBet());
+        long initial = Math.max(0L, request.bet().moneyBet());
+        if (request.royal()) {
+            long min = CoinFormat.goldUnit();
+            if (initial < min) initial = min;
+        }
+        this.moneyBet = new AtomicLong(initial);
+        this.honorBet = Math.max(0, request.bet().honorBet());
         this.onBothReady = Objects.requireNonNull(onBothReady);
         this.onCancel = Objects.requireNonNull(onCancel);
     }
@@ -68,9 +73,13 @@ public final class StakeConfirmSession {
     }
 
     public void setMoneyBet(long amount) {
-        if (terminated.get() || request.isTraining()) return;
-        moneyBet.set(Math.max(0L, amount));
-        // смена ставки сбрасывает готовность
+        if (terminated.get()) return;
+        long v = Math.max(0L, amount);
+        if (request.royal()) {
+            long min = CoinFormat.goldUnit();
+            if (v < min) v = min;
+        }
+        moneyBet.set(v);
         ready1.set(false);
         ready2.set(false);
         fireState();
