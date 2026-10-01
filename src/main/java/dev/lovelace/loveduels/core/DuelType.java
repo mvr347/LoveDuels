@@ -12,37 +12,43 @@ public enum DuelType {
             "own_inventory",
             "<gold>Свои вещи</gold>",
             Material.IRON_SWORD,
-            "Сражение в собственной экипировке с экраном готовности."
+            "Сражение в собственной экипировке."
     ),
     KIT(
             "kit",
-            "<aqua>Киты</aqua>",
-            Material.CHEST,
-            "Битва с равными заготовленными наборами брони и оружия."
+            "<aqua>Рыцарское снаряжение</aqua>",
+            Material.IRON_CHESTPLATE,
+            "Равный набор брони и оружия."
     ),
     SWORD(
             "sword",
             "<yellow>Мечи</yellow>",
             Material.DIAMOND_SWORD,
-            "Классическая дуэль на мечах без сторонних предметов."
+            "Классическая дуэль на мечах."
     ),
     BOW(
             "bow",
             "<green>Луки</green>",
             Material.BOW,
-            "Стрелковая дуэль на луках со стрелами."
+            "Стрелковая дуэль на луках."
+    ),
+    CROSSBOW(
+            "crossbow",
+            "<dark_aqua>Арбалеты</dark_aqua>",
+            Material.CROSSBOW,
+            "Дуэль на арбалетах."
     ),
     HORSE_SPEAR(
             "horse_spear",
-            "<gold>Копьё и конь</gold>",
+            "<gold>Копьё</gold>",
             Material.TRIDENT,
-            "Турнирный рыцарский поединок верхом с зарядом копья и очками."
+            "Турнир верхом с зарядом копья."
     ),
     FISTS(
             "fists",
-            "<red>Кулачные бои</red>",
+            "<red>Кулаки</red>",
             Material.LEATHER,
-            "Голые руки, без оружия и брони. Чистая техника."
+            "Голые руки, без оружия и брони."
     );
 
     private final String id;
@@ -78,16 +84,16 @@ public enum DuelType {
     }
 
     public boolean requiresReadinessSession() {
-        return this == OWN_INVENTORY;
+        // Готовность/ставки теперь через StakeConfirmSession для всех режимов
+        return false;
     }
 
     public boolean isMiniGame() {
-        return this == SWORD || this == BOW || this == HORSE_SPEAR || this == FISTS;
+        return this == SWORD || this == BOW || this == CROSSBOW || this == HORSE_SPEAR || this == FISTS;
     }
 
-    /** Типы, по которым ведётся отдельный ранг. */
     public boolean hasSeparateRank() {
-        return this == SWORD || this == BOW || this == HORSE_SPEAR || this == FISTS;
+        return this == SWORD || this == BOW || this == CROSSBOW || this == HORSE_SPEAR || this == FISTS;
     }
 
     public static DuelType fromString(String name) {
