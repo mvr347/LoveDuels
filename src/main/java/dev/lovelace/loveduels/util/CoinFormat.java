@@ -17,6 +17,8 @@ import java.util.Optional;
 public final class CoinFormat {
 
     private static final MiniMessage MM = MiniMessage.miniMessage();
+    /** Fallback ценности «золотой монеты», если экономика недоступна. */
+    public static final long FALLBACK_GOLD_UNIT = 50L;
 
     private CoinFormat() {}
 
@@ -39,7 +41,23 @@ public final class CoinFormat {
         return "<gradient:#E67E22:#D35400>Медная монета</gradient>";
     }
 
-    /** Однострочно: %img_diamond_coin% x2  %img_gold_coin% x1 */
+    /** Номинал золотой монеты (value), или FALLBACK_GOLD_UNIT. */
+    public static long goldUnit(LoveEconomy eco) {
+        if (eco == null) return FALLBACK_GOLD_UNIT;
+        Optional<Denomination> gold = eco.denominations().stream()
+                .filter(d -> d.value() > 0)
+                .filter(d -> {
+                    String id = d.itemId() != null ? d.itemId().toLowerCase() : "";
+                    return id.contains("gold") || (d.value() >= 50 && d.value() < 100);
+                })
+                .min(Comparator.comparingLong(Denomination::value));
+        return gold.map(Denomination::value).orElse(FALLBACK_GOLD_UNIT);
+    }
+
+    public static long goldUnit() {
+        return goldUnit(tryEconomy().orElse(null));
+    }
+
     public static String formatGlyphs(LoveEconomy eco, long amount) {
         if (eco == null) return "%img_copper_coin% x0";
         List<Denomination> dens = new ArrayList<>(eco.denominations());
@@ -101,7 +119,6 @@ public final class CoinFormat {
         return lines;
     }
 
-    /** Удобная обёртка через bridge (если economy недоступна — fallback числом). */
     public static String formatBalanceLine(LoveEconomyBridge bridge, long amount) {
         Optional<LoveEconomy> eco = tryEconomy();
         if (eco.isPresent()) {
@@ -110,7 +127,7 @@ public final class CoinFormat {
         return "<yellow>" + amount + "</yellow> <gray>" + (bridge != null ? bridge.currencyName() : "монет") + "</gray>";
     }
 
-    private static Optional<LoveEconomy> tryEconomy() {
+    public static Optional<LoveEconomy> tryEconomy() {
         if (!org.bukkit.Bukkit.getPluginManager().isPluginEnabled("LoveCore")) {
             return Optional.empty();
         }
