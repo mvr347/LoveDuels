@@ -6,13 +6,16 @@ import org.bukkit.entity.Player;
 
 import java.util.List;
 
+/**
+ * Главное меню: только вызов и наблюдение (gui-gen-5, 45 слотов).
+ */
 public final class MainMenuGUI extends CustomGUI {
 
     private final DuelManager duelManager;
 
     public MainMenuGUI(Player player, DuelManager duelManager) {
         super(player, 45, MiniMessage.miniMessage().deserialize(
-                "<gradient:#FFD700:#FFA500><b>⚔ Турниры и Дуэли</b></gradient>"));
+                "<gradient:#C9A227:#E8D48B>Турниры и дуэли</gradient>"));
         this.duelManager = duelManager;
     }
 
@@ -20,49 +23,22 @@ public final class MainMenuGUI extends CustomGUI {
     protected void build() {
         applyStandardBorders(false, null);
 
-        setItem(20, HeadTextures.head(HeadTextures.SWORD,
-                "<gold><b>⚔ Бросить вызов</b></gold>",
+        // Рабочая зона: два пункта по центру (слоты 21 и 23)
+        setItem(21, HeadTextures.head(HeadTextures.SWORD,
+                "<gold>Бросить вызов</gold>",
                 List.of(
-                        "<gray>Выберите соперника и настройте дуэль.",
+                        "<gray>Тренировка, обычная или королевская дуэль.",
                         "",
-                        "<yellow>➤ ЛКМ — список игроков"
+                        "<yellow>ЛКМ</yellow> <dark_gray>—</dark_gray> <white>выбрать режим</white>"
                 )
-        ), e -> new PlayerSelectGUI(player, duelManager, false).open());
+        ), e -> new ChallengeModeGUI(player, duelManager).open());
 
-        setItem(21, HeadTextures.head(HeadTextures.CHEST,
-                "<aqua><b>🛡 Киты</b></aqua>",
-                List.of(
-                        "<gray>Заготовленные наборы снаряжения.",
-                        "",
-                        "<yellow>➤ ЛКМ — просмотр"
-                )
-        ), e -> new KitSelectGUI(player, duelManager, null).open());
-
-        setItem(22, HeadTextures.head(HeadTextures.CROWN,
-                "<gradient:#FFD700:#FFA500><b>👑 Королевская Дуэль</b></gradient>",
-                List.of(
-                        "<gray>Эпический бой с глашатаем и бонусами.",
-                        "<gold>Нужен Билет Королевской Дуэли",
-                        "",
-                        "<yellow>➤ ЛКМ — открыть"
-                )
-        ), e -> new RoyalDuelGUI(player, duelManager).open());
-
-        setItem(23, HeadTextures.head(HeadTextures.TROPHY,
-                "<yellow><b>🏆 Зал Славы</b></yellow>",
-                List.of(
-                        "<gray>Топ Чести, серии побед, статистика.",
-                        "",
-                        "<yellow>➤ ЛКМ — топ"
-                )
-        ), e -> new LeaderboardGUI(player, duelManager).open());
-
-        setItem(24, HeadTextures.head(HeadTextures.EYE,
-                "<light_purple><b>👁 Наблюдение</b></light_purple>",
+        setItem(23, HeadTextures.head(HeadTextures.EYE,
+                "<light_purple>Наблюдение</light_purple>",
                 List.of(
                         "<gray>Смотрите идущие поединки с трибун.",
                         "",
-                        "<yellow>➤ ЛКМ — список боёв"
+                        "<yellow>ЛКМ</yellow> <dark_gray>—</dark_gray> <white>список боёв</white>"
                 )
         ), e -> new SpectateListGUI(player, duelManager).open());
     }
