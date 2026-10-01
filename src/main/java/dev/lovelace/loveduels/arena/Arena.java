@@ -2,6 +2,7 @@ package dev.lovelace.loveduels.arena;
 
 import dev.lovelace.loveduels.core.DuelType;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.util.BoundingBox;
 
 import java.util.EnumSet;
@@ -111,11 +112,69 @@ public final class Arena {
         this.state = state;
     }
 
+    public World getWorld() {
+        if (pos1 != null && pos1.getWorld() != null) return pos1.getWorld();
+        if (pos2 != null && pos2.getWorld() != null) return pos2.getWorld();
+        if (spectatorSpawn != null && spectatorSpawn.getWorld() != null) return spectatorSpawn.getWorld();
+        return null;
+    }
+
+    public String getWorldName() {
+        World w = getWorld();
+        return w != null ? w.getName() : "не задан";
+    }
+
+    public java.util.List<String> getValidationErrors() {
+        java.util.List<String> errors = new java.util.ArrayList<>();
+        if (pos1 == null) {
+            errors.add("Точка спавна 1 (pos1) не установлена");
+        } else if (pos1.getWorld() == null) {
+            errors.add("Мир точки спавна 1 не загружен или не существует");
+        }
+        if (pos2 == null) {
+            errors.add("Точка спавна 2 (pos2) не установлена");
+        } else if (pos2.getWorld() == null) {
+            errors.add("Мир точки спавна 2 не загружен или не существует");
+        }
+        if (pos1 != null && pos2 != null && pos1.getWorld() != null && pos2.getWorld() != null) {
+            if (!pos1.getWorld().equals(pos2.getWorld())) {
+                errors.add("Спавны 1 и 2 в разных мирах (" + pos1.getWorld().getName() + " и " + pos2.getWorld().getName() + ")");
+            } else if (pos1.distanceSquared(pos2) < 4.0) {
+                errors.add("Точки спавна расположены слишком близко (< 2 блоков)");
+            }
+        }
+        if (bounds != null) {
+            if (pos1 != null && !isInCombatBounds(pos1)) {
+                errors.add("Спавн 1 находится ВНЕ боевых границ арены");
+            }
+            if (pos2 != null && !isInCombatBounds(pos2)) {
+                errors.add("Спавн 2 находится ВНЕ боевых границ арены");
+            }
+        }
+        if (spectatorSpawn != null && pos1 != null && spectatorSpawn.getWorld() != null && pos1.getWorld() != null) {
+            if (!spectatorSpawn.getWorld().equals(pos1.getWorld())) {
+                errors.add("Спавн зрителей находится в другом мире (" + spectatorSpawn.getWorld().getName() + ")");
+            }
+        }
+        return errors;
+    }
+
+    public java.util.List<String> getValidationWarnings() {
+        java.util.List<String> warnings = new java.util.ArrayList<>();
+        if (bounds == null) {
+            warnings.add("Боевые границы не заданы (бойцы могут убегать за пределы)");
+        }
+        if (spectatorSpawn == null) {
+            warnings.add("Спавн зрителей не задан (будет точка над спавном 1)");
+        }
+        if (spectatorZone == null && bounds != null) {
+            warnings.add("Зона трибун не задана (зрителям доступна зона вокруг арены)");
+        }
+        return warnings;
+    }
+
     public boolean isConfigured() {
-        return pos1 != null && pos2 != null
-                && pos1.getWorld() != null
-                && pos2.getWorld() != null
-                && pos1.getWorld().equals(pos2.getWorld());
+        return getValidationErrors().isEmpty();
     }
 
     public boolean isAvailableFor(DuelType type) {
@@ -125,21 +184,47 @@ public final class Arena {
     public boolean isInCombatBounds(Location loc) {
         if (bounds == null) return true;
         if (loc == null || loc.getWorld() == null) return false;
-        if (pos1 != null && !loc.getWorld().equals(pos1.getWorld())) return false;
-        return bounds.contains(loc.getX(), loc.getY(), loc.getZ());
+        World w = getWorld();
+        if (w != null && !loc.getWorld().equals(w)) return false;
+        return loc.getX() >= bounds.getMinX() - 0.05 && loc.getX() <= bounds.getMaxX() + 0.05
+                && loc.getY() >= bounds.getMinY() - 0.20 && loc.getY() <= bounds.getMaxY() + 0.20
+                && loc.getZ() >= bounds.getMinZ() - 0.05 && loc.getZ() <= bounds.getMaxZ() + 0.05;
     }
 
     public boolean isInSpectatorZone(Location loc) {
         if (spectatorZone == null) {
-            // Fallback: if no custom spectator zone is defined, allow bounds expanded by 5 blocks
             if (bounds != null) {
-                return bounds.clone().expand(5.0).contains(loc.getX(), loc.getY(), loc.getZ());
+                return loc.getX() >= bounds.getMinX() - 10.0 && loc.getX() <= bounds.getMaxX() + 10.0
+                        && loc.getY() >= bounds.getMinY() - 5.0 && loc.getY() <= bounds.getMaxY() + 15.0
+                        && loc.getZ() >= bounds.getMinZ() - 10.0 && loc.getZ() <= bounds.getMaxZ() + 10.0;
             }
             return true;
         }
         if (loc == null || loc.getWorld() == null) return false;
-        if (spectatorSpawn != null && !loc.getWorld().equals(spectatorSpawn.getWorld())) return false;
-        return spectatorZone.contains(loc.getX(), loc.getY(), loc.getZ());
+        World w = getWorld();
+        if (w != null && !loc.getWorld().equals(w)) return false;
+        return loc.getX() >= spectatorZone.getMinX() - 0.1 && loc.getX() <= spectatorZone.getMaxX() + 0.1
+                && loc.getY() >= spectatorZone.getMinY() - 0.2 && loc.getY() <= spectatorZone.getMaxY() + 0.2
+                && loc.getZ() >= spectatorZone.getMinZ() - 0.1 && loc.getZ() <= spectatorZone.getMaxZ() + 0.1;
+    }
+
+    public boolean setBoundsHeight(double height) {
+        if (bounds == null || height < 2.0) return false;
+        this.bounds = new BoundingBox(
+                bounds.getMinX(), bounds.getMinY(), bounds.getMinZ(),
+                bounds.getMaxX(), bounds.getMinY() + height, bounds.getMaxZ()
+        );
+        return true;
+    }
+
+    public void toggleSupportedType(DuelType type) {
+        if (supportedTypes.contains(type)) {
+            if (supportedTypes.size() > 1) {
+                supportedTypes.remove(type);
+            }
+        } else {
+            supportedTypes.add(type);
+        }
     }
 
     public Location getSafeSpectatorPoint() {

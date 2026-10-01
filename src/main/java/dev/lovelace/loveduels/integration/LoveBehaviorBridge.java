@@ -1,7 +1,6 @@
 package dev.lovelace.loveduels.integration;
 
 import dev.lovelace.lovecore.api.LoveCore;
-import dev.lovelace.lovecore.api.social.BehaviorLevels;
 import dev.lovelace.lovecore.api.social.ReputationOracle;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.ServicesManager;
@@ -27,7 +26,6 @@ public final class LoveBehaviorBridge {
 
     public boolean isAvailable() {
         return LoveCore.service(ReputationOracle.class).isPresent()
-                || LoveCore.service(BehaviorLevels.class).isPresent()
                 || findApiInstance() != null;
     }
 
@@ -40,15 +38,6 @@ public final class LoveBehaviorBridge {
                 return oracle.get().tier(playerId) == ReputationOracle.Tier.OUTCAST;
             } catch (Throwable t) {
                 logger.fine("ReputationOracle.tier failed: " + t.getMessage());
-            }
-        }
-
-        Optional<BehaviorLevels> levels = LoveCore.service(BehaviorLevels.class);
-        if (levels.isPresent()) {
-            try {
-                return levels.get().politenessLevel(playerId) <= 0;
-            } catch (Throwable t) {
-                logger.fine("BehaviorLevels.politenessLevel failed: " + t.getMessage());
             }
         }
 
@@ -78,15 +67,20 @@ public final class LoveBehaviorBridge {
 
     public int getPolitenessLevel(UUID playerId) {
         if (playerId == null) return 3;
-        return LoveCore.service(BehaviorLevels.class)
-                .map(l -> {
-                    try {
-                        return l.politenessLevel(playerId);
-                    } catch (Throwable t) {
-                        return 3;
+        Object api = findApiInstance();
+        if (api != null) {
+            try {
+                for (Method m : api.getClass().getMethods()) {
+                    if (m.getName().equalsIgnoreCase("getPolitenessLevel") && m.getParameterCount() == 1) {
+                        Object r = m.invoke(api, playerId);
+                        if (r instanceof Number n) return n.intValue();
                     }
-                })
-                .orElse(3);
+                }
+            } catch (Throwable t) {
+                return 3;
+            }
+        }
+        return 3;
     }
 
     public boolean punishFleeing(UUID player, int penaltyPoints) {
