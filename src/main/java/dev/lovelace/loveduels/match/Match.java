@@ -54,6 +54,10 @@ public interface Match {
 
     void surrender(Player player);
 
+    default void forfeit(Player player) {
+        surrender(player);
+    }
+
     void handleDisconnect(Player player);
 
     void registerDamage(Player attacker, Player victim, double damage);

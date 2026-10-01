@@ -320,7 +320,7 @@ public final class DuelCommand implements CommandExecutor, TabCompleter {
             player.sendMessage(MiniMessage.miniMessage().deserialize("<red>Вы не в дуэли."));
             return;
         }
-        matchOpt.get().forfeit(player);
+        matchOpt.get().surrender(player);
     }
 
     @Override

@@ -1,0 +1,83 @@
+# =========================================================
+# LoveDuels Base64 Skull Textures Repository (heads.yml)
+# Все кнопки GUI, режимы дуэлей и индикаторы настраиваются здесь.
+# Значение каждого ключа можно заменить на свой Base64 (или texture hash).
+# =========================================================
+
+# ---------------------------------------------------------
+# Навигация и системные кнопки интерфейса (UI Navigation)
+# ---------------------------------------------------------
+navigation:
+  back: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvODY1MmUyYjkzNmNhODAyNmJkMjg2NTFkN2M5ZjI4MTlkMmU5MjM2OTc3MzRkMThkZmRiMTM1NTBmOGZkYWQ1ZiJ9fX0="
+  close: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWZkMjQwMDAwMmFkOWZiYmJkMDA2Njk0MWViNWIxYTM4NGFiOWIwZTQ4YTE3OGVlOTZlNGQxMjlhNTIwODY1NCJ9fX0="
+  previous: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmQ2OWUwNmU1ZGFkZmQ4NGU1ZjNkMWMyMWYyZjhjY2ZlYTA0MzIzZDkxMWIzNTIxYTdhZmQ3MTc5YTA3YWU3OSJ9fX0="
+  next: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMTliZjMyOTJlMTI2YTEwNWI1NGViYTcxM2FhMWIxNTJkNTQxYTFkODkzODgyOWM1NjM2NTZkMjMyNjZiZCJ9fX0="
+  reset: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMWE2ZjFjYTViYjQyMWQwOWU4NjMzMzliZjRmOWQyZDBiNjdiZjVhYjVmZjlhM2E5MzZhNmRiOWQxOCJ9fX0="
+
+# ---------------------------------------------------------
+# Действия, вызовы и подтверждения (Actions & Statuses)
+# ---------------------------------------------------------
+actions:
+  confirm: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmFkYzA0OGE3Y2U3OGY3ZGFkNzJhMDdkYTI3ZDg1YzA5MTY4ODFlNTUyMmVlZWQxZTNkYWYyMTdhMzhjMWEifX19"
+  cancel: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmM4NjE0ZDEwOTRkYTczMTY5ODAxMTI5YjBmZjk0M2ZhNDk1NjMxNGJlOTM0MTcxZDYxMTFmNzE0NGQxNWYifX19"
+  ready: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYTkyZTMxZmZiNTUxYzAxMTBlOTZlYTJkNjVmYTFhNWZmNjk5ZjU5MjNkMzE4ZTVmMTI4ZTFmOWI1ZTc2ZSJ9fX0="
+  not_ready: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmViNTg4YjM1ZDNjODAwOGEyODc5NTA5YjIzYjM2MWE2MDNiNTE5Mzk1MmY0YzQwOTc0ZjA3YTRhYWI0N2EifX19"
+  surrender: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmViNTg4YjIxYTZmOThhZDFmZjRlMDg1YzU1MmRjYjA1MGVmYzljYWI0MjdmNDYwNDhmMThmYzgwMzQ3NWY3In19fQ=="
+
+# ---------------------------------------------------------
+# Боевые категории (Combat Categories)
+# ---------------------------------------------------------
+categories:
+  melee: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzdhZWU5YTc1YmYwZGY3ODk3MTgzMDE1Y2NhMGIyZDdiNzliYjNjMzRlYTU0MjRjNjc5NGJiNGZhOTVjMTZiZiJ9fX0="
+  ranged: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjVjYTA5YmY5MjExY2U2OTM2NzkzY2NjYmNmODFjOWE1ZmQ1YmYxNTVmNGUxNTY0ZjY0OGY1YTE4NDhkIn19fQ=="
+  mounted: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNTY3YTFjOGRmY2ExMTM3Nzg0Nzg5MzU1NzU0YzFiMmIzMjQyMmU3N2E2ZWMzYzg5N2FmMTgzZjhhYmIxYTYifX19"
+
+# ---------------------------------------------------------
+# Виды дуэлей и снаряжения (Duel Types & Equipment)
+# ---------------------------------------------------------
+duel_types:
+  sword: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzdhZWU5YTc1YmYwZGY3ODk3MTgzMDE1Y2NhMGIyZDdiNzliYjNjMzRlYTU0MjRjNjc5NGJiNGZhOTVjMTZiZiJ9fX0="
+  bow: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjVjYTA5YmY5MjExY2U2OTM2NzkzY2NjYmNmODFjOWE1ZmQ1YmYxNTVmNGUxNTY0ZjY0OGY1YTE4NDhkIn19fQ=="
+  horse_spear: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNTY3YTFjOGRmY2ExMTM3Nzg0Nzg5MzU1NzU0YzFiMmIzMjQyMmU3N2E2ZWMzYzg5N2FmMTgzZjhhYmIxYTYifX19"
+  fists: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZTVkNTljZTUxZTM5YjdkNTVjODhiOWJmOTJiYjNiZmE4YmU4MGE2YjU3ZGYzMzJkN2JhNWFiNGViYzgifX19"
+  own_inventory: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjc4ZWYyZTRjZjJjNDFhMmQxNDJjOTA1N2IxNmUyMmNiODRlMzQ4ZmNmZWY3OTgzMzJjNjdlMzZkOWYxZDhlIn19fQ=="
+  kit: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNDQ4MWRmZTJiMmY5OWUzZGVjZTRjMzQ3MjY0MzM1ZjUzMTgzZjEzYjE4YTkxN2RkYjcyMzEzZTlkMDc0NjNmZCJ9fX0="
+  chest: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNDQ4MWRmZTJiMmY5OWUzZGVjZTRjMzQ3MjY0MzM1ZjUzMTgzZjEzYjE4YTkxN2RkYjcyMzEzZTlkMDc0NjNmZCJ9fX0="
+  backpack: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjc4ZWYyZTRjZjJjNDFhMmQxNDJjOTA1N2IxNmUyMmNiODRlMzQ4ZmNmZWY3OTgzMzJjNjdlMzZkOWYxZDhlIn19fQ=="
+  mace: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMWFiNTRjMWNlOTQyYzIzMjFkNmRiYjgzMjQ1ZWJmM2ZmZDY5NmJmOWQxZjAyNDY3MzY0NzFmNjdmNzJiYTI1MCJ9fX0="
+  potion: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvOTZkN2I3MjA0YmVhMWZmMGRmNzkzMGJkNDU1OWEzMGI1ZWE1NTllNTYyNDI5NDY5NGU4NjdiZjdiNWFlMDM2MSJ9fX0="
+  crossbow: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjVjYTA5YmY5MjExY2U2OTM2NzkzY2NjYmNmODFjOWE1ZmQ1YmYxNTVmNGUxNTY0ZjY0OGY1YTE4NDhkIn19fQ=="
+
+# ---------------------------------------------------------
+# Экономика, ставки и ранговая Честь (Stakes & Currencies)
+# ---------------------------------------------------------
+economy:
+  coin: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZTM2ZTk0ZjZjMGNlMzI1MTQzOTVhODk5OTAxODUyZjE0ZTM1YzM0ZGE0NDcwMzY0ZTI4MTczODQ1OGI1ZCJ9fX0="
+  coin_stack: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjMxMWU4NDIyNDk3NDUxMTMzMzM4NzhmZDVhOGQ4ZWIyMjgwYmNiYWI3Njg5ZTQ3M2YxNjY5NjIzYTExYzk5NyJ9fX0="
+  star: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMWZkYjFhMTQ5YmJjYThjNjFiYjBlMjE0ZTg1YWFkZjFhM2U3NGNlNTc3OTQ1YTBiZDU2ZjFiNTUxNzJkMTMifX19"
+  crown: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNzE1NDQxOWVlMzc4NDg4NDllNDBmYzNmZTdkZGI3ODI0NmE3MzY4NDlhN2E0MWU4ZTYxOTdmYjhiOTFmNDNlIn19fQ=="
+  scroll: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjUxNzc0MzAxNWE5OTUxZWUxOWNkOGU0MTFiMDI2Y2MzZGJiMWU0MmJmYWUxYmM5N2U3NDI4OGI4ZmE3In19fQ=="
+
+# ---------------------------------------------------------
+# Статистика, итоги дуэлей и наблюдение (Stats & Spectate)
+# ---------------------------------------------------------
+stats:
+  trophy: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZjU3YzdlOTZhODAyYzI3MDgwYzdmODA1MzgxNDM2OGVhOTRkZjg2NDQ1OTEyMGU1MTU1NzE4YjUwM2MzZWQ3In19fQ=="
+  clock: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvODUzYzgwZTNjMjE5MzRlNjUwZWYzMTY0Y2I4OTU0N2NiMGI1Y2M0YWI3Y2I5MzQ1MDk0ZDRkNjJiNjZkNDgifX19"
+  skull: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZTVkNTljZTUxZTM5YjdkNTVjODhiOWJmOTJiYjNiZmE4YmU4MGE2YjU3ZGYzMzJkN2JhNWFiNGViYzgifX19"
+  eye: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZGZjZWUzYTg4YmI1NGMwZjZlZTY2YjQ0YWM3NGZmOTdjZDkyYTA4ZjE0Y2NjMTdhMjYyMzcxZjBhYTg5MjEifX19"
+  info: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZjgwZDMyOTVkM2Q5YWJkNjI3NzZhYmNiOGRhNzU2ZjI5OGE1NDVmZWU5NDk4YzRmNjlhMWMyYzc4NTI0YzgyNCJ9fX0="
+  status_on: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvODg5MDgyNTQ1MWMwMWJkMDNiMDMwNzkwNjIxYWI3NTM0NDgzMTlmODQ3NDliYjAyYzkwZjNhMjg0ODliZDcyIn19fQ=="
+  status_off: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYTRmZWY3NTNkNWI0ZmYyYTljYWU3NWJjMmVkZWIzMTUzMDI1YWJjNWNjMjc0NDI4NWYzMTk2NGY5NDA4YTFmIn19fQ=="
+
+# ---------------------------------------------------------
+# Ступени рангов дуэлянтов (Rank Tiers)
+# ---------------------------------------------------------
+ranks:
+  page: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZmIwZmQ2MGQ3MjI0MTlhNzg1N2Y3Mjg2YzIzZjcyYzIxOTMzMDM4ZmM0MTQwNDljZGU2NTZmNGU4MzI4ZTU0NiJ9fX0="
+  squire: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZGFlZjZhZTE2OWNjNGYzZTM5Yzc2ZDA5NzE5OTNiOTJhYmU1MTBkOTZjOWJiNDk3YzFhYjlhMmI0YzJkYThhMSJ9fX0="
+  knight: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMWFiNTRjMWNlOTQyYzIzMjFkNmRiYjgzMjQ1ZWJmM2ZmZDY5NmJmOWQxZjAyNDY3MzY0NzFmNjdmNzJiYTI1MCJ9fX0="
+  baron: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNmVlZjdlNTZjZGU3NDA3NzJkZmI3NmRkZDJmNTg0YmU4OTA3Yjg1OTc2NjhlNDAyNjM0OTg2NDY5MjMwYWE0OSJ9fX0="
+  count: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZjFhZTgwMzg0YTAwYjZmOWY2NGRkODMwN2E5MDY3NjU0NGM5N2E3OTI5NzE2NWVhNzEzMjYyYzdkODgzMzg0NyJ9fX0="
+  duke: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNDU1ODdkYTdmZTczMzZlOGFiOWY3OTFlYTVlMmNmYzhhODI3Y2E5NTk1NjdlYjlkNTNhNjQ3YmFiZjk0OGQ1In19fQ=="
+  king: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNzE1NDQxOWVlMzc4NDg4NDllNDBmYzNmZTdkZGI3ODI0NmE3MzY4NDlhN2E0MWU4ZTYxOTdmYjhiOTFmNDNlIn19fQ=="

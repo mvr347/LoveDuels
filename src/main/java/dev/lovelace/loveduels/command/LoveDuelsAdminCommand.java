@@ -1011,9 +1011,10 @@ public final class LoveDuelsAdminCommand implements CommandExecutor, TabComplete
 
     private void handleReload(CommandSender sender) {
         duelManager.getPlugin().reloadConfig();
+        dev.lovelace.loveduels.gui.HeadsConfig.load(duelManager.getPlugin());
         duelManager.getArenaManager().loadArenas();
         duelManager.getKitManager().loadKits();
-        sender.sendMessage(mm.deserialize("<green>✔ Конфигурация, арены и наборы китов LoveDuels успешно перезагружены!"));
+        sender.sendMessage(mm.deserialize("<green>✔ Конфигурация, арены, киты и скины голов (heads.yml) LoveDuels успешно перезагружены!"));
     }
 
     private void sendHelp(CommandSender sender) {
