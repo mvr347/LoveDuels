@@ -23,12 +23,9 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Настройка параметров дуэли:
- * 1) категория (ближний / дальний / всадники)
- * 2) подтип внутри категории
- * 3) ставка монетами (глифы, Shift — номинал, ЛКМ + / ПКМ −)
- * 4) ставка Честью (база, ЛКМ ×2, ПКМ ÷2)
- * 5) отправить запрос
+ * Настройка дуэли.
+ * Тренировка — только категория/режим, без ставок.
+ * Королевская — минимум 1 золотая монета, торжественное оформление.
  */
 public final class DuelSetupGUI extends CustomGUI {
 
@@ -40,8 +37,8 @@ public final class DuelSetupGUI extends CustomGUI {
 
     private CombatCategory category = CombatCategory.MELEE;
     private DuelType selectedType = CombatCategory.MELEE.firstSubtype();
-    private long moneyBet = 0L;
-    private int honorBet = BASE_HONOR;
+    private long moneyBet;
+    private int honorBet;
     private int selectedDenomIndex = 0;
 
     public DuelSetupGUI(Player player, Player opponent, DuelManager duelManager, ChallengeMode mode) {
@@ -49,12 +46,15 @@ public final class DuelSetupGUI extends CustomGUI {
         this.opponent = opponent;
         this.duelManager = duelManager;
         this.mode = mode;
-        if (mode.isRoyal()) {
-            this.moneyBet = 500L;
-        }
         if (mode.isTraining()) {
-            this.honorBet = 0;
             this.moneyBet = 0L;
+            this.honorBet = 0;
+        } else if (mode.isRoyal()) {
+            this.moneyBet = minRoyalBet();
+            this.honorBet = BASE_HONOR;
+        } else {
+            this.moneyBet = 0L;
+            this.honorBet = BASE_HONOR;
         }
     }
 
@@ -65,10 +65,21 @@ public final class DuelSetupGUI extends CustomGUI {
 
     private static String titleFor(ChallengeMode mode) {
         return switch (mode) {
-            case TRAINING -> "<aqua>Настройка · тренировка</aqua>";
-            case ROYAL -> "<gradient:#C9A227:#E8D48B>Настройка · королевская</gradient>";
-            default -> "<gold>Настройка · дуэль</gold>";
+            case TRAINING -> "<aqua>Тренировка</aqua>";
+            case ROYAL -> "<gradient:#FFD700:#F5E6A3:#C9A227>Королевская дуэль</gradient>";
+            default -> "<gold>Настройка дуэли</gold>";
         };
+    }
+
+    private long minRoyalBet() {
+        return CoinFormat.goldUnit();
+    }
+
+    private void clampRoyalMoney() {
+        if (mode.isRoyal()) {
+            long min = minRoyalBet();
+            if (moneyBet < min) moneyBet = min;
+        }
     }
 
     @Override
@@ -77,7 +88,6 @@ public final class DuelSetupGUI extends CustomGUI {
 
         setItem(4, createOpponentInfoItem(), null);
 
-        // Категория
         setItem(20, createCategoryItem(), e -> {
             category = e.isRightClick() ? category.prev() : category.next();
             selectedType = category.firstSubtype();
@@ -85,7 +95,6 @@ public final class DuelSetupGUI extends CustomGUI {
             build();
         });
 
-        // Подтип
         setItem(21, createSubtypeItem(), e -> {
             selectedType = e.isRightClick()
                     ? category.prevSubtype(selectedType)
@@ -94,57 +103,52 @@ public final class DuelSetupGUI extends CustomGUI {
             build();
         });
 
-        boolean canBet = !mode.isTraining();
-
-        if (canBet) {
-            setItem(23, createMoneyBetItem(), e -> {
-                List<Denomination> dens = denominations();
-                if (dens.isEmpty()) {
-                    // fallback без экономики
-                    if (e.isShiftClick()) {
-                        // no-op
-                    } else if (e.isRightClick()) {
-                        moneyBet = Math.max(mode.isRoyal() ? 500L : 0L, moneyBet - 1);
-                    } else {
-                        moneyBet += 1;
-                    }
-                } else {
-                    if (selectedDenomIndex >= dens.size()) selectedDenomIndex = 0;
-                    if (e.isShiftClick()) {
-                        selectedDenomIndex = (selectedDenomIndex + 1) % dens.size();
-                    } else {
-                        long unit = dens.get(selectedDenomIndex).value();
-                        if (e.isRightClick()) {
-                            moneyBet = Math.max(0L, moneyBet - unit);
-                            if (mode.isRoyal() && moneyBet < 500L) moneyBet = 500L;
-                        } else {
-                            moneyBet += unit;
-                        }
-                    }
-                }
-                player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.7f, 1.2f);
-                build();
-            });
-
-            setItem(24, createHonorBetItem(), e -> {
-                if (e.isRightClick()) {
-                    if (honorBet > BASE_HONOR && honorBet % 2 == 0) {
-                        honorBet = honorBet / 2;
-                    } else {
-                        honorBet = BASE_HONOR;
-                    }
-                } else {
-                    honorBet = Math.max(BASE_HONOR, honorBet * 2);
-                }
-                player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.7f, 1.4f);
-                build();
-            });
-        } else {
-            setItem(23, HeadTextures.head(HeadTextures.READY,
-                    "<aqua>Тренировка</aqua>",
-                    List.of("<gray>Без ставок и Чести.")
-            ), null);
+        if (mode.isTraining()) {
+            // только режим + отправить — без чести и монет
+            setItem(31, createSendButton(), e -> sendChallenge());
+            return;
         }
+
+        setItem(23, createMoneyBetItem(), e -> {
+            List<Denomination> dens = denominations();
+            long min = mode.isRoyal() ? minRoyalBet() : 0L;
+            if (dens.isEmpty()) {
+                if (e.isRightClick()) {
+                    moneyBet = Math.max(min, moneyBet - 1);
+                } else if (!e.isShiftClick()) {
+                    moneyBet += 1;
+                }
+            } else {
+                if (selectedDenomIndex >= dens.size()) selectedDenomIndex = 0;
+                if (e.isShiftClick()) {
+                    selectedDenomIndex = (selectedDenomIndex + 1) % dens.size();
+                } else {
+                    long unit = dens.get(selectedDenomIndex).value();
+                    if (e.isRightClick()) {
+                        moneyBet = Math.max(min, moneyBet - unit);
+                    } else {
+                        moneyBet += unit;
+                    }
+                }
+            }
+            clampRoyalMoney();
+            player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.7f, 1.2f);
+            build();
+        });
+
+        setItem(24, createHonorBetItem(), e -> {
+            if (e.isRightClick()) {
+                if (honorBet > BASE_HONOR && honorBet % 2 == 0) {
+                    honorBet = honorBet / 2;
+                } else {
+                    honorBet = BASE_HONOR;
+                }
+            } else {
+                honorBet = Math.max(BASE_HONOR, honorBet * 2);
+            }
+            player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.7f, 1.4f);
+            build();
+        });
 
         setItem(31, createSendButton(), e -> sendChallenge());
     }
@@ -188,8 +192,11 @@ public final class DuelSetupGUI extends CustomGUI {
                 player.sendMessage(MiniMessage.miniMessage().deserialize("<red>Нет билета королевской дуэли."));
                 return;
             }
-            if (moneyBet <= 0) {
-                player.sendMessage(MiniMessage.miniMessage().deserialize("<red>Нужна денежная ставка."));
+            clampRoyalMoney();
+            if (moneyBet < minRoyalBet()) {
+                player.sendMessage(MiniMessage.miniMessage().deserialize(
+                        "<red>Минимум для королевской: 1 золотая монета."
+                ));
                 return;
             }
         }
@@ -224,7 +231,8 @@ public final class DuelSetupGUI extends CustomGUI {
         ));
         player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.2f);
 
-        Component acceptBtn = MiniMessage.miniMessage().deserialize("<green>[Принять]</green>")
+        Component acceptBtn = MiniMessage.miniMessage().deserialize(
+                        royal ? "<gradient:#FFD700:#C9A227>[Принять]</gradient>" : "<green>[Принять]</green>")
                 .clickEvent(ClickEvent.runCommand("/duel accept " + player.getName()))
                 .hoverEvent(HoverEvent.showText(MiniMessage.miniMessage().deserialize("<green>Принять</green>")));
         Component denyBtn = MiniMessage.miniMessage().deserialize("<red>[Отклонить]</red>")
@@ -232,17 +240,20 @@ public final class DuelSetupGUI extends CustomGUI {
                 .hoverEvent(HoverEvent.showText(MiniMessage.miniMessage().deserialize("<red>Отклонить</red>")));
 
         String prefix = royal
-                ? "<gradient:#C9A227:#E8D48B>[Королевский вызов]</gradient>\n"
+                ? "<gradient:#FFD700:#F5E6A3:#C9A227>══ Королевский вызов ══</gradient>\n"
                 : training
                     ? "<aqua>[Тренировочный вызов]</aqua>\n"
                     : "<gold>[Вызов на дуэль]</gold>\n";
 
-        String moneyLine = training
-                ? "<gray>Монеты: без ставок</gray>"
-                : "<gray>Монеты: </gray>" + CoinFormat.formatBalanceLine(duelManager.getEconomyBridge(), effectiveMoney);
-        String honorLine = training
-                ? ""
-                : "\n<gray>Честь: <yellow>" + effectiveHonor + "</yellow>";
+        String moneyLine;
+        String honorLine;
+        if (training) {
+            moneyLine = "<gray>Без ставок</gray>";
+            honorLine = "";
+        } else {
+            moneyLine = "<gray>Монеты: </gray>" + CoinFormat.formatBalanceLine(duelManager.getEconomyBridge(), effectiveMoney);
+            honorLine = "\n<gray>Честь: <yellow>" + effectiveHonor + "</yellow>";
+        }
 
         Component invite = MiniMessage.miniMessage().deserialize(
                 prefix +
@@ -253,7 +264,8 @@ public final class DuelSetupGUI extends CustomGUI {
         ).append(acceptBtn).append(Component.text("  ")).append(denyBtn);
 
         opponent.sendMessage(invite);
-        opponent.playSound(opponent.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 1.0f, 1.0f);
+        opponent.playSound(opponent.getLocation(),
+                royal ? Sound.UI_TOAST_CHALLENGE_COMPLETE : Sound.BLOCK_NOTE_BLOCK_BELL, 1.0f, 1.0f);
 
         if (royal) {
             duelManager.getRoyalManager().broadcastCreation(player, opponent, effectiveMoney, effectiveHonor);
@@ -261,21 +273,12 @@ public final class DuelSetupGUI extends CustomGUI {
     }
 
     private List<Denomination> denominations() {
-        Optional<LoveEconomy> eco = tryEconomy();
+        Optional<LoveEconomy> eco = CoinFormat.tryEconomy();
         if (eco.isEmpty()) return List.of();
         List<Denomination> dens = new ArrayList<>(eco.get().denominations());
-        dens.sort(Comparator.comparingLong(Denomination::value)); // от мелкого к крупному для переключения
+        dens.sort(Comparator.comparingLong(Denomination::value));
         dens.removeIf(d -> d.value() <= 0);
         return dens;
-    }
-
-    private static Optional<LoveEconomy> tryEconomy() {
-        if (!org.bukkit.Bukkit.getPluginManager().isPluginEnabled("LoveCore")) return Optional.empty();
-        try {
-            return dev.lovelace.lovecore.api.LoveCore.service(LoveEconomy.class);
-        } catch (Throwable t) {
-            return Optional.empty();
-        }
     }
 
     private boolean hasRoyalTicket(Player p) {
@@ -297,16 +300,22 @@ public final class DuelSetupGUI extends CustomGUI {
     }
 
     private ItemStack createOpponentInfoItem() {
+        String name = mode.isRoyal()
+                ? "<gradient:#FFD700:#C9A227>" + opponent.getName() + "</gradient>"
+                : "<gold>" + opponent.getName() + "</gold>";
         return HeadTextures.playerHead(opponent,
-                MiniMessage.miniMessage().deserialize("<gold>" + opponent.getName() + "</gold>"),
+                MiniMessage.miniMessage().deserialize(name),
                 List.of(
-                        MiniMessage.miniMessage().deserialize("<gray>HP <red>" + (int) opponent.getHealth() + "</red> · пинг <white>" + opponent.getPing() + "</white>")
+                        MiniMessage.miniMessage().deserialize(
+                                "<gray>HP <red>" + (int) opponent.getHealth() + "</red> · пинг <white>" + opponent.getPing() + "</white>")
                 )
         );
     }
 
     private ItemStack createCategoryItem() {
-        String name = "<gold>Категория: <white>" + category.getDisplayName() + "</white></gold>";
+        String name = mode.isRoyal()
+                ? "<gradient:#FFD700:#C9A227>Категория: " + category.getDisplayName() + "</gradient>"
+                : "<gold>Категория: <white>" + category.getDisplayName() + "</white></gold>";
         List<String> lore = List.of(
                 "<gray>" + category.getDescription(),
                 "",
@@ -330,7 +339,6 @@ public final class DuelSetupGUI extends CustomGUI {
             lore.add("<yellow>ЛКМ</yellow> <dark_gray>—</dark_gray> <white>следующий</white>");
             lore.add("<yellow>ПКМ</yellow> <dark_gray>—</dark_gray> <white>предыдущий</white>");
             lore.add("");
-            lore.add("<dark_gray>Варианты:</dark_gray>");
             for (DuelType t : category.getSubtypes()) {
                 String mark = t == selectedType ? "<green>●</green> " : "<dark_gray>○</dark_gray> ";
                 lore.add(mark + t.getDisplayNameMiniMessage());
@@ -351,9 +359,14 @@ public final class DuelSetupGUI extends CustomGUI {
 
     private ItemStack createMoneyBetItem() {
         List<String> lore = new ArrayList<>();
+        if (mode.isRoyal()) {
+            lore.add("<gradient:#FFD700:#C9A227>Королевская ставка</gradient>");
+            lore.add("<gray>Минимум: 1 золотая монета</gray>");
+            lore.add("");
+        }
         lore.add("<gray>Текущая ставка:</gray>");
 
-        Optional<LoveEconomy> eco = tryEconomy();
+        Optional<LoveEconomy> eco = CoinFormat.tryEconomy();
         if (eco.isPresent()) {
             for (Component line : CoinFormat.formatGlyphLines(eco.get(), moneyBet)) {
                 lore.add(MiniMessage.miniMessage().serialize(line));
@@ -367,13 +380,8 @@ public final class DuelSetupGUI extends CustomGUI {
         if (!dens.isEmpty()) {
             if (selectedDenomIndex >= dens.size()) selectedDenomIndex = 0;
             Denomination sel = dens.get(selectedDenomIndex);
-            lore.add("<gray>Номинал: </gray>" + CoinFormat.getCoinGlyph(sel) + " <white>×" + sel.value() + "</white>");
-            lore.add("");
-            lore.add("<yellow>Shift+клик</yellow> <dark_gray>—</dark_gray> <white>сменить номинал</white>");
-            lore.add("<yellow>ЛКМ</yellow> <dark_gray>—</dark_gray> <white>+1 номинал</white>");
-            lore.add("<red>ПКМ</red> <dark_gray>—</dark_gray> <white>−1 номинал</white>");
-        } else {
-            lore.add("<yellow>ЛКМ</yellow> +1 · <red>ПКМ</red> −1");
+            lore.add("<gray>Номинал: </gray>" + CoinFormat.getCoinGlyph(sel));
+            lore.add("<yellow>Shift</yellow> — сменить · <yellow>ЛКМ</yellow> + · <red>ПКМ</red> −");
         }
 
         String balance = CoinFormat.formatBalanceLine(duelManager.getEconomyBridge(),
@@ -381,14 +389,19 @@ public final class DuelSetupGUI extends CustomGUI {
         lore.add("");
         lore.add("<gray>Баланс: </gray>" + balance);
 
-        String name = "<gold>Ставка монетами</gold>";
-        return HeadTextures.head(HeadTextures.COIN, name, lore);
+        String name = mode.isRoyal()
+                ? "<gradient:#FFD700:#C9A227>Ставка монетами</gradient>"
+                : "<gold>Ставка монетами</gold>";
+        return HeadTextures.head(mode.isRoyal() ? HeadTextures.CROWN : HeadTextures.COIN, name, lore);
     }
 
     private ItemStack createHonorBetItem() {
-        String name = "<yellow>Честь: <white>" + honorBet + "</white></yellow>";
+        String name = mode.isRoyal()
+                ? "<gradient:#FFD700:#C9A227>Честь: " + honorBet + "</gradient>"
+                : "<yellow>Честь: <white>" + honorBet + "</white></yellow>";
         List<String> lore = List.of(
                 "<gray>База: " + BASE_HONOR + ". Победитель получает, проигравший теряет.",
+                mode.isRoyal() ? "<gray>В королевской дуэли Честь выше ценится.</gray>" : "",
                 "",
                 "<yellow>ЛКМ</yellow> <dark_gray>—</dark_gray> <white>×2</white>",
                 "<red>ПКМ</red> <dark_gray>—</dark_gray> <white>÷2 (или база)</white>"
@@ -398,12 +411,13 @@ public final class DuelSetupGUI extends CustomGUI {
 
     private ItemStack createSendButton() {
         String name = mode.isRoyal()
-                ? "<gradient:#C9A227:#E8D48B>Отправить вызов</gradient>"
+                ? "<gradient:#FFD700:#F5E6A3:#C9A227>Отправить королевский вызов</gradient>"
                 : mode.isTraining()
                     ? "<aqua>Отправить вызов</aqua>"
                     : "<green>Отправить вызов</green>";
-        return HeadTextures.head(HeadTextures.SWORD, name, List.of(
-                "<gray>Соперник увидит параметры и сможет принять."
-        ));
+        List<String> lore = mode.isTraining()
+                ? List.of("<gray>Без ставок. Соперник примет — и сразу бой.")
+                : List.of("<gray>Соперник увидит параметры и сможет принять.");
+        return HeadTextures.head(mode.isRoyal() ? HeadTextures.CROWN : HeadTextures.SWORD, name, lore);
     }
 }
