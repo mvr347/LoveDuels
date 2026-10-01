@@ -9,7 +9,6 @@ import dev.lovelace.loveduels.integration.LoveBehaviorBridge;
 import dev.lovelace.loveduels.integration.LoveEconomyBridge;
 import dev.lovelace.loveduels.integration.LoveLeaderboardsBridge;
 import dev.lovelace.loveduels.royal.RoyalDuelManager;
-import dev.lovelace.loveduels.storage.DuelHistoryEntry;
 import dev.lovelace.loveduels.storage.PlayerStorage;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
@@ -18,6 +17,7 @@ import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Sound;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -65,12 +65,21 @@ public abstract class AbstractMatch implements Match {
             Plugin plugin, Player player1, Player player2, Arena arena, DuelType type, DuelBet bet, boolean royal,
             PlayerStorage playerStorage, LoveEconomyBridge economyBridge, LoveBehaviorBridge behaviorBridge,
             LoveLeaderboardsBridge leaderboardsBridge, RoyalDuelManager royalManager, MatchManager matchManager) {
-        this.plugin = plugin; this.player1 = player1; this.player2 = player2;
-        this.player1Id = player1.getUniqueId(); this.player2Id = player2.getUniqueId();
-        this.arena = arena; this.type = type; this.bet = bet; this.royal = royal;
-        this.playerStorage = playerStorage; this.economyBridge = economyBridge;
-        this.behaviorBridge = behaviorBridge; this.leaderboardsBridge = leaderboardsBridge;
-        this.royalManager = royalManager; this.matchManager = matchManager;
+        this.plugin = plugin;
+        this.player1 = player1;
+        this.player2 = player2;
+        this.player1Id = player1.getUniqueId();
+        this.player2Id = player2.getUniqueId();
+        this.arena = arena;
+        this.type = type;
+        this.bet = bet;
+        this.royal = royal;
+        this.playerStorage = playerStorage;
+        this.economyBridge = economyBridge;
+        this.behaviorBridge = behaviorBridge;
+        this.leaderboardsBridge = leaderboardsBridge;
+        this.royalManager = royalManager;
+        this.matchManager = matchManager;
     }
 
     @Override public UUID getMatchId() { return matchId; }
@@ -85,21 +94,35 @@ public abstract class AbstractMatch implements Match {
     @Override public MatchState getState() { return state; }
     @Override public boolean isEnded() { return ended.get(); }
     @Override public long getStartTime() { return startTime; }
-    @Override public long getDurationSeconds() { return startTime <= 0 ? 0 : (System.currentTimeMillis() - startTime) / 1000L; }
+    @Override public long getDurationSeconds() {
+        return startTime <= 0 ? 0 : (System.currentTimeMillis() - startTime) / 1000L;
+    }
     @Override public Set<UUID> getSpectators() { return spectators; }
     @Override public void addSpectator(Player player) {
-        if (player != null) { spectators.add(player.getUniqueId()); if (timerBossBar != null) player.showBossBar(timerBossBar); }
+        if (player != null) {
+            spectators.add(player.getUniqueId());
+            if (timerBossBar != null) player.showBossBar(timerBossBar);
+        }
     }
     @Override public void removeSpectator(Player player) {
-        if (player != null) { spectators.remove(player.getUniqueId()); if (timerBossBar != null) player.hideBossBar(timerBossBar); }
+        if (player != null) {
+            spectators.remove(player.getUniqueId());
+            if (timerBossBar != null) player.hideBossBar(timerBossBar);
+        }
     }
     @Override public int getSpectatorCount() { return spectators.size(); }
-    @Override public boolean containsPlayer(UUID uuid) { return player1Id.equals(uuid) || player2Id.equals(uuid); }
+    @Override public boolean containsPlayer(UUID uuid) {
+        return player1Id.equals(uuid) || player2Id.equals(uuid);
+    }
     @Override public Player getOpponent(UUID uuid) {
-        if (player1Id.equals(uuid)) return player2; if (player2Id.equals(uuid)) return player1; return null;
+        if (player1Id.equals(uuid)) return player2;
+        if (player2Id.equals(uuid)) return player1;
+        return null;
     }
     @Override public double getDamageDealt(UUID player) { return damageDealt.getOrDefault(player, 0.0); }
-    @Override public void registerDamage(Player attacker, Player victim, double damage) { damageDealt.merge(attacker.getUniqueId(), damage, Double::sum); }
+    @Override public void registerDamage(Player attacker, Player victim, double damage) {
+        damageDealt.merge(attacker.getUniqueId(), damage, Double::sum);
+    }
     @Override public int getPoints(UUID player) { return points.getOrDefault(player, 0); }
     @Override public void addPoints(UUID player, int pts) { points.merge(player, pts, Integer::sum); }
     @Override public InventorySnapshot getSnapshot(UUID player) { return snapshots.get(player); }
@@ -129,8 +152,14 @@ public abstract class AbstractMatch implements Match {
                             MiniMessage.miniMessage().deserialize("<gold>" + countdown + "</gold>"),
                             MiniMessage.miniMessage().deserialize("<gray>Приготовьтесь к бою!"),
                             Title.Times.times(Duration.ZERO, Duration.ofMillis(1200), Duration.ofMillis(300)));
-                    if (player1.isOnline()) { player1.showTitle(title); player1.playSound(player1.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1f, 1f); }
-                    if (player2.isOnline()) { player2.showTitle(title); player2.playSound(player2.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1f, 1f); }
+                    if (player1.isOnline()) {
+                        player1.showTitle(title);
+                        player1.playSound(player1.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1f, 1f);
+                    }
+                    if (player2.isOnline()) {
+                        player2.showTitle(title);
+                        player2.playSound(player2.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1f, 1f);
+                    }
                     countdown--;
                 } else {
                     cancel();
@@ -141,8 +170,14 @@ public abstract class AbstractMatch implements Match {
                             MiniMessage.miniMessage().deserialize("<green>В БОЙ!</green>"),
                             MiniMessage.miniMessage().deserialize("<yellow>Да победит сильнейший!"),
                             Title.Times.times(Duration.ofMillis(200), Duration.ofSeconds(1), Duration.ofMillis(400)));
-                    if (player1.isOnline()) { player1.showTitle(fightTitle); player1.playSound(player1.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 0.8f, 1.2f); }
-                    if (player2.isOnline()) { player2.showTitle(fightTitle); player2.playSound(player2.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 0.8f, 1.2f); }
+                    if (player1.isOnline()) {
+                        player1.showTitle(fightTitle);
+                        player1.playSound(player1.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 0.8f, 1.2f);
+                    }
+                    if (player2.isOnline()) {
+                        player2.showTitle(fightTitle);
+                        player2.playSound(player2.getLocation(), Sound.ENTITY_ENDER_DRAGON_GROWL, 0.8f, 1.2f);
+                    }
                     if (royal) royalManager.broadcastStart(player1, player2);
                     actionBarTask = new DuelActionBarTask(AbstractMatch.this).runTaskTimer(plugin, 0L, 10L);
                     startTimerTask();
@@ -152,12 +187,14 @@ public abstract class AbstractMatch implements Match {
     }
 
     @Override public boolean hasRounds() { return false; }
+
     @Override public int getTimeLimitSeconds() {
         int seconds = hasRounds()
                 ? plugin.getConfig().getInt("settings.round_time_limit_seconds", 600)
                 : plugin.getConfig().getInt("settings.match_time_limit_seconds", 720);
         return Math.max(10, seconds);
     }
+
     @Override public int getRemainingSeconds() {
         if (startTime <= 0) return getTimeLimitSeconds();
         long elapsed = (System.currentTimeMillis() - startTime) / 1000L;
@@ -268,7 +305,8 @@ public abstract class AbstractMatch implements Match {
     protected void prepareFighter(Player player) {
         if (player == null || !player.isOnline()) return;
         player.setGameMode(GameMode.SURVIVAL);
-        player.setHealth(player.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH).getValue());
+        var max = player.getAttribute(Attribute.MAX_HEALTH);
+        if (max != null) player.setHealth(max.getValue());
         player.setFoodLevel(20);
         player.setSaturation(20f);
         player.setFireTicks(0);
@@ -294,8 +332,6 @@ public abstract class AbstractMatch implements Match {
         }
         cleanupCustomEntities();
 
-        // Delegate full payout/stats logic: restore from main branch end() body is complex;
-        // minimal safe path: refund if no winner, else pay prize pool once.
         long duration = getDurationSeconds();
         UUID loserId = winnerId != null ? (winnerId.equals(player1Id) ? player2Id : player1Id) : null;
         long prize = bet.totalMoneyPrizePool();
@@ -303,10 +339,11 @@ public abstract class AbstractMatch implements Match {
         if (royal && prize > 0) prize += prize / 4;
         if (royal) honor = (int) Math.round(honor * plugin.getConfig().getDouble("royal_duel.honor_multiplier", 1.5));
 
-        if (winnerId != null && prize > 0) economyBridge.giveTo(winnerId, prize);
-        else if (winnerId == null && bet.hasMoney() && reason != MatchEndReason.TIMEOUT || (reason == MatchEndReason.TIMEOUT && !royal)) {
-            // draw refund both (non-royal timeout)
-            if (bet.hasMoney()) {
+        if (winnerId != null && prize > 0) {
+            economyBridge.giveTo(winnerId, prize);
+        } else if (winnerId == null && bet.hasMoney()) {
+            boolean burnRoyal = royal && reason == MatchEndReason.TIMEOUT;
+            if (!burnRoyal) {
                 economyBridge.giveTo(player1Id, bet.moneyBet());
                 economyBridge.giveTo(player2Id, bet.moneyBet());
             }
@@ -315,27 +352,43 @@ public abstract class AbstractMatch implements Match {
 
         Player winner = winnerId != null ? Bukkit.getPlayer(winnerId) : null;
         Player loser = loserId != null ? Bukkit.getPlayer(loserId) : null;
+        final int honorFinal = honor;
+        final long prizeFinal = prize;
         if (winner != null && winner.isOnline()) {
-            final int h = honor; final long pr = prize;
             playerStorage.getOrCreatePlayer(winnerId, winner.getName()).thenAccept(data -> {
-                playerStorage.savePlayer(data.withWin(h, pr, royal));
-                leaderboardsBridge.syncPlayerData(data.withWin(h, pr, royal));
+                var updated = data.withWin(honorFinal, prizeFinal, royal);
+                playerStorage.savePlayer(updated);
+                leaderboardsBridge.syncPlayerData(updated);
                 leaderboardsBridge.recordDuelWin(winnerId, royal);
             });
             winner.sendMessage(MiniMessage.miniMessage().deserialize("<green>Победа!</green>"));
         }
         if (loser != null && loser.isOnline()) {
-            final int h = honor;
             playerStorage.getOrCreatePlayer(loserId, loser.getName()).thenAccept(data -> {
-                playerStorage.savePlayer(data.withLoss(h, bet.moneyBet()));
-                leaderboardsBridge.syncPlayerData(data.withLoss(h, bet.moneyBet()));
+                var updated = data.withLoss(honorFinal, bet.moneyBet());
+                playerStorage.savePlayer(updated);
+                leaderboardsBridge.syncPlayerData(updated);
             });
             loser.sendMessage(MiniMessage.miniMessage().deserialize("<red>Поражение.</red>"));
         }
 
-        result = new MatchResult(matchId, player1Id, player2Id, winnerId, type, royal, bet,
-                damageDealt.getOrDefault(player1Id, 0.0), damageDealt.getOrDefault(player2Id, 0.0),
-                duration, reason);
+        result = new MatchResult(
+                matchId,
+                player1Id,
+                player2Id,
+                winnerId,
+                loserId,
+                reason,
+                duration,
+                damageDealt.getOrDefault(player1Id, 0.0),
+                damageDealt.getOrDefault(player2Id, 0.0),
+                points.getOrDefault(player1Id, 0),
+                points.getOrDefault(player2Id, 0),
+                winnerId != null ? prizeFinal : 0L,
+                winnerId != null ? honorFinal : 0,
+                winnerId != null ? honorFinal : 0,
+                royal
+        );
 
         Runnable cleanup = () -> {
             restoreFighter(player1, snapshots.get(player1Id));
