@@ -25,7 +25,6 @@ public final class LoveDuels extends JavaPlugin {
 
         this.duelManager = new DuelManager(this);
 
-        // Configure post-duel summary GUI callback
         duelManager.getMatchManager().setPostDuelSummaryOpener(res -> {
             Bukkit.getScheduler().runTask(this, () -> {
                 Player p1 = Bukkit.getPlayer(res.player1Id());
@@ -39,13 +38,17 @@ public final class LoveDuels extends JavaPlugin {
             });
         });
 
-        // Register event listeners
         var pm = getServer().getPluginManager();
         PayoutListener payoutListener = new PayoutListener(this, duelManager.getEconomyBridge());
         pm.registerEvents(payoutListener, this);
         payoutListener.deliverToOnlinePlayers();
         pm.registerEvents(new GuiListener(), this);
-        pm.registerEvents(new MatchProtectionListener(this, duelManager.getMatchManager(), duelManager.getSpectatorManager()), this);
+        pm.registerEvents(new MatchProtectionListener(
+                this,
+                duelManager.getMatchManager(),
+                duelManager.getSpectatorManager(),
+                duelManager.getMatchManager().getPostMatchGuard()
+        ), this);
         pm.registerEvents(new SpearDuelListener(
                 duelManager.getMatchManager(),
                 duelManager.getMatchManager().getSpearItem(),
@@ -54,7 +57,6 @@ public final class LoveDuels extends JavaPlugin {
         ), this);
         pm.registerEvents(duelManager.getSpectatorManager().getZoneGuard(), this);
 
-        // Register commands
         var duelCmd = getCommand("duel");
         if (duelCmd != null) {
             DuelCommand cmd = new DuelCommand(duelManager);
@@ -69,7 +71,6 @@ public final class LoveDuels extends JavaPlugin {
             adminCmd.setTabCompleter(cmd);
         }
 
-        // Register PlaceholderAPI expansion if hooked
         if (getServer().getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             new LoveDuelsPlaceholderExpansion(this, duelManager.getPlayerStorage(), duelManager.getMatchManager()).register();
             getLogger().info("PlaceholderAPI expansion successfully hooked!");
@@ -81,7 +82,6 @@ public final class LoveDuels extends JavaPlugin {
     @Override
     public void onDisable() {
         if (duelManager != null) {
-            // Safely finish active matches to restore player items
             for (Match match : duelManager.getMatchManager().getActiveMatches()) {
                 match.end(null, MatchEndReason.ADMIN_FORCE);
             }

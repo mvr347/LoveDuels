@@ -5,7 +5,6 @@ import dev.lovelace.loveduels.match.Match;
 import dev.lovelace.loveduels.match.MatchManager;
 import dev.lovelace.loveduels.match.MatchState;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Material;
 import org.bukkit.entity.Horse;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Trident;
@@ -15,14 +14,13 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityDismountEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
-import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.event.entity.EntityDismountEvent;
 
 public final class SpearDuelListener implements Listener {
 
@@ -67,7 +65,7 @@ public final class SpearDuelListener implements Listener {
             if (!chargeHandler.isCharging(player)) {
                 chargeHandler.startCharge(player);
                 player.sendActionBar(MiniMessage.miniMessage().deserialize(
-                        "<gold>🗡 Зарядка копья... <gray>(Нажмите ещё раз или ударьте для выпада)"
+                        "<gold>Зарядка копья... <gray>(ещё раз или удар — выпад)"
                 ));
             } else {
                 chargeHandler.stopCharge(player, match);
@@ -91,12 +89,28 @@ public final class SpearDuelListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onDismount(EntityDismountEvent event) {
-        if (event.getEntity() instanceof Player player) {
-            var matchOpt = matchManager.getMatch(player.getUniqueId());
-            if (matchOpt.isPresent() && matchOpt.get() instanceof HorseSpearMatch match) {
+        if (!(event.getEntity() instanceof Player player)) return;
+        var matchOpt = matchManager.getMatch(player.getUniqueId());
+        if (matchOpt.isEmpty() || !(matchOpt.get() instanceof HorseSpearMatch match)) return;
+        if (match.isEnded()) return;
+
+        boolean block = true;
+        var plugin = org.bukkit.Bukkit.getPluginManager().getPlugin("LoveDuels");
+        if (plugin != null) {
+            block = plugin.getConfig().getBoolean("horse_spear.block_dismount_while_horse_alive", true);
+        }
+        if (!block) return;
+
+        // Слезть нельзя, пока конь жив
+        if (event.getDismounted() instanceof Horse horse) {
+            if (horse.isValid() && !horse.isDead()) {
                 event.setCancelled(true);
                 match.handleDismount(player);
             }
+            // конь умер — слезание разрешено
+        } else {
+            event.setCancelled(true);
+            match.handleDismount(player);
         }
     }
 
@@ -143,7 +157,6 @@ public final class SpearDuelListener implements Listener {
         Player player = event.getPlayer();
         var matchOpt = matchManager.getMatch(player.getUniqueId());
         if (matchOpt.isPresent() && matchOpt.get() instanceof HorseSpearMatch) {
-            // Keep spear held
             if (event.getNewSlot() != 0) {
                 event.setCancelled(true);
             }
