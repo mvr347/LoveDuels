@@ -10,33 +10,39 @@ import org.bukkit.Material;
 public enum DuelType {
     OWN_INVENTORY(
             "own_inventory",
-            "<gold>⚔ Свои вещи",
+            "<gold>Свои вещи</gold>",
             Material.IRON_SWORD,
             "Сражение в собственной экипировке с экраном готовности."
     ),
     KIT(
             "kit",
-            "<aqua>🛡 Киты",
+            "<aqua>Киты</aqua>",
             Material.CHEST,
             "Битва с равными заготовленными наборами брони и оружия."
     ),
     SWORD(
             "sword",
-            "<yellow>🗡 Мечи",
+            "<yellow>Мечи</yellow>",
             Material.DIAMOND_SWORD,
             "Классическая дуэль на мечах без сторонних предметов."
     ),
     BOW(
             "bow",
-            "<green>🏹 Луки",
+            "<green>Луки</green>",
             Material.BOW,
             "Стрелковая дуэль на луках со стрелами."
     ),
     HORSE_SPEAR(
             "horse_spear",
-            "<gold>🐎 Копьё и Конь",
+            "<gold>Копьё и конь</gold>",
             Material.TRIDENT,
             "Турнирный рыцарский поединок верхом с зарядом копья и очками."
+    ),
+    FISTS(
+            "fists",
+            "<red>Кулачные бои</red>",
+            Material.LEATHER,
+            "Голые руки, без оружия и брони. Чистая техника."
     );
 
     private final String id;
@@ -76,7 +82,12 @@ public enum DuelType {
     }
 
     public boolean isMiniGame() {
-        return this == SWORD || this == BOW || this == HORSE_SPEAR;
+        return this == SWORD || this == BOW || this == HORSE_SPEAR || this == FISTS;
+    }
+
+    /** Типы, по которым ведётся отдельный ранг. */
+    public boolean hasSeparateRank() {
+        return this == SWORD || this == BOW || this == HORSE_SPEAR || this == FISTS;
     }
 
     public static DuelType fromString(String name) {

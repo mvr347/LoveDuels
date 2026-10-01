@@ -13,6 +13,7 @@ public record DuelRequest(
         String kitId,
         DuelBet bet,
         boolean royal,
+        boolean training,
         long createdAt,
         long expiresAt
 ) {
@@ -21,6 +22,9 @@ public record DuelRequest(
         Objects.requireNonNull(targetId, "targetId");
         Objects.requireNonNull(type, "type");
         Objects.requireNonNull(bet, "bet");
+        if (training && royal) {
+            throw new IllegalArgumentException("training and royal cannot both be true");
+        }
     }
 
     public static DuelRequest of(
@@ -30,13 +34,31 @@ public record DuelRequest(
             String kitId,
             DuelBet bet,
             boolean royal,
+            boolean training,
             long timeoutMillis
     ) {
         long now = System.currentTimeMillis();
-        return new DuelRequest(senderId, targetId, type, kitId, bet, royal, now, now + timeoutMillis);
+        return new DuelRequest(senderId, targetId, type, kitId, bet, royal, training, now, now + timeoutMillis);
+    }
+
+    /** Backward-compatible factory (non-training). */
+    public static DuelRequest of(
+            UUID senderId,
+            UUID targetId,
+            DuelType type,
+            String kitId,
+            DuelBet bet,
+            boolean royal,
+            long timeoutMillis
+    ) {
+        return of(senderId, targetId, type, kitId, bet, royal, false, timeoutMillis);
     }
 
     public boolean isExpired() {
         return System.currentTimeMillis() > expiresAt;
+    }
+
+    public boolean isTraining() {
+        return training;
     }
 }

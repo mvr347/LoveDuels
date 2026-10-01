@@ -1,9 +1,9 @@
 package dev.lovelace.loveduels.command;
 
+import dev.lovelace.loveduels.core.ChallengeMode;
 import dev.lovelace.loveduels.core.DuelManager;
 import dev.lovelace.loveduels.core.DuelRequest;
 import dev.lovelace.loveduels.gui.DuelSetupGUI;
-import dev.lovelace.loveduels.gui.LeaderboardGUI;
 import dev.lovelace.loveduels.gui.MainMenuGUI;
 import dev.lovelace.loveduels.gui.ReadinessGUI;
 import dev.lovelace.loveduels.gui.SpectateListGUI;
@@ -39,7 +39,7 @@ public final class DuelCommand implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage(MiniMessage.miniMessage().deserialize("<red>❌ Команда доступна только для игроков."));
+            sender.sendMessage(MiniMessage.miniMessage().deserialize("<red>Команда только для игроков."));
             return true;
         }
 
@@ -55,20 +55,25 @@ public final class DuelCommand implements CommandExecutor, TabCompleter {
             case "deny", "отклонить", "decline" -> handleDeny(player, args);
             case "leave", "выйти", "покинуть" -> handleLeave(player);
             case "spectate", "наблюдать", "spec" -> handleSpectate(player, args);
-            case "top", "топ", "leaderboard" -> new LeaderboardGUI(player, duelManager).open();
+            case "top", "топ", "leaderboard" -> {
+                // Зал славы убран из главного меню; ранги по видам — в разработке
+                player.sendMessage(MiniMessage.miniMessage().deserialize(
+                        "<gray>Отдельные ранги по видам дуэлей (мечи, луки, кони, кулаки) — в разработке." +
+                        " Статистика: <yellow>/duel stats</yellow>"
+                ));
+            }
             case "stats", "статистика" -> handleStats(player, args);
             case "rematch", "реванш", "revenge", "месть" -> handleRematch(player);
             case "forfeit", "surrender", "сдаться" -> handleForfeit(player);
             default -> {
-                // Check if args[0] is an online player name for fast challenge
                 Player target = Bukkit.getPlayerExact(args[0]);
                 if (target != null && !target.equals(player)) {
-                    new DuelSetupGUI(player, target, duelManager, false).open();
-                } else if (target != null && target.equals(player)) {
-                    player.sendMessage(MiniMessage.miniMessage().deserialize("<red>❌ Вы не можете вызвать на дуэль самого себя!"));
+                    new DuelSetupGUI(player, target, duelManager, ChallengeMode.NORMAL).open();
+                } else if (target != null) {
+                    player.sendMessage(MiniMessage.miniMessage().deserialize("<red>Нельзя вызвать самого себя."));
                 } else {
                     player.sendMessage(MiniMessage.miniMessage().deserialize(
-                            "<red>❌ Игрок <gold>" + args[0] + "</gold> не найден или офлайн. Введите <yellow>/duel help</yellow> для списка команд."
+                            "<red>Игрок <gold>" + args[0] + "</gold> не найден. <yellow>/duel help</yellow>"
                     ));
                 }
             }
@@ -79,76 +84,70 @@ public final class DuelCommand implements CommandExecutor, TabCompleter {
 
     private void sendHelp(Player player) {
         MiniMessage mm = MiniMessage.miniMessage();
-        Component header = mm.deserialize("\n<gradient:#FFD700:#FFA500><b>⚔ LoveDuels — Справка по командам поединков</b></gradient>");
-        Component divider = mm.deserialize("<dark_gray>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</dark_gray>");
+        Component header = mm.deserialize("\n<gradient:#C9A227:#E8D48B>LoveDuels — команды</gradient>");
+        Component divider = mm.deserialize("<dark_gray>━━━━━━━━━━━━━━━━━━━━━━━━━━━━</dark_gray>");
 
         Component help = Component.empty()
                 .append(header).append(Component.newline())
                 .append(divider).append(Component.newline())
-                .append(formatCmd("/duel", "Открыть главное интерактивное меню дуэлей и турниров")).append(Component.newline())
-                .append(formatCmd("/duel <игрок>", "Настроить и бросить вызов конкретному игроку")).append(Component.newline())
-                .append(formatCmd("/duel accept", "Принять входящий вызов на поединок (/принять)")).append(Component.newline())
-                .append(formatCmd("/duel deny", "Отклонить входящий вызов на дуэль (/отклонить)")).append(Component.newline())
-                .append(formatCmd("/duel spectate", "Открыть список активных дуэлей для наблюдения (/наблюдать)")).append(Component.newline())
-                .append(formatCmd("/duel top", "Открыть Зал Славы — рейтинг лучших дуэлянтов (/топ)")).append(Component.newline())
-                .append(formatCmd("/duel stats [игрок]", "Посмотреть статистику побед, поражений и Чести (/статистика)")).append(Component.newline())
-                .append(formatCmd("/duel rematch", "Предложить мгновенный реванш после поединка (/реванш)")).append(Component.newline())
-                .append(formatCmd("/duel surrender", "Сдаться сопернику во время боя или перемирия (/сдаться)")).append(Component.newline())
-                .append(formatCmd("/duel leave", "Покинуть трибуны зрителей (/выйти)")).append(Component.newline())
-                .append(divider).append(Component.newline())
-                .append(mm.deserialize("<gray><i>💡 Нажмите на любую команду в чате для автозаполнения</i></gray>\n"));
+                .append(formatCmd("/duel", "Главное меню")).append(Component.newline())
+                .append(formatCmd("/duel <игрок>", "Вызов (обычная дуэль)")).append(Component.newline())
+                .append(formatCmd("/duel accept", "Принять вызов")).append(Component.newline())
+                .append(formatCmd("/duel deny", "Отклонить вызов")).append(Component.newline())
+                .append(formatCmd("/duel spectate", "Наблюдение")).append(Component.newline())
+                .append(formatCmd("/duel stats [игрок]", "Статистика")).append(Component.newline())
+                .append(formatCmd("/duel rematch", "Реванш")).append(Component.newline())
+                .append(formatCmd("/duel surrender", "Сдаться")).append(Component.newline())
+                .append(formatCmd("/duel leave", "Выйти с трибун")).append(Component.newline())
+                .append(divider).append(Component.newline());
 
         player.sendMessage(help);
     }
 
     private Component formatCmd(String cmd, String description) {
         MiniMessage mm = MiniMessage.miniMessage();
-        return mm.deserialize("<yellow><b>" + cmd + "</b></yellow> <dark_gray>—</dark_gray> <gray>" + description + "</gray>")
+        return mm.deserialize("<yellow>" + cmd + "</yellow> <dark_gray>—</dark_gray> <gray>" + description + "</gray>")
                 .clickEvent(ClickEvent.suggestCommand(cmd + " "))
-                .hoverEvent(HoverEvent.showText(mm.deserialize("<yellow>Нажмите, чтобы ввести: <white>" + cmd + "</white></yellow>")));
+                .hoverEvent(HoverEvent.showText(mm.deserialize("<yellow>" + cmd + "</yellow>")));
     }
 
     private void handleAccept(Player player, String[] args) {
         Optional<DuelRequest> optReq = duelManager.getMatchManager().getPendingRequest(player.getUniqueId());
         if (optReq.isEmpty()) {
-            player.sendMessage(MiniMessage.miniMessage().deserialize("<red>❌ У вас нет активных входящих вызовов на дуэль."));
+            player.sendMessage(MiniMessage.miniMessage().deserialize("<red>Нет входящих вызовов."));
             return;
         }
 
         DuelRequest req = optReq.get();
         Player challenger = Bukkit.getPlayer(req.senderId());
         if (challenger == null || !challenger.isOnline()) {
-            player.sendMessage(MiniMessage.miniMessage().deserialize("<red>❌ Вызвавший вас игрок покинул сервер."));
+            player.sendMessage(MiniMessage.miniMessage().deserialize("<red>Вызвавший игрок офлайн."));
             duelManager.getMatchManager().removePendingRequest(player.getUniqueId());
             return;
         }
 
         if (duelManager.getMatchManager().isInMatch(challenger.getUniqueId()) || duelManager.getMatchManager().isInMatch(player.getUniqueId())) {
-            player.sendMessage(MiniMessage.miniMessage().deserialize("<red>❌ Один из бойцов уже находится в поединке!"));
+            player.sendMessage(MiniMessage.miniMessage().deserialize("<red>Один из бойцов уже в поединке."));
             return;
         }
 
-        // Verify balances for betting
-        if (req.bet().hasMoney()) {
+        if (req.bet().hasMoney() && !req.isTraining()) {
             long money = req.bet().moneyBet();
             if (!duelManager.getEconomyBridge().has(player, money)) {
-                player.sendMessage(MiniMessage.miniMessage().deserialize("<red>❌ У вас недостаточно монет для ставки (<gold>" + money + " монет</gold>)!"));
+                player.sendMessage(MiniMessage.miniMessage().deserialize("<red>Недостаточно средств для ставки."));
                 return;
             }
             if (!duelManager.getEconomyBridge().has(challenger, money)) {
-                player.sendMessage(MiniMessage.miniMessage().deserialize("<red>❌ У соперника недостаточно монет для этой ставки!"));
+                player.sendMessage(MiniMessage.miniMessage().deserialize("<red>У соперника недостаточно средств."));
                 return;
             }
-
-            // Charge both players. has() was true a moment ago, but charge() is the authority: if the
-            // second one fails, give the first one's stake back instead of starting an unfunded duel.
             if (!duelManager.getEconomyBridge().charge(player, money)) {
-                player.sendMessage(MiniMessage.miniMessage().deserialize("<red>❌ Не удалось списать ставку (<gold>" + money + " монет</gold>)!"));
+                player.sendMessage(MiniMessage.miniMessage().deserialize("<red>Не удалось списать ставку."));
                 return;
             }
             if (!duelManager.getEconomyBridge().charge(challenger, money)) {
                 duelManager.getEconomyBridge().give(player, money);
-                player.sendMessage(MiniMessage.miniMessage().deserialize("<red>❌ У соперника не удалось списать ставку. Ваша ставка возвращена."));
+                player.sendMessage(MiniMessage.miniMessage().deserialize("<red>У соперника не списалась ставка. Ваша возвращена."));
                 return;
             }
             duelManager.getEconomyBridge().holdEscrow(challenger.getUniqueId(), player.getUniqueId(), money);
@@ -156,27 +155,18 @@ public final class DuelCommand implements CommandExecutor, TabCompleter {
 
         duelManager.getMatchManager().removePendingRequest(player.getUniqueId());
 
-        // If OWN_INVENTORY: open readiness GUI for both players
         if (req.type().requiresReadinessSession()) {
             ReadinessSession session = new ReadinessSession(
                     challenger.getUniqueId(),
                     player.getUniqueId(),
-                    () -> {
-                        // On both ready: close inventories on next tick and start match
-                        Bukkit.getScheduler().runTask(duelManager.getPlugin(), () -> {
-                            if (challenger.isOnline()) {
-                                challenger.closeInventory();
-                            }
-                            if (player.isOnline()) {
-                                player.closeInventory();
-                            }
-                            duelManager.getMatchManager().createAndStartMatch(
-                                    challenger, player, req.type(), req.kitId(), req.bet(), req.royal()
-                            );
-                        });
-                    },
+                    () -> Bukkit.getScheduler().runTask(duelManager.getPlugin(), () -> {
+                        if (challenger.isOnline()) challenger.closeInventory();
+                        if (player.isOnline()) player.closeInventory();
+                        duelManager.getMatchManager().createAndStartMatch(
+                                challenger, player, req.type(), req.kitId(), req.bet(), req.royal()
+                        );
+                    }),
                     (cancelledBy) -> {
-                        // Close inventories on next tick to avoid recursive closeContainer loop
                         Bukkit.getScheduler().runTask(duelManager.getPlugin(), () -> {
                             if (challenger.isOnline() && challenger.getOpenInventory().getTopInventory().getHolder() instanceof ReadinessGUI) {
                                 challenger.closeInventory();
@@ -185,32 +175,23 @@ public final class DuelCommand implements CommandExecutor, TabCompleter {
                                 player.closeInventory();
                             }
                         });
-                        // Refund money
-                        if (req.bet().hasMoney()) {
+                        if (req.bet().hasMoney() && !req.isTraining()) {
                             duelManager.getEconomyBridge().give(challenger, req.bet().moneyBet());
                             duelManager.getEconomyBridge().give(player, req.bet().moneyBet());
                             duelManager.getEconomyBridge().releaseEscrow(challenger.getUniqueId());
                         }
-                        // cancelledBy is null when the session expired without both fighters confirming
                         Player canceller = cancelledBy != null ? Bukkit.getPlayer(cancelledBy) : null;
                         String cName = (canceller != null) ? canceller.getName()
-                                : (cancelledBy == null ? "время ожидания подтверждения истекло" : "Один из бойцов");
-                        challenger.sendMessage(MiniMessage.miniMessage().deserialize("<red>✖ Дуэль была отменена (" + cName + ")."));
-                        player.sendMessage(MiniMessage.miniMessage().deserialize("<red>✖ Дуэль была отменена (" + cName + ")."));
+                                : (cancelledBy == null ? "время истекло" : "Один из бойцов");
+                        challenger.sendMessage(MiniMessage.miniMessage().deserialize("<red>Дуэль отменена (" + cName + ")."));
+                        player.sendMessage(MiniMessage.miniMessage().deserialize("<red>Дуэль отменена (" + cName + ")."));
                     }
             );
 
             session.setStateChangeListener(s -> {
-                if (s.isTerminated()) {
-                    return;
-                }
-                // Refresh items without reopening inventory to prevent close events
-                if (challenger.getOpenInventory().getTopInventory().getHolder() instanceof ReadinessGUI r1) {
-                    r1.refresh();
-                }
-                if (player.getOpenInventory().getTopInventory().getHolder() instanceof ReadinessGUI r2) {
-                    r2.refresh();
-                }
+                if (s.isTerminated()) return;
+                if (challenger.getOpenInventory().getTopInventory().getHolder() instanceof ReadinessGUI r1) r1.refresh();
+                if (player.getOpenInventory().getTopInventory().getHolder() instanceof ReadinessGUI r2) r2.refresh();
             });
 
             new ReadinessGUI(challenger, session).open();
@@ -218,7 +199,6 @@ public final class DuelCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        // Other modes: start match immediately
         duelManager.getMatchManager().createAndStartMatch(
                 challenger, player, req.type(), req.kitId(), req.bet(), req.royal()
         );
@@ -227,21 +207,18 @@ public final class DuelCommand implements CommandExecutor, TabCompleter {
     private void handleDeny(Player player, String[] args) {
         Optional<DuelRequest> optReq = duelManager.getMatchManager().getPendingRequest(player.getUniqueId());
         if (optReq.isEmpty()) {
-            player.sendMessage(MiniMessage.miniMessage().deserialize("<red>❌ У вас нет активных входящих вызовов."));
+            player.sendMessage(MiniMessage.miniMessage().deserialize("<red>Нет входящих вызовов."));
             return;
         }
-
         DuelRequest req = optReq.get();
         duelManager.getMatchManager().removePendingRequest(player.getUniqueId());
-
         Player challenger = Bukkit.getPlayer(req.senderId());
         if (challenger != null && challenger.isOnline()) {
             challenger.sendMessage(MiniMessage.miniMessage().deserialize(
-                    "<red>✖ Игрок <gold>" + player.getName() + "</gold> отклонил ваш вызов на дуэль."
+                    "<red>Игрок <gold>" + player.getName() + "</gold> отклонил вызов."
             ));
         }
-
-        player.sendMessage(MiniMessage.miniMessage().deserialize("<gray>✖ Вы отклонили вызов на дуэль."));
+        player.sendMessage(MiniMessage.miniMessage().deserialize("<gray>Вызов отклонён."));
     }
 
     private void handleLeave(Player player) {
@@ -249,15 +226,13 @@ public final class DuelCommand implements CommandExecutor, TabCompleter {
             duelManager.getSpectatorManager().removeSpectator(player);
             return;
         }
-
         if (duelManager.getMatchManager().isInMatch(player.getUniqueId())) {
             player.sendMessage(MiniMessage.miniMessage().deserialize(
-                    "<red>❌ Вы находитесь в бою! Чтобы сдаться, используйте: <yellow>/duel surrender</yellow>."
+                    "<red>Вы в бою. Сдаться: <yellow>/duel surrender</yellow>."
             ));
             return;
         }
-
-        player.sendMessage(MiniMessage.miniMessage().deserialize("<gray>❌ Вы не находитесь в дуэли или среди зрителей."));
+        player.sendMessage(MiniMessage.miniMessage().deserialize("<gray>Вы не в дуэли и не среди зрителей."));
     }
 
     private void handleSpectate(Player player, String[] args) {
@@ -270,7 +245,7 @@ public final class DuelCommand implements CommandExecutor, TabCompleter {
                     return;
                 }
             }
-            player.sendMessage(MiniMessage.miniMessage().deserialize("<red>❌ Игрок не найден или не участвует в бою."));
+            player.sendMessage(MiniMessage.miniMessage().deserialize("<red>Игрок не найден или не в бою."));
             return;
         }
         new SpectateListGUI(player, duelManager).open();
@@ -279,20 +254,20 @@ public final class DuelCommand implements CommandExecutor, TabCompleter {
     private void handleStats(Player player, String[] args) {
         Player target = (args.length > 1) ? Bukkit.getPlayerExact(args[1]) : player;
         if (target == null) {
-            player.sendMessage(MiniMessage.miniMessage().deserialize("<red>❌ Игрок не найден или офлайн."));
+            player.sendMessage(MiniMessage.miniMessage().deserialize("<red>Игрок не найден."));
             return;
         }
 
         duelManager.getPlayerStorage().getOrCreatePlayer(target.getUniqueId(), target.getName()).thenAccept(data -> {
             player.sendMessage(MiniMessage.miniMessage().deserialize(
-                    "\n<gradient:#FFD700:#FFA500><b>⚔ Боевой профиль: " + data.name() + "</b></gradient>\n" +
-                    "<dark_gray>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</dark_gray>\n" +
-                    "<gray>▪ Рейтинг Чести: <gold><b>" + data.honor() + "</b></gold>\n" +
-                    "<gray>▪ Побед: <green><b>" + data.wins() + "</b></green> <dark_gray>|</dark_gray> Поражений: <red><b>" + data.losses() + "</b></red>\n" +
-                    "<gray>▪ Процент побед (WR): <yellow><b>" + String.format("%.1f%%", data.winRate()) + "</b></yellow>\n" +
-                    "<gray>▪ Текущая серия: <white><b>" + data.currentStreak() + "</b></white> <dark_gray>(Лучшая: " + data.bestStreak() + ")</dark_gray>\n" +
-                    "<gray>▪ Королевских триумфов: <gold>👑 <b>" + data.royalWins() + "</b></gold>\n" +
-                    "<dark_gray>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</dark_gray>\n"
+                    "\n<gradient:#C9A227:#E8D48B>Профиль: " + data.name() + "</gradient>\n" +
+                    "<dark_gray>━━━━━━━━━━━━━━━━━━━━</dark_gray>\n" +
+                    "<gray>Честь: <gold>" + data.honor() + "</gold>\n" +
+                    "<gray>Побед: <green>" + data.wins() + "</green> · Поражений: <red>" + data.losses() + "</red>\n" +
+                    "<gray>WR: <yellow>" + String.format("%.1f%%", data.winRate()) + "</yellow>\n" +
+                    "<gray>Серия: <white>" + data.currentStreak() + "</white> (лучшая " + data.bestStreak() + ")\n" +
+                    "<gray>Королевских побед: <gold>" + data.royalWins() + "</gold>\n" +
+                    "<dark_gray>━━━━━━━━━━━━━━━━━━━━</dark_gray>\n"
             ));
         });
     }
@@ -300,54 +275,47 @@ public final class DuelCommand implements CommandExecutor, TabCompleter {
     private void handleRematch(Player player) {
         Optional<MatchResult> optRes = duelManager.getMatchManager().getLastResult(player.getUniqueId());
         if (optRes.isEmpty()) {
-            player.sendMessage(MiniMessage.miniMessage().deserialize("<red>❌ У вас нет недавних завершённых дуэлей для предложения реванша."));
+            player.sendMessage(MiniMessage.miniMessage().deserialize("<red>Нет недавних дуэлей для реванша."));
             return;
         }
-
         MatchResult res = optRes.get();
         UUID oppId = res.getOpponentId(player.getUniqueId());
         Player opp = (oppId != null) ? Bukkit.getPlayer(oppId) : null;
-
         if (opp == null || !opp.isOnline()) {
-            player.sendMessage(MiniMessage.miniMessage().deserialize("<red>❌ Ваш бывший соперник уже вышел с сервера."));
+            player.sendMessage(MiniMessage.miniMessage().deserialize("<red>Соперник офлайн."));
             return;
         }
-
-        new DuelSetupGUI(player, opp, duelManager, res.royal()).open();
+        ChallengeMode mode = res.royal() ? ChallengeMode.ROYAL : ChallengeMode.NORMAL;
+        new DuelSetupGUI(player, opp, duelManager, mode).open();
     }
 
     private void handleForfeit(Player player) {
         Optional<Match> matchOpt = duelManager.getMatchManager().getMatch(player.getUniqueId());
         if (matchOpt.isEmpty()) {
-            player.sendMessage(MiniMessage.miniMessage().deserialize("<red>❌ Вы не участвуете в дуэли."));
+            player.sendMessage(MiniMessage.miniMessage().deserialize("<red>Вы не в дуэли."));
             return;
         }
-
         Match match = matchOpt.get();
-        if (match.isEnded()) {
-            player.sendMessage(MiniMessage.miniMessage().deserialize("<red>❌ Бой уже завершён."));
-            return;
-        }
-
-        match.surrender(player);
+        match.forfeit(player);
     }
 
     @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
+        List<String> out = new ArrayList<>();
         if (args.length == 1) {
-            List<String> subs = List.of(
-                    "help", "accept", "deny", "leave", "spectate", "top", "stats", "rematch", "forfeit", "surrender",
-                    "помощь", "принять", "отклонить", "выйти", "наблюдать", "топ", "статистика", "реванш", "сдаться", "месть"
-            );
-            List<String> res = new ArrayList<>();
-            for (String s : subs) {
-                if (s.startsWith(args[0].toLowerCase())) res.add(s);
+            String p = args[0].toLowerCase();
+            for (String s : List.of("accept", "deny", "leave", "spectate", "stats", "rematch", "surrender", "help")) {
+                if (s.startsWith(p)) out.add(s);
             }
-            for (Player p : Bukkit.getOnlinePlayers()) {
-                if (p.getName().toLowerCase().startsWith(args[0].toLowerCase())) res.add(p.getName());
+            for (Player pl : Bukkit.getOnlinePlayers()) {
+                if (pl.getName().toLowerCase().startsWith(p)) out.add(pl.getName());
             }
-            return res;
+        } else if (args.length == 2 && (args[0].equalsIgnoreCase("stats") || args[0].equalsIgnoreCase("spectate"))) {
+            String p = args[1].toLowerCase();
+            for (Player pl : Bukkit.getOnlinePlayers()) {
+                if (pl.getName().toLowerCase().startsWith(p)) out.add(pl.getName());
+            }
         }
-        return List.of();
+        return out;
     }
 }

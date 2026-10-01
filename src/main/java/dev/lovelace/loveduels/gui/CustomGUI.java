@@ -25,7 +25,7 @@ import java.util.function.Consumer;
  * - Glass ONLY in Header (row 0, and row 1 if size >= 45) and Footer (last 9 slots)
  * - Work area: NO glass, side columns empty (AIR)
  * - Slot 0: player head
- * - Footer: Slot size-2 is Back (or glass), Slot size-1 is Close (Barrier)
+ * - Footer: Slot size-2 is Back (or glass), Slot size-1 is Close
  */
 public abstract class CustomGUI implements InventoryHolder {
 
@@ -71,44 +71,32 @@ public abstract class CustomGUI implements InventoryHolder {
         build();
     }
 
-    /**
-     * Applies standard gui-gen-5 borders:
-     * - Header: row 0 (and row 1 if size >= 45) filled with GRAY_STAINED_GLASS_PANE
-     * - Footer: last 9 slots filled with GRAY_STAINED_GLASS_PANE
-     * - Slot size - 1: Close button
-     */
     protected void applyStandardBorders(boolean hasBackButton, Runnable onBack) {
         ItemStack glass = createGlass();
 
-        // Header Row 0: slots 0 to 8
         for (int i = 0; i <= 8; i++) {
             setItem(i, glass, null);
         }
 
-        // Header Row 1 (for 45 and 54): slots 9 to 17
         if (size >= 45) {
             for (int i = 9; i <= 17; i++) {
                 setItem(i, glass, null);
             }
         }
 
-        // Player Head at Slot 0
         setItem(0, createPlayerHead(player), null);
 
-        // Footer: last 9 slots
         int footerStart = size - 9;
         for (int i = footerStart; i < size; i++) {
             setItem(i, glass, null);
         }
 
-        // Back button (slot size - 2)
         if (hasBackButton) {
             setItem(size - 2, createBackButton(), e -> {
                 if (onBack != null) onBack.run();
             });
         }
 
-        // Close button (slot size - 1)
         setItem(size - 1, createCloseButton(), e -> player.closeInventory());
     }
 
@@ -137,10 +125,10 @@ public abstract class CustomGUI implements InventoryHolder {
         if (meta != null) {
             meta.setOwningPlayer(p);
             meta.displayName(MiniMessage.miniMessage().deserialize(
-                    "<gold><b>" + p.getName() + "</b>"
+                    "<gold>" + p.getName() + "</gold>"
             ).decoration(TextDecoration.ITALIC, false));
             meta.lore(List.of(
-                    MiniMessage.miniMessage().deserialize("<gray>Ваш профиль в системе LoveDuels").decoration(TextDecoration.ITALIC, false)
+                    MiniMessage.miniMessage().deserialize("<gray>Профиль LoveDuels</gray>").decoration(TextDecoration.ITALIC, false)
             ));
             item.setItemMeta(meta);
         }
@@ -148,11 +136,11 @@ public abstract class CustomGUI implements InventoryHolder {
     }
 
     protected ItemStack createBackButton() {
-        return HeadTextures.head(HeadTextures.BACK, "<yellow><b>← Назад</b>", List.of("<gray>Вернуться в предыдущее меню"));
+        return HeadTextures.head(HeadTextures.BACK, "<yellow>Назад</yellow>", List.of("<gray>Предыдущее меню</gray>"));
     }
 
     protected ItemStack createCloseButton() {
-        return HeadTextures.head(HeadTextures.CLOSE, "<red><b>✖ Закрыть</b>", List.of("<gray>Закрыть данное окно"));
+        return HeadTextures.head(HeadTextures.CLOSE, "<red>Закрыть</red>", List.of("<gray>Закрыть окно</gray>"));
     }
 
     @Override
