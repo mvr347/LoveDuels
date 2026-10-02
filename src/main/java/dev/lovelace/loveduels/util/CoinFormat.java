@@ -13,11 +13,11 @@ import java.util.Optional;
 
 /**
  * Формат монет как в LoveShop BankerGui: глифы %img_&lt;tag&gt;% xN по номиналам LoveEconomy.
+ * Для отображения иконок нужен PlaceholderAPI (и расширение ItemsAdder / font_images).
  */
 public final class CoinFormat {
 
     private static final MiniMessage MM = MiniMessage.miniMessage();
-    /** Fallback ценности «золотой монеты», если экономика недоступна. */
     public static final long FALLBACK_GOLD_UNIT = 50L;
 
     private CoinFormat() {}
@@ -41,7 +41,6 @@ public final class CoinFormat {
         return "<gradient:#E67E22:#D35400>Медная монета</gradient>";
     }
 
-    /** Номинал золотой монеты (value), или FALLBACK_GOLD_UNIT. */
     public static long goldUnit(LoveEconomy eco) {
         if (eco == null) return FALLBACK_GOLD_UNIT;
         Optional<Denomination> gold = eco.denominations().stream()
@@ -117,6 +116,21 @@ public final class CoinFormat {
             lines.add(MM.deserialize(glyph + " <yellow>x0</yellow>"));
         }
         return lines;
+    }
+
+    /** Прогон через PlaceholderAPI для %img_iron_coin% и т.п. */
+    public static String applyPlaceholders(org.bukkit.entity.Player player, String text) {
+        if (text == null || text.isEmpty() || player == null) return text;
+        if (!org.bukkit.Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) return text;
+        try {
+            var pl = org.bukkit.Bukkit.getPluginManager().getPlugin("LoveDuels");
+            if (pl != null && !pl.getConfig().getBoolean("coins.use_placeholderapi", true)) {
+                return text;
+            }
+            return me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, text);
+        } catch (Throwable ignored) {
+            return text;
+        }
     }
 
     public static String formatBalanceLine(LoveEconomyBridge bridge, long amount) {

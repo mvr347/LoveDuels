@@ -15,11 +15,20 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.*;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerGameModeChangeEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerKickEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -31,12 +40,18 @@ public final class MatchProtectionListener implements Listener {
     private final Plugin plugin;
     private final MatchManager matchManager;
     private final SpectatorManager spectatorManager;
-    private final Set<String> allowedCommands = Set.of("duel", "дуэль", "msg", "tell", "w", "r");
+    private final PostMatchGuard postMatchGuard;
+    private final Set<String> allowedCommands;
 
-    public MatchProtectionListener(Plugin plugin, MatchManager matchManager, SpectatorManager spectatorManager) {
+    public MatchProtectionListener(Plugin plugin, MatchManager matchManager, SpectatorManager spectatorManager, PostMatchGuard postMatchGuard) {
         this.plugin = plugin;
         this.matchManager = matchManager;
         this.spectatorManager = spectatorManager;
+        this.postMatchGuard = postMatchGuard;
+        this.allowedCommands = new HashSet<>(plugin.getConfig().getStringList("protection.command_whitelist"));
+        if (this.allowedCommands.isEmpty()) {
+            this.allowedCommands.addAll(Set.of("duel", "дуэль", "msg", "tell", "w", "r"));
+        }
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
@@ -49,7 +64,7 @@ public final class MatchProtectionListener implements Listener {
             if (!allowedCommands.contains(root) && !player.hasPermission("loveduels.admin")) {
                 event.setCancelled(true);
                 player.sendMessage(MiniMessage.miniMessage().deserialize(
-                        "<red>⛔ Во время дуэли запрещено использовать эту команду!"
+                        "<red>Во время дуэли эта команда недоступна."
                 ));
             }
         }
@@ -66,19 +81,17 @@ public final class MatchProtectionListener implements Listener {
         Location to = event.getTo();
         if (to == null) return;
 
-        // Prevent fighters from running outside the fighting arena bounds
         if (!arena.isInCombatBounds(to)) {
             event.setCancelled(true);
             Location from = event.getFrom();
             if (!arena.isInCombatBounds(from)) {
-                // If previous position was somehow outside, teleport back to arena spawn
                 Location spawn = match.getPlayer1Id().equals(player.getUniqueId()) ? arena.getPos1() : arena.getPos2();
                 if (spawn != null) {
                     player.teleportAsync(spawn);
                 }
             }
             player.sendMessage(MiniMessage.miniMessage().deserialize(
-                    "<red>⚠ Не выходите за границы боевой арены!"
+                    "<red>Не выходите за границы боевой арены."
             ));
         }
     }
@@ -86,6 +99,26 @@ public final class MatchProtectionListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onLethalDamage(EntityDamageEvent event) {
         if (!(event.getEntity() instanceof Player victim)) return;
+
+        if (spectatorManager.isSpectating(victim.getUniqueId())) {
+            event.setCancelled(true);
+            return;
+        }
+        if (event instanceof EntityDamageByEntityEvent by && by.getDamager() instanceof Player atk
+                && spectatorManager.isSpectating(atk.getUniqueId())) {
+            event.setCancelled(true);
+            return;
+        }
+
+        if (event instanceof EntityDamageByEntityEvent by2) {
+            Player attacker = null;
+            if (by2.getDamager() instanceof Player p) attacker = p;
+            else if (by2.getDamager() instanceof Projectile proj && proj.getShooter() instanceof Player p) attacker = p;
+            if (attacker != null && postMatchGuard != null && postMatchGuard.blocksDamage(attacker, victim)) {
+                event.setCancelled(true);
+                return;
+            }
+        }
 
         var matchOpt = matchManager.getMatch(victim.getUniqueId());
         if (matchOpt.isEmpty()) return;
@@ -97,7 +130,6 @@ public final class MatchProtectionListener implements Listener {
         }
 
         if (match.getState() == MatchState.PREPARATION || match.getState() == MatchState.ARMISTICE) {
-            // Cannot attack during preparation or armistice
             event.setCancelled(true);
             return;
         }
@@ -111,13 +143,11 @@ public final class MatchProtectionListener implements Listener {
             }
 
             if (attacker != null && !match.containsPlayer(attacker.getUniqueId())) {
-                // Third party interference blocked
                 event.setCancelled(true);
                 return;
             }
         }
 
-        // Intercept lethal blow before vanilla death screen triggers
         if (victim.getHealth() - event.getFinalDamage() <= 0.0) {
             event.setCancelled(true);
 
@@ -150,7 +180,6 @@ public final class MatchProtectionListener implements Listener {
 
             match.end(winnerId, MatchEndReason.KILL);
         } else {
-            // Register normal non-lethal combat damage
             if (event instanceof EntityDamageByEntityEvent byEntity) {
                 Player attacker = null;
                 if (byEntity.getDamager() instanceof Player p) {
@@ -177,7 +206,6 @@ public final class MatchProtectionListener implements Listener {
         event.setDroppedExp(0);
         event.deathMessage(null);
 
-        // Immediate respawn next tick to bypass death screen lock if death happened
         Bukkit.getScheduler().runTask(plugin, () -> {
             if (victim.isOnline()) {
                 victim.spigot().respawn();
@@ -236,13 +264,37 @@ public final class MatchProtectionListener implements Listener {
         if (matchManager.isInMatch(player.getUniqueId())) {
             if (event.getCause() == PlayerTeleportEvent.TeleportCause.COMMAND ||
                 event.getCause() == PlayerTeleportEvent.TeleportCause.ENDER_PEARL) {
-                // Only allow if destination is inside arena
                 var matchOpt = matchManager.getMatch(player.getUniqueId());
                 if (matchOpt.isPresent() && !matchOpt.get().getArena().isInCombatBounds(event.getTo())) {
                     event.setCancelled(true);
-                    player.sendMessage(MiniMessage.miniMessage().deserialize("<red>⚠ Телепортация за пределы арены запрещена!"));
+                    player.sendMessage(MiniMessage.miniMessage().deserialize("<red>Телепортация за пределы арены запрещена."));
                 }
             }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onSpectatorDrop(PlayerDropItemEvent event) {
+        if (!plugin.getConfig().getBoolean("spectators.block_drop", true)) return;
+        if (spectatorManager.isSpectating(event.getPlayer().getUniqueId())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onSpectatorPickup(EntityPickupItemEvent event) {
+        if (!plugin.getConfig().getBoolean("spectators.block_pickup", true)) return;
+        if (event.getEntity() instanceof Player p && spectatorManager.isSpectating(p.getUniqueId())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onSpectatorInteractEntity(PlayerInteractEntityEvent event) {
+        if (!plugin.getConfig().getBoolean("spectators.block_combat", true)
+                && !plugin.getConfig().getBoolean("spectators.block_interact", true)) return;
+        if (spectatorManager.isSpectating(event.getPlayer().getUniqueId())) {
+            event.setCancelled(true);
         }
     }
 }

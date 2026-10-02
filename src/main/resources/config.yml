@@ -6,11 +6,21 @@
 settings:
   default_honor: 1000
   challenge_cooldown_seconds: 600
-  preparation_countdown_seconds: 5
+  # Обратный отсчёт до начала боя (сек)
+  preparation_countdown_seconds: 10
+  preparation_countdown_royal_seconds: 15
+  # Лимит длительности боя (сек)
+  match_time_limit_seconds: 720
+  round_time_limit_seconds: 600
+  # После победы/конца: PvP в зоне арены выключен ещё N сек (пока игроки на арене)
+  post_match_pvp_disable_seconds: 20
 
 royal_duel:
   ticket_cooldown_seconds: 3600
-  min_money_bet: 500
+  # Минимум ставки в «единицах экономики» (fallback, если нет золотого номинала)
+  min_money_bet: 50
+  # Минимум = 1 золотая монета (поиск по itemId/value в LoveEconomy)
+  min_gold_coins: 1
   winner_bonus_percent: 25
   honor_multiplier: 1.5
 
@@ -19,6 +29,11 @@ spectators:
   base_price: 50
   step_price: 25
   allow_spectator_flight_with_permission: true
+  # Зрителям нельзя:
+  block_drop: true
+  block_combat: true
+  block_pickup: true
+  block_interact: true
 
 horse_spear:
   target_points: 5
@@ -31,6 +46,16 @@ horse_spear:
   horse_speed: 0.32
   thrust_cooldown_ms: 800
   dash_cooldown_ms: 4000
+  # Слезть с коня нельзя, пока конь жив
+  block_dismount_while_horse_alive: true
+
+# Глифы монет (ItemsAdder / PlaceholderAPI): %img_iron_coin% и т.п.
+coins:
+  # Нужен PlaceholderAPI (+ расширение, которое рендерит %img_...%)
+  use_placeholderapi: true
+  glyph_prefix: "%img_"
+  glyph_suffix: "%"
+  # Пример: iron_coin → %img_iron_coin%
 
 behavior:
   fleeing_politeness_penalty: 150

@@ -56,6 +56,7 @@ public final class SimpleMatchManager implements MatchManager {
             .build();
 
     private SpectatorManager spectatorManager;
+    private final PostMatchGuard postMatchGuard;
     private Consumer<MatchResult> postDuelSummaryOpener;
 
     public SimpleMatchManager(
@@ -91,6 +92,11 @@ public final class SimpleMatchManager implements MatchManager {
         this.spearItem = new SpearItem(plugin);
         this.chargeHandler = new SpearChargeHandler();
         this.staminaHandler = new HorseStaminaHandler();
+        this.postMatchGuard = new PostMatchGuard(plugin);
+    }
+
+    public PostMatchGuard getPostMatchGuard() {
+        return postMatchGuard;
     }
 
     public void setPostDuelSummaryOpener(Consumer<MatchResult> opener) {
@@ -172,8 +178,8 @@ public final class SimpleMatchManager implements MatchManager {
     public void createAndStartMatch(Player p1, Player p2, DuelType type, String kitId, DuelBet bet, boolean royal) {
         Optional<Arena> arenaOpt = arenaManager.findAvailableArena(type);
         if (arenaOpt.isEmpty()) {
-            p1.sendMessage(MiniMessage.miniMessage().deserialize("<red>❌ Нет свободных настроенных арен для этого режима!"));
-            p2.sendMessage(MiniMessage.miniMessage().deserialize("<red>❌ Нет свободных настроенных арен для этого режима!"));
+            p1.sendMessage(MiniMessage.miniMessage().deserialize("<red>Нет свободных арен для этого режима."));
+            p2.sendMessage(MiniMessage.miniMessage().deserialize("<red>Нет свободных арен для этого режима."));
             if (bet.hasMoney()) {
                 economyBridge.give(p1, bet.moneyBet());
                 economyBridge.give(p2, bet.moneyBet());
@@ -201,8 +207,8 @@ public final class SimpleMatchManager implements MatchManager {
 
         if (royal) {
             if (!royalManager.registerRoyalDuel(match)) {
-                p1.sendMessage(MiniMessage.miniMessage().deserialize("<red>❌ На сервере уже идёт Королевская Дуэль!"));
-                p2.sendMessage(MiniMessage.miniMessage().deserialize("<red>❌ На сервере уже идёт Королевская Дуэль!"));
+                p1.sendMessage(MiniMessage.miniMessage().deserialize("<red>На сервере уже идёт королевская дуэль."));
+                p2.sendMessage(MiniMessage.miniMessage().deserialize("<red>На сервере уже идёт королевская дуэль."));
                 if (bet.hasMoney()) {
                     economyBridge.give(p1, bet.moneyBet());
                     economyBridge.give(p2, bet.moneyBet());
@@ -220,6 +226,7 @@ public final class SimpleMatchManager implements MatchManager {
 
     @Override
     public void endMatch(Match match, UUID winnerId, MatchEndReason reason) {
+        postMatchGuard.lock(match.getPlayer1Id(), match.getPlayer2Id(), match.getArena());
         activeMatches.remove(match.getPlayer1Id());
         activeMatches.remove(match.getPlayer2Id());
 
