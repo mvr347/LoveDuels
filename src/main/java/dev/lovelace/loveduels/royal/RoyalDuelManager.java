@@ -1,5 +1,6 @@
 package dev.lovelace.loveduels.royal;
 
+import dev.lovelace.loveduels.util.CoinFormat;
 import dev.lovelace.loveduels.integration.DiscordWebhookSender;
 import dev.lovelace.loveduels.match.Match;
 import net.kyori.adventure.text.Component;
@@ -68,11 +69,10 @@ public final class RoyalDuelManager {
         String msg = String.format(
                 "<gradient:#FFD700:#FFA500><b>👑 [КОРОЛЕВСКИЙ ГЛАШАТАЙ]</b></gradient>\n" +
                 "<gold>Внимание всем жителям королевства! Рыцарь <white>%s</white> бросил вызов рыцарю <white>%s</white>!\n" +
-                "<yellow>Ставка деньгами: <green>%d монет <dark_gray>| <yellow>Ставка Честью: <gold>%d",
-                challenger.getName(), target.getName(), moneyBet, honorBet
+                "<yellow>Ставка деньгами: </yellow>%s <dark_gray>| <yellow>Ставка Честью: <gold>%d",
+                challenger.getName(), target.getName(), CoinFormat.amount(moneyBet), honorBet
         );
-        Component comp = MiniMessage.miniMessage().deserialize(msg);
-        Bukkit.broadcast(comp);
+        broadcastGlyphs(msg);
 
         for (Player p : Bukkit.getOnlinePlayers()) {
             p.playSound(p.getLocation(), Sound.EVENT_RAID_HORN, 1.0f, 1.0f);
@@ -112,10 +112,10 @@ public final class RoyalDuelManager {
         String msg = String.format(
                 "<gradient:#FFD700:#FFA500><b>👑 [КОРОЛЕВСКИЙ ГЛАШАТАЙ]</b></gradient>\n" +
                 "<gold>Славная победа! Рыцарь <green><b>%s</b></green> сокрушил <red>%s</red> в Королевской Дуэли!\n" +
-                "<yellow>Награда победителя: <green>+%d монет <dark_gray>| <yellow>Честь: <gold>+%d",
-                winner.getName(), loser.getName(), totalMoney, honorWon
+                "<yellow>Награда победителя: <green>+</green>%s <dark_gray>| <yellow>Честь: <gold>+%d",
+                winner.getName(), loser.getName(), CoinFormat.amount(totalMoney), honorWon
         );
-        Bukkit.broadcast(MiniMessage.miniMessage().deserialize(msg));
+        broadcastGlyphs(msg);
 
         for (Player p : Bukkit.getOnlinePlayers()) {
             p.playSound(p.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 1.0f, 1.0f);
@@ -133,10 +133,10 @@ public final class RoyalDuelManager {
         String msg = String.format(
                 "<gradient:#FFD700:#FFA500><b>👑 [КОРОЛЕВСКИЙ ГЛАШАТАЙ]</b></gradient>\n" +
                 "<gold>Время поединка между <white>%s</white> и <white>%s</white> истекло!\n" +
-                "<red><b>НИЧЬЯ!</b> Победитель не определён. Все ставки (%d монет) аннулированы и сгорели в казне!",
-                p1.getName(), p2.getName(), burnedMoney
+                "<red><b>НИЧЬЯ!</b> Победитель не определён. Все ставки (</red>%s<red>) аннулированы и сгорели в казне!",
+                p1.getName(), p2.getName(), CoinFormat.amount(burnedMoney)
         );
-        Bukkit.broadcast(MiniMessage.miniMessage().deserialize(msg));
+        broadcastGlyphs(msg);
 
         for (Player p : Bukkit.getOnlinePlayers()) {
             p.playSound(p.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 0.8f);
@@ -145,5 +145,13 @@ public final class RoyalDuelManager {
         if (discordSender != null) {
             discordSender.sendRoyalDuelDraw(p1.getName(), p2.getName(), burnedMoney);
         }
+    }
+
+    /** Broadcast with coin glyphs resolved per recipient (PlaceholderAPI needs a player); console gets the raw tags. */
+    private static void broadcastGlyphs(String mm) {
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            p.sendMessage(CoinFormat.component(p, mm));
+        }
+        Bukkit.getConsoleSender().sendMessage(CoinFormat.component(null, mm));
     }
 }

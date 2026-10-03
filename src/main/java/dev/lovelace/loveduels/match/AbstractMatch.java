@@ -1,5 +1,6 @@
 package dev.lovelace.loveduels.match;
 
+import dev.lovelace.loveduels.util.CoinFormat;
 import dev.lovelace.loveduels.arena.Arena;
 import dev.lovelace.loveduels.arena.ArenaState;
 import dev.lovelace.loveduels.core.DuelBet;
@@ -664,13 +665,13 @@ public abstract class AbstractMatch implements Match {
 
             winner.playSound(winner.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 1.0f, 1.0f);
             if (armisticeSurrender) {
-                winner.sendMessage(MiniMessage.miniMessage().deserialize(
-                        "<gold>⚔ <b>ПОБЕДА!</b> Противник сдался во время перемирия! <green>(+" + finalPrizeMoney + " монет, +" + finalHonorDelta + " Чести)</green>"
+                winner.sendMessage(CoinFormat.component(winner,
+                        "<gold>⚔ <b>ПОБЕДА!</b> Противник сдался во время перемирия! <green>(+</green>" + CoinFormat.amount(finalPrizeMoney) + "<green>, +" + finalHonorDelta + " Чести)</green>"
                 ));
             } else {
-                winner.sendMessage(MiniMessage.miniMessage().deserialize(
+                winner.sendMessage(CoinFormat.component(winner,
                         "<gold>⚔ <b>ПОБЕДА!</b> Вы победили в дуэли против <white>" + (loser != null ? loser.getName() : "противника") +
-                        "</white>! <green>(+" + finalPrizeMoney + " монет, +" + finalHonorDelta + " Чести)</green>"
+                        "</white>! <green>(+</green>" + CoinFormat.amount(finalPrizeMoney) + "<green>, +" + finalHonorDelta + " Чести)</green>"
                 ));
             }
         }
@@ -686,9 +687,9 @@ public abstract class AbstractMatch implements Match {
             loser.playSound(loser.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 0.8f);
             if (armisticeSurrender) {
                 int stakePercent = plugin.getConfig().getInt("armistice.surrender_stake_percent", 25);
-                loser.sendMessage(MiniMessage.miniMessage().deserialize(
-                        "<red>🏳 <b>СДАЧА В ПЕРЕМИРИЕ!</b> Вы сдались. Списано " + stakePercent + "% ставки (-" + loserActualLoss +
-                        " монет), возвращено " + finalLoserRefund + " монет."
+                loser.sendMessage(CoinFormat.component(loser,
+                        "<red>🏳 <b>СДАЧА В ПЕРЕМИРИЕ!</b> Вы сдались. Списано " + stakePercent + "% ставки (-</red>" + CoinFormat.amount(loserActualLoss) +
+                        "<red>), возвращено</red> " + CoinFormat.amount(finalLoserRefund)
                 ));
             } else {
                 loser.sendMessage(MiniMessage.miniMessage().deserialize(
@@ -741,19 +742,19 @@ public abstract class AbstractMatch implements Match {
                             MiniMessage.miniMessage().deserialize("<gray>Время поединка истекло"),
                             Title.Times.times(Duration.ofMillis(200), Duration.ofSeconds(2), Duration.ofMillis(400))
                     );
-                    String refundMsg = bet.hasMoney() ? " <green>(Ставка " + bet.moneyBet() + " монет возвращена)</green>" : "";
+                    String refundMsg = bet.hasMoney() ? " <green>(Ставка</green> " + CoinFormat.amount(bet.moneyBet()) + " <green>возвращена)</green>" : "";
 
                     if (player1.isOnline()) {
                         player1.showTitle(drawTitle);
                         player1.playSound(player1.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 1.0f);
-                        player1.sendMessage(MiniMessage.miniMessage().deserialize(
+                        player1.sendMessage(CoinFormat.component(player1,
                                 "<yellow>⚔ <b>НИЧЬЯ!</b> Время поединка истекло." + refundMsg
                         ));
                     }
                     if (player2.isOnline()) {
                         player2.showTitle(drawTitle);
                         player2.playSound(player2.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 1.0f);
-                        player2.sendMessage(MiniMessage.miniMessage().deserialize(
+                        player2.sendMessage(CoinFormat.component(player2,
                                 "<yellow>⚔ <b>НИЧЬЯ!</b> Время поединка истекло." + refundMsg
                         ));
                     }

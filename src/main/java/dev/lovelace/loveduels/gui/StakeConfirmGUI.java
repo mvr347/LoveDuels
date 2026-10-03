@@ -39,7 +39,7 @@ public final class StakeConfirmGUI extends CustomGUI {
     }
 
     private long minMoney() {
-        return session.getRequest().royal() ? CoinFormat.goldUnit() : 0L;
+        return session.getRequest().royal() ? CoinFormat.royalMinStake() : 0L;
     }
 
     @Override
@@ -59,11 +59,11 @@ public final class StakeConfirmGUI extends CustomGUI {
         infoLore.add("<gray>Честь: <yellow>" + session.getHonorBet() + "</yellow>");
         if (royal) {
             infoLore.add("<gradient:#FFD700:#C9A227>Королевская дуэль</gradient>");
-            infoLore.add("<gray>Минимум ставки: 1 золотая</gray>");
+            infoLore.add("<gray>Минимум ставки: </gray>" + CoinFormat.amount(minMoney()));
         }
         setItem(4, HeadTextures.head(royal ? HeadTextures.CROWN : HeadTextures.SCROLL,
                 royal ? "<gradient:#FFD700:#C9A227>Параметры</gradient>" : "<gold>Параметры</gold>",
-                infoLore
+                CoinFormat.resolveGlyphs(player, infoLore)
         ), null);
 
         setItem(13, createMoneyItem(royal), e -> {
@@ -99,7 +99,7 @@ public final class StakeConfirmGUI extends CustomGUI {
                 return;
             }
             if (royal && need < minMoney()) {
-                player.sendMessage(MiniMessage.miniMessage().deserialize("<red>Минимум: 1 золотая монета."));
+                player.sendMessage(MiniMessage.miniMessage().deserialize("<red>Минимум: " + CoinFormat.amount(minMoney())));
                 return;
             }
             session.toggleReady(player.getUniqueId());
@@ -125,7 +125,7 @@ public final class StakeConfirmGUI extends CustomGUI {
         List<String> lore = new ArrayList<>();
         if (royal) {
             lore.add("<gradient:#FFD700:#C9A227>Королевская ставка</gradient>");
-            lore.add("<gray>Не ниже 1 золотой монеты</gray>");
+            lore.add("<gray>Не ниже </gray>" + CoinFormat.amount(minMoney()));
             lore.add("");
         }
         lore.add("<gray>Ставка (на каждого):</gray>");

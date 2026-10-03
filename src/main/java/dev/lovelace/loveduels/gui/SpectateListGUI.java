@@ -1,5 +1,6 @@
 package dev.lovelace.loveduels.gui;
 
+import dev.lovelace.loveduels.util.CoinFormat;
 import dev.lovelace.loveduels.core.DuelManager;
 import dev.lovelace.loveduels.match.Match;
 import net.kyori.adventure.text.Component;
@@ -53,13 +54,13 @@ public final class SpectateListGUI extends CustomGUI {
         );
 
         long fee = duelManager.getSpectatorManager().calculateSpectatorFee(match);
-        String feeStr = (fee <= 0) ? "<green>БЕСПЛАТНО" : "<gold>" + fee + " монет";
+        String feeStr = (fee <= 0) ? "<green>БЕСПЛАТНО" : CoinFormat.amount(fee);
 
         List<Component> lore = List.of(
                 MiniMessage.miniMessage().deserialize("<gray>Режим: <white>" + match.getType().getDisplayNameMiniMessage()),
                 MiniMessage.miniMessage().deserialize("<gray>Арена: <yellow>" + match.getArena().getName()),
                 MiniMessage.miniMessage().deserialize("<gray>Зрителей: <aqua>" + match.getSpectators().size()),
-                MiniMessage.miniMessage().deserialize("<gray>Цена билета: " + feeStr),
+                MiniMessage.miniMessage().deserialize(CoinFormat.resolveGlyphs(player, "<gray>Цена билета: " + feeStr)),
                 Component.empty(),
                 MiniMessage.miniMessage().deserialize("<yellow>➤ Нажмите, чтобы перейти на трибуны")
         );

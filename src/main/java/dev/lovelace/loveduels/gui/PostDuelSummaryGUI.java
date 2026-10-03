@@ -1,5 +1,6 @@
 package dev.lovelace.loveduels.gui;
 
+import dev.lovelace.loveduels.util.CoinFormat;
 import dev.lovelace.loveduels.core.DuelManager;
 import dev.lovelace.loveduels.match.MatchResult;
 import net.kyori.adventure.text.Component;
@@ -82,10 +83,10 @@ public final class PostDuelSummaryGUI extends CustomGUI {
         if (isWinner) {
             String name = "<green><b>🏆 ВЫ ПОБЕДИЛИ!</b>";
             List<String> lore = List.of(
-                    "<gray>Деньги: <green>+" + result.moneyPrizeWon() + " монет",
+                    "<gray>Деньги: <green>+</green>" + CoinFormat.amount(result.moneyPrizeWon()),
                     "<gray>Честь: <gold>+" + result.honorWon()
             );
-            return HeadTextures.head(HeadTextures.TROPHY, name, lore);
+            return HeadTextures.head(HeadTextures.TROPHY, name, CoinFormat.resolveGlyphs(player, lore));
         } else {
             String name = "<red><b>💀 ПОРАЖЕНИЕ</b>";
             List<String> lore = List.of(

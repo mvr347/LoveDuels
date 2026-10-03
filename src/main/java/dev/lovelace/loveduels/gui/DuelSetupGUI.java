@@ -72,7 +72,7 @@ public final class DuelSetupGUI extends CustomGUI {
     }
 
     private long minRoyalBet() {
-        return CoinFormat.goldUnit();
+        return CoinFormat.royalMinStake();
     }
 
     private void clampRoyalMoney() {
@@ -202,7 +202,7 @@ public final class DuelSetupGUI extends CustomGUI {
             clampRoyalMoney();
             if (moneyBet < minRoyalBet()) {
                 player.sendMessage(MiniMessage.miniMessage().deserialize(
-                        "<red>Минимум для королевской: 1 золотая монета."
+                        "<red>Минимум для королевской: " + CoinFormat.amount(minRoyalBet())
                 ));
                 return;
             }
@@ -369,7 +369,7 @@ public final class DuelSetupGUI extends CustomGUI {
         List<String> lore = new ArrayList<>();
         if (mode.isRoyal()) {
             lore.add("<gradient:#FFD700:#C9A227>Королевская ставка</gradient>");
-            lore.add("<gray>Минимум: 1 золотая монета</gray>");
+            lore.add("<gray>Минимум: </gray>" + CoinFormat.amount(minRoyalBet()));
             lore.add("");
         }
         lore.add("<gray>Текущая ставка:</gray>");
