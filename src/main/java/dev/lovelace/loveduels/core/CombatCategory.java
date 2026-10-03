@@ -7,29 +7,35 @@ import java.util.List;
  */
 public enum CombatCategory {
     MELEE(
-            "Ближний бой",
+            "melee", "Ближний бой",
             "Кулаки, рыцарское снаряжение или свои вещи.",
             List.of(DuelType.FISTS, DuelType.KIT, DuelType.OWN_INVENTORY)
     ),
     RANGED(
-            "Дальний бой",
+            "ranged", "Дальний бой",
             "Луки и арбалеты.",
             List.of(DuelType.BOW, DuelType.CROSSBOW)
     ),
     MOUNTED(
-            "Всадники",
+            "mounted", "Всадники",
             "Турнир на копьях верхом.",
             List.of(DuelType.HORSE_SPEAR)
     );
 
+    private final String id;
     private final String displayName;
     private final String description;
     private final List<DuelType> subtypes;
 
-    CombatCategory(String displayName, String description, List<DuelType> subtypes) {
+    CombatCategory(String id, String displayName, String description, List<DuelType> subtypes) {
+        this.id = id;
         this.displayName = displayName;
         this.description = description;
         this.subtypes = List.copyOf(subtypes);
+    }
+
+    public String getId() {
+        return id;
     }
 
     public String getDisplayName() {
@@ -76,5 +82,20 @@ public enum CombatCategory {
             if (c.subtypes.contains(type)) return c;
         }
         return MELEE;
+    }
+
+    /** Parses an English id/enum name or a Russian alias; null when unknown. */
+    public static CombatCategory fromString(String name) {
+        if (name == null || name.isBlank()) return null;
+        String n = name.trim().toLowerCase(java.util.Locale.ROOT);
+        for (CombatCategory c : values()) {
+            if (c.id.equals(n) || c.name().equalsIgnoreCase(n)) return c;
+        }
+        return switch (n) {
+            case "ближний", "ближний_бой", "ближнийбой" -> MELEE;
+            case "дальний", "дальний_бой", "дальнийбой" -> RANGED;
+            case "всадники", "конный", "конная", "верхом" -> MOUNTED;
+            default -> null;
+        };
     }
 }

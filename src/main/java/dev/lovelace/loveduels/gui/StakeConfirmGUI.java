@@ -143,13 +143,15 @@ public final class StakeConfirmGUI extends CustomGUI {
             if (selectedDenomIndex >= dens.size()) selectedDenomIndex = 0;
             Denomination sel = dens.get(selectedDenomIndex);
             lore.add("<gray>Номинал: </gray>" + CoinFormat.getCoinGlyph(sel));
-            lore.add("<yellow>Shift</yellow> — сменить · <yellow>ЛКМ</yellow> + · <red>ПКМ</red> −");
+            lore.add("<yellow>Shift</yellow> <dark_gray>—</dark_gray> <white>сменить номинал</white>");
+            lore.add("<yellow>ЛКМ</yellow> <dark_gray>—</dark_gray> <white>+ номинал</white>");
+            lore.add("<red>ПКМ</red> <dark_gray>—</dark_gray> <white>− номинал</white>");
         }
         lore.add("");
         lore.add("<dark_gray>Смена ставки сбрасывает готовность</dark_gray>");
         return HeadTextures.head(royal ? HeadTextures.CROWN : HeadTextures.COIN,
                 royal ? "<gradient:#FFD700:#C9A227>Ставка монетами</gradient>" : "<gold>Ставка монетами</gold>",
-                lore);
+                CoinFormat.resolveGlyphs(player, lore));
     }
 
     private ItemStack createReadyButton(boolean ready, boolean royal) {

@@ -138,6 +138,30 @@ public final class CoinFormat {
         }
     }
 
+    private static final java.util.regex.Pattern GLYPH = java.util.regex.Pattern.compile("%img_[A-Za-z0-9_]+%");
+    private static final java.util.regex.Pattern LEGACY = java.util.regex.Pattern.compile("[\u00A7&][0-9a-fk-orx]");
+
+    /**
+     * Resolves only the %img_*% glyph placeholders of a MiniMessage string through PlaceholderAPI.
+     * Legacy colour codes in the result are stripped: they are not understood by MiniMessage and the
+     * surrounding <white> tag already colours the glyph.
+     */
+    public static String resolveGlyphs(org.bukkit.entity.Player player, String mm) {
+        if (mm == null || mm.indexOf("%img_") < 0) return mm;
+        return GLYPH.matcher(mm).replaceAll(r -> {
+            String raw = r.group();
+            String out = applyPlaceholders(player, raw);
+            if (out == null || out.equals(raw)) return java.util.regex.Matcher.quoteReplacement(raw);
+            return java.util.regex.Matcher.quoteReplacement(LEGACY.matcher(out).replaceAll(""));
+        });
+    }
+
+    public static java.util.List<String> resolveGlyphs(org.bukkit.entity.Player player, java.util.List<String> lines) {
+        java.util.List<String> res = new ArrayList<>(lines.size());
+        for (String l : lines) res.add(resolveGlyphs(player, l));
+        return res;
+    }
+
     public static String formatBalanceLine(LoveEconomyBridge bridge, long amount) {
         Optional<LoveEconomy> eco = tryEconomy();
         if (eco.isPresent()) {
