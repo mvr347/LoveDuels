@@ -1,5 +1,6 @@
 package dev.lovelace.loveduels.arena;
 
+import dev.lovelace.loveduels.core.CombatCategory;
 import dev.lovelace.loveduels.core.DuelType;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -22,7 +23,10 @@ public final class Arena {
     private Location spectatorSpawn;
     private BoundingBox bounds;
     private BoundingBox spectatorZone;
-    private final Set<DuelType> supportedTypes = EnumSet.allOf(DuelType.class);
+    /** Arena type chosen at creation; null with a non-empty type set means "all modes". */
+    private CombatCategory category;
+    /** Empty until a type is chosen; an arena without types is never offered to duels. */
+    private final Set<DuelType> supportedTypes = EnumSet.noneOf(DuelType.class);
     private boolean enabled = true;
     private ArenaState state = ArenaState.FREE;
 
@@ -83,6 +87,36 @@ public final class Arena {
         this.spectatorZone = spectatorZone != null ? spectatorZone.clone() : null;
     }
 
+    public CombatCategory getCategory() {
+        return category;
+    }
+
+    /** Restricts the arena to the duel types of one category (melee / ranged / mounted). */
+    public void setCategory(CombatCategory category) {
+        this.category = category;
+        supportedTypes.clear();
+        if (category != null) {
+            supportedTypes.addAll(category.getSubtypes());
+        }
+    }
+
+    /** Makes the arena usable for every duel type (no category restriction). */
+    public void setAllTypes() {
+        this.category = null;
+        supportedTypes.clear();
+        supportedTypes.addAll(EnumSet.allOf(DuelType.class));
+    }
+
+    public boolean hasType() {
+        return !supportedTypes.isEmpty();
+    }
+
+    /** Human readable arena type for admin output. */
+    public String getTypeLabel() {
+        if (category != null) return category.getDisplayName();
+        return supportedTypes.isEmpty() ? "не задан" : "Все режимы";
+    }
+
     public Set<DuelType> getSupportedTypes() {
         return supportedTypes;
     }
@@ -126,6 +160,9 @@ public final class Arena {
 
     public java.util.List<String> getValidationErrors() {
         java.util.List<String> errors = new java.util.ArrayList<>();
+        if (supportedTypes.isEmpty()) {
+            errors.add("Тип арены не задан (/lda arena type <id> <melee|ranged|mounted|all>)");
+        }
         if (pos1 == null) {
             errors.add("Точка спавна 1 (pos1) не установлена");
         } else if (pos1.getWorld() == null) {
@@ -217,7 +254,13 @@ public final class Arena {
         return true;
     }
 
+    /** A category arena may only fine-tune types inside its own category. */
+    public boolean canToggleType(DuelType type) {
+        return category == null || category.getSubtypes().contains(type);
+    }
+
     public void toggleSupportedType(DuelType type) {
+        if (!canToggleType(type)) return;
         if (supportedTypes.contains(type)) {
             if (supportedTypes.size() > 1) {
                 supportedTypes.remove(type);

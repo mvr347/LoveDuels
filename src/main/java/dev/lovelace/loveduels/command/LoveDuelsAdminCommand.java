@@ -3,6 +3,7 @@ package dev.lovelace.loveduels.command;
 import dev.lovelace.loveduels.arena.Arena;
 import dev.lovelace.loveduels.arena.ArenaParticlePreview;
 import dev.lovelace.loveduels.core.DuelManager;
+import dev.lovelace.loveduels.core.CombatCategory;
 import dev.lovelace.loveduels.core.DuelType;
 import dev.lovelace.loveduels.kit.Kit;
 import net.kyori.adventure.text.Component;
@@ -95,7 +96,8 @@ public final class LoveDuelsAdminCommand implements CommandExecutor, TabComplete
             case "preview", "частицы", "подсветка" -> handleArenaPreview(sender, args);
             case "tp", "телепорт" -> handleArenaTp(sender, args);
             case "toggle", "переключить" -> handleArenaToggle(sender, args);
-            case "mode", "режим", "type" -> handleArenaMode(sender, args);
+            case "mode", "режим" -> handleArenaMode(sender, args);
+            case "type", "тип" -> handleArenaType(sender, args);
             case "list", "список" -> handleArenaList(sender);
             case "delete", "удалить" -> handleArenaDelete(sender, args);
             default -> sender.sendMessage(mm.deserialize("<red>❌ Неизвестная команда арены. Введите <yellow>/lda arena</yellow> для справки."));
@@ -109,7 +111,7 @@ public final class LoveDuelsAdminCommand implements CommandExecutor, TabComplete
         }
 
         if (args.length < 3) {
-            p.sendMessage(mm.deserialize("<red>❌ Укажите ID арены: <yellow>/lda arena create <id> [название]</yellow>"));
+            p.sendMessage(mm.deserialize("<red>❌ Укажите ID арены: <yellow>/lda arena create <id> [melee|ranged|mounted|all] [название]</yellow>"));
             return;
         }
 
@@ -120,10 +122,22 @@ public final class LoveDuelsAdminCommand implements CommandExecutor, TabComplete
             arena = existing.get();
             p.sendMessage(mm.deserialize("<yellow>ℹ Арена с ID <gold>" + id + "</gold> уже существует. Открываю мастер настройки этой арены."));
         } else {
-            String name = (args.length > 3) ? String.join(" ", Arrays.copyOfRange(args, 3, args.length)) : id;
+            // Optional 4th argument: arena type (category), the rest is the display name.
+            String typeArg = args.length > 3 ? args[3].toLowerCase() : null;
+            CombatCategory category = typeArg != null ? CombatCategory.fromString(typeArg) : null;
+            boolean allModes = typeArg != null && (typeArg.equals("all") || typeArg.equals("все") || typeArg.equals("любой"));
+            int nameFrom = (category != null || allModes) ? 4 : 3;
+            String name = (args.length > nameFrom) ? String.join(" ", Arrays.copyOfRange(args, nameFrom, args.length)) : id;
+
+            if (category == null && !allModes) {
+                sendArenaTypeChoice(p, id, name);
+                return;
+            }
+
             arena = new Arena(id, name);
+            if (allModes) arena.setAllTypes(); else arena.setCategory(category);
             duelManager.getArenaManager().registerArena(arena);
-            p.sendMessage(mm.deserialize("<green>✔ Арена <gold>" + id + "</gold> («" + name + "») успешно зарегистрирована!"));
+            p.sendMessage(mm.deserialize("<green>✔ Арена <gold>" + id + "</gold> («" + name + "», тип: <yellow>" + arena.getTypeLabel() + "</yellow>) успешно зарегистрирована!"));
         }
 
         // Start wizard session
@@ -131,11 +145,55 @@ public final class LoveDuelsAdminCommand implements CommandExecutor, TabComplete
 
         p.sendMessage(Component.empty());
         p.sendMessage(mm.deserialize("<gradient:#FFD700:#FFA500><b>══════════════════════════════════════════════════</b></gradient>"));
-        p.sendMessage(mm.deserialize(" <b>🏟 Мастер пошаговой настройки арены:</b> <yellow>" + arena.getId() + "</yellow> <gray>(«" + arena.getName() + "»)</gray>"));
+        p.sendMessage(mm.deserialize(" <b>🏟 Мастер пошаговой настройки арены:</b> <yellow>" + arena.getId() + "</yellow> <gray>(«" + arena.getName() + "», " + arena.getTypeLabel() + ")</gray>"));
         p.sendMessage(mm.deserialize(" <gray>Следуйте подсказкам мастера или нажимайте на кнопки в чате.</gray>"));
         p.sendMessage(mm.deserialize("<gradient:#FFD700:#FFA500><b>══════════════════════════════════════════════════</b></gradient>"));
 
         sendWizardStep1(p, arena);
+    }
+
+    /** Asks for the arena type with clickable chat buttons; the arena is registered only after a choice. */
+    private void sendArenaTypeChoice(Player p, String id, String name) {
+        String tail = name.equals(id) ? "" : " " + name;
+        p.sendMessage(Component.empty());
+        p.sendMessage(mm.deserialize("<gold><b>🏟 Выберите тип арены <yellow>" + id + "</yellow>:</b></gold>"));
+        p.sendMessage(mm.deserialize("<gray>Арена будет принимать только дуэли своей категории (например, конная арена не подойдёт для ближнего боя).</gray>"));
+        Component row = Component.text("  ");
+        for (CombatCategory c : CombatCategory.values()) {
+            row = row.append(button(c.getDisplayName(), "/lda arena create " + id + " " + c.getId() + tail, c.getDescription(), "aqua")).append(Component.space());
+        }
+        row = row.append(button("Все режимы", "/lda arena create " + id + " all" + tail, "Арена подходит для любых дуэлей", "yellow"));
+        p.sendMessage(row);
+    }
+
+    private void handleArenaType(CommandSender sender, String[] args) {
+        if (args.length < 4) {
+            sender.sendMessage(mm.deserialize("<red>❌ Использование: <yellow>/lda arena type <id> <melee|ranged|mounted|all></yellow>"));
+            return;
+        }
+        Optional<Arena> opt = duelManager.getArenaManager().getArena(args[2]);
+        if (opt.isEmpty()) {
+            sender.sendMessage(mm.deserialize("<red>❌ Арена не найдена."));
+            return;
+        }
+        Arena a = opt.get();
+        if (a.getState() == dev.lovelace.loveduels.arena.ArenaState.BUSY) {
+            sender.sendMessage(mm.deserialize("<red>❌ Арена сейчас занята матчем — смените тип после его окончания."));
+            return;
+        }
+        String t = args[3].toLowerCase();
+        if (t.equals("all") || t.equals("все") || t.equals("любой")) {
+            a.setAllTypes();
+        } else {
+            CombatCategory c = CombatCategory.fromString(t);
+            if (c == null) {
+                sender.sendMessage(mm.deserialize("<red>❌ Неизвестный тип. Доступно: <yellow>melee, ranged, mounted, all</yellow>"));
+                return;
+            }
+            a.setCategory(c);
+        }
+        duelManager.getArenaManager().saveArenas();
+        sender.sendMessage(mm.deserialize("<green>✔ Тип арены <gold>" + a.getId() + "</gold>: <yellow>" + a.getTypeLabel() + "</yellow>"));
     }
 
     private void handleArenaWizard(CommandSender sender, String[] args) {
@@ -541,6 +599,13 @@ public final class LoveDuelsAdminCommand implements CommandExecutor, TabComplete
             sender.sendMessage(mm.deserialize("  <gray>▪ Трибуны: по умолчанию (вокруг боевой зоны)</gray>"));
         }
 
+        Component typeLine = mm.deserialize("  <yellow>▪ Тип арены:</yellow> <white>" + a.getTypeLabel() + "</white> ");
+        for (CombatCategory c : CombatCategory.values()) {
+            typeLine = typeLine.append(button(c.getDisplayName(), "/lda arena type " + a.getId() + " " + c.getId(), "Сменить тип арены", "aqua")).append(Component.space());
+        }
+        typeLine = typeLine.append(button("Все", "/lda arena type " + a.getId() + " all", "Любые дуэли", "yellow"));
+        sender.sendMessage(typeLine);
+
         sender.sendMessage(Component.newline().append(mm.deserialize("<green><b>⚔ Поддерживаемые режимы дуэлей:</b></green>")));
         Component typesLine = Component.text("  ");
         for (DuelType dt : DuelType.values()) {
@@ -620,7 +685,7 @@ public final class LoveDuelsAdminCommand implements CommandExecutor, TabComplete
                 }
 
                 Component line = Component.text("▪ ")
-                        .append(mm.deserialize("<b><white>" + a.getId() + "</white></b> <gray>(«" + a.getName() + "»)</gray> " + statusBadge + " <yellow>" + a.getWorldName() + "</yellow> "))
+                        .append(mm.deserialize("<b><white>" + a.getId() + "</white></b> <gray>(«" + a.getName() + "»)</gray> <aqua>{" + a.getTypeLabel() + "}</aqua> " + statusBadge + " <yellow>" + a.getWorldName() + "</yellow> "))
                         .append(button("📋 Инфо", "/lda arena info " + a.getId(), "Диагностика", "yellow"))
                         .append(Component.space())
                         .append(button("🚀 ТП", "/lda arena tp " + a.getId() + " pos1", "Телепорт на спавн 1", "gold"))
@@ -728,7 +793,7 @@ public final class LoveDuelsAdminCommand implements CommandExecutor, TabComplete
         String modeArg = args[3].toUpperCase();
 
         if (modeArg.equalsIgnoreCase("ALL") || modeArg.equalsIgnoreCase("ВСЕ")) {
-            a.getSupportedTypes().addAll(EnumSet.allOf(DuelType.class));
+            a.setAllTypes();
             duelManager.getArenaManager().saveArenas();
             sender.sendMessage(mm.deserialize("<green>✔ Арена <gold>" + a.getId() + "</gold> теперь поддерживает <yellow>ВСЕ</yellow> режимы дуэлей!"));
             return;
@@ -740,6 +805,11 @@ public final class LoveDuelsAdminCommand implements CommandExecutor, TabComplete
             return;
         }
 
+        if (!a.canToggleType(type)) {
+            sender.sendMessage(mm.deserialize("<red>❌ Арена типа <yellow>" + a.getTypeLabel() + "</yellow> не может поддерживать режим " + type.name()
+                    + ". Смените тип: <yellow>/lda arena type " + a.getId() + " <категория|all></yellow>"));
+            return;
+        }
         a.toggleSupportedType(type);
         duelManager.getArenaManager().saveArenas();
         boolean nowSupported = a.supportsType(type);
@@ -1026,7 +1096,7 @@ public final class LoveDuelsAdminCommand implements CommandExecutor, TabComplete
                 .append(divider).append(Component.newline())
                 .append(mm.deserialize("<gold><b>🏟 Арены:</b></gold>")).append(Component.newline())
                 .append(formatAdminCmd("/lda arena list", "Список всех арен со статусом готовности")).append(Component.newline())
-                .append(formatAdminCmd("/lda arena create <id> [имя]", "Создать арену и запустить пошаговый мастер")).append(Component.newline())
+                .append(formatAdminCmd("/lda arena create <id> [melee|ranged|mounted|all] [имя]", "Создать арену (без типа — выбор кнопками) и запустить мастер")).append(Component.newline())
                 .append(formatAdminCmd("/lda arena wizard [id]", "Пошаговый мастер настройки арены")).append(Component.newline())
                 .append(formatAdminCmd("/lda arena info <id>", "Диагностическая карточка и проверка арены")).append(Component.newline())
                 .append(formatAdminCmd("/lda arena preview <id> [сек]", "Подсветить границы арены частицами в мире")).append(Component.newline())
@@ -1071,6 +1141,7 @@ public final class LoveDuelsAdminCommand implements CommandExecutor, TabComplete
                 .append(formatAdminCmd("/lda arena preview <id> [сек]", "Подсветить границы арены частицами в мире")).append(Component.newline())
                 .append(formatAdminCmd("/lda arena tp <id> [точка]", "Телепорт на арену (pos1, pos2, spectator)")).append(Component.newline())
                 .append(formatAdminCmd("/lda arena toggle <id>", "Включить / отключить арену для дуэлей")).append(Component.newline())
+                .append(formatAdminCmd("/lda arena type <id> <melee|ranged|mounted|all>", "Сменить тип арены (ближний/дальний/всадники)")).append(Component.newline())
                 .append(formatAdminCmd("/lda arena mode <id> <тип|all>", "Переключить поддерживаемый тип дуэли")).append(Component.newline())
                 .append(formatAdminCmd("/lda arena delete <id>", "Удалить арену из конфигурации")).append(Component.newline())
                 .append(div).append(Component.newline());
@@ -1109,7 +1180,7 @@ public final class LoveDuelsAdminCommand implements CommandExecutor, TabComplete
             return filter(List.of(
                     "list", "create", "setup", "wizard", "info", "setpos1", "setpos2",
                     "setspectator", "setbound1", "setbound2", "setheight", "setspecbound1",
-                    "setspecbound2", "finish", "cancel", "preview", "tp", "toggle", "mode", "delete"
+                    "setspecbound2", "finish", "cancel", "preview", "tp", "toggle", "mode", "type", "delete"
             ), args[1]);
         }
         if (args.length == 3 && (args[0].equalsIgnoreCase("arena") || args[0].equalsIgnoreCase("арена"))) {
@@ -1130,6 +1201,12 @@ public final class LoveDuelsAdminCommand implements CommandExecutor, TabComplete
                     modes.add(dt.name());
                 }
                 return filter(modes, args[3]);
+            }
+            if (args[1].equalsIgnoreCase("type") || args[1].equalsIgnoreCase("тип")) {
+                return filter(List.of("melee", "ranged", "mounted", "all"), args[3]);
+            }
+            if (args[1].equalsIgnoreCase("create")) {
+                return filter(List.of("melee", "ranged", "mounted", "all"), args[3]);
             }
             if (args[1].equalsIgnoreCase("setheight")) {
                 return filter(List.of("15", "20", "25", "30"), args[3]);

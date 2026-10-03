@@ -1,5 +1,6 @@
 package dev.lovelace.loveduels.arena;
 
+import dev.lovelace.loveduels.core.CombatCategory;
 import dev.lovelace.loveduels.core.DuelType;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -71,7 +72,28 @@ public final class SimpleArenaManager implements ArenaManager {
         ConfigurationSection root = config.getConfigurationSection("arenas");
         if (root == null) return;
 
+        // One-time migration: arenas saved before the arena type existed are dropped (backup kept).
+        List<String> legacy = new ArrayList<>();
         for (String id : root.getKeys(false)) {
+            ConfigurationSection sec = root.getConfigurationSection(id);
+            if (sec != null && !sec.isSet("category")) legacy.add(id);
+        }
+        boolean migrated = !legacy.isEmpty();
+        if (migrated) {
+            File backup = new File(plugin.getDataFolder(), "arenas.yml.bak-pre-category");
+            try {
+                if (!backup.exists()) {
+                    java.nio.file.Files.copy(arenasFile.toPath(), backup.toPath());
+                }
+            } catch (IOException e) {
+                plugin.getLogger().log(Level.WARNING, "Failed to back up arenas.yml before migration", e);
+            }
+            plugin.getLogger().warning("Removed " + legacy.size() + " arena(s) without a type: " + legacy
+                    + ". Recreate them with /lda arena create <id> <melee|ranged|mounted|all> (backup: arenas.yml.bak-pre-category).");
+        }
+
+        for (String id : root.getKeys(false)) {
+            if (legacy.contains(id)) continue;
             ConfigurationSection sec = root.getConfigurationSection(id);
             if (sec == null) continue;
 
@@ -86,6 +108,13 @@ public final class SimpleArenaManager implements ArenaManager {
             arena.setBounds(deserializeBoundingBox(sec.getConfigurationSection("bounds")));
             arena.setSpectatorZone(deserializeBoundingBox(sec.getConfigurationSection("spectatorZone")));
 
+            String cat = sec.getString("category", "all");
+            CombatCategory category = CombatCategory.fromString(cat);
+            if (category != null) {
+                arena.setCategory(category);
+            } else if (!"none".equalsIgnoreCase(cat)) {
+                arena.setAllTypes();
+            }
             List<String> types = sec.getStringList("supportedTypes");
             if (!types.isEmpty()) {
                 arena.getSupportedTypes().clear();
@@ -100,6 +129,7 @@ public final class SimpleArenaManager implements ArenaManager {
             arenas.put(arena.getId(), arena);
         }
 
+        if (migrated) saveArenas();
         plugin.getLogger().info("Loaded " + arenas.size() + " duel arena(s).");
     }
 
@@ -112,6 +142,8 @@ public final class SimpleArenaManager implements ArenaManager {
             ConfigurationSection sec = root.createSection(arena.getId());
             sec.set("name", arena.getName());
             sec.set("enabled", arena.isEnabled());
+            sec.set("category", arena.getCategory() != null ? arena.getCategory().getId()
+                    : (arena.hasType() ? "all" : "none"));
 
             if (arena.getPos1() != null) {
                 serializeLocation(sec.createSection("pos1"), arena.getPos1());
