@@ -1,5 +1,6 @@
 package dev.lovelace.loveduels.gui;
 
+import dev.lovelace.loveduels.util.CoinFormat;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -32,12 +33,12 @@ public final class ConfirmBetGUI extends CustomGUI {
         setItem(6, glass, null);
         setItem(8, glass, null);
 
-        setItem(1, HeadTextures.head(HeadTextures.CONFIRM, "<green><b>✔ Подтвердить</b>", List.of(
-                "<gray>Ставка: <gold>" + moneyBet + " монет",
+        setItem(1, HeadTextures.head(HeadTextures.CONFIRM, "<green><b>✔ Подтвердить</b>", CoinFormat.resolveGlyphs(player, List.of(
+                "<gray>Ставка: </gray>" + CoinFormat.amount(moneyBet),
                 honorBet > 0 ? "<gray>Честь: <yellow>" + honorBet : "<gray>Честь: <white>нет",
                 "",
                 "<green>ЛКМ — отправить вызов"
-        )), e -> {
+        ))), e -> {
             player.closeInventory();
             if (onConfirm != null) onConfirm.run();
         });

@@ -81,9 +81,9 @@ public final class LoveEconomyBridge {
         long owed = payouts.takePending(player.getUniqueId());
         if (owed <= 0) return;
         eco.get().give(player, owed);
-        player.sendMessage(MiniMessage.miniMessage().deserialize(
-                "<green>💰 Вам выплачено <gold>" + owed + " " + currencyName() + "</gold> по завершённым дуэлям, "
-                        + "пока вы были не в сети.</green>"));
+        player.sendMessage(dev.lovelace.loveduels.util.CoinFormat.component(player,
+                "<green>💰 Вам выплачено</green> " + dev.lovelace.loveduels.util.CoinFormat.amount(owed)
+                        + " <green>по завершённым дуэлям, пока вы были не в сети.</green>"));
     }
 
     /** Records the stakes just charged from both fighters so a crash cannot swallow them. */

@@ -1,5 +1,6 @@
 package dev.lovelace.loveduels.spectator;
 
+import dev.lovelace.loveduels.util.CoinFormat;
 import dev.lovelace.loveduels.arena.Arena;
 import dev.lovelace.loveduels.core.InventorySnapshot;
 import dev.lovelace.loveduels.integration.LoveEconomyBridge;
@@ -38,8 +39,8 @@ public final class SimpleSpectatorManager implements SpectatorManager {
         this.zoneGuard = new SpectatorZoneGuard(this);
         this.economyBridge = economyBridge;
         this.freeSlots = Math.max(0, plugin.getConfig().getInt("spectators.free_slots", 15));
-        this.basePrice = Math.max(0L, plugin.getConfig().getLong("spectators.base_price", 50L));
-        this.stepPrice = Math.max(0L, plugin.getConfig().getLong("spectators.step_price", 25L));
+        this.basePrice = Math.max(0L, dev.lovelace.lovecore.api.economy.MoneyConfig.getScaled(plugin.getConfig(), "spectators.base_price", 200L));
+        this.stepPrice = Math.max(0L, dev.lovelace.lovecore.api.economy.MoneyConfig.getScaled(plugin.getConfig(), "spectators.step_price", 100L));
     }
 
     public SpectatorZoneGuard getZoneGuard() {
@@ -72,13 +73,13 @@ public final class SimpleSpectatorManager implements SpectatorManager {
         long fee = calculateSpectatorFee(match);
         if (fee > 0) {
             if (!economyBridge.charge(player, fee)) {
-                player.sendMessage(MiniMessage.miniMessage().deserialize(
-                        "<red>❌ Недостаточно монет для покупки места зрителя! Требуется: <gold>" + fee + " монет."
+                player.sendMessage(CoinFormat.component(player,
+                        "<red>❌ Недостаточно монет для покупки места зрителя! Требуется:</red> " + CoinFormat.amount(fee)
                 ));
                 return false;
             }
-            player.sendMessage(MiniMessage.miniMessage().deserialize(
-                    "<green>✔ Вы приобрели место на трибунах за <gold>" + fee + " монет!</gold>"
+            player.sendMessage(CoinFormat.component(player,
+                    "<green>✔ Вы приобрели место на трибунах за</green> " + CoinFormat.amount(fee)
             ));
         }
 

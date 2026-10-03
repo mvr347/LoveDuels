@@ -39,7 +39,7 @@ public final class StakeConfirmSession {
         this.player2 = request.targetId();
         long initial = Math.max(0L, request.bet().moneyBet());
         if (request.royal()) {
-            long min = CoinFormat.goldUnit();
+            long min = CoinFormat.royalMinStake();
             if (initial < min) initial = min;
         }
         this.moneyBet = new AtomicLong(initial);
@@ -76,7 +76,7 @@ public final class StakeConfirmSession {
         if (terminated.get()) return;
         long v = Math.max(0L, amount);
         if (request.royal()) {
-            long min = CoinFormat.goldUnit();
+            long min = CoinFormat.royalMinStake();
             if (v < min) v = min;
         }
         moneyBet.set(v);

@@ -18,7 +18,8 @@ import java.util.Optional;
 public final class CoinFormat {
 
     private static final MiniMessage MM = MiniMessage.miniMessage();
-    public static final long FALLBACK_GOLD_UNIT = 50L;
+    /** Used only if LoveCore is missing and the config value is unreadable: 1 gold coin in the standard scale. */
+    private static final long DEFAULT_ROYAL_MIN_STAKE = 2_000L;
 
     private CoinFormat() {}
 
@@ -35,31 +36,42 @@ public final class CoinFormat {
         return "<white>" + placeholder + "</white>";
     }
 
+    /**
+     * Coin name by its id only. 2026-10-03: the old value thresholds (>= 1000 netherite, >= 100 diamond ...)
+     * labelled every coin one tier too high after the denominations changed to 1/100/2000/20000.
+     */
     public static String getCoinName(Denomination den) {
         if (den == null) return "Монета";
         String id = den.itemId() != null ? den.itemId().toLowerCase() : "";
-        long val = den.value();
-        if (id.contains("netherite") || val >= 1000) return "<gradient:#9B51E0:#BB6BD9>Незеритовая монета</gradient>";
-        if (id.contains("diamond") || val >= 100) return "<gradient:#00C9FF:#92FE9D>Алмазная монета</gradient>";
-        if (id.contains("gold") || val >= 50) return "<gradient:#FFE000:#799F0C>Золотая монета</gradient>";
-        if (id.contains("iron") || val >= 10) return "<gradient:#E0E0E0:#F2F2F2>Железная монета</gradient>";
-        return "<gradient:#E67E22:#D35400>Медная монета</gradient>";
+        if (id.contains("netherite")) return "<gradient:#9B51E0:#BB6BD9>Незеритовая монета</gradient>";
+        if (id.contains("diamond")) return "<gradient:#00C9FF:#92FE9D>Алмазная монета</gradient>";
+        if (id.contains("gold")) return "<gradient:#FFE000:#799F0C>Золотая монета</gradient>";
+        if (id.contains("iron")) return "<gradient:#E0E0E0:#F2F2F2>Железная монета</gradient>";
+        if (id.contains("copper")) return "<gradient:#E67E22:#D35400>Медная монета</gradient>";
+        return "Монета";
     }
 
-    public static long goldUnit(LoveEconomy eco) {
-        if (eco == null) return FALLBACK_GOLD_UNIT;
-        Optional<Denomination> gold = eco.denominations().stream()
-                .filter(d -> d.value() > 0)
-                .filter(d -> {
-                    String id = d.itemId() != null ? d.itemId().toLowerCase() : "";
-                    return id.contains("gold") || (d.value() >= 50 && d.value() < 100);
-                })
-                .min(Comparator.comparingLong(Denomination::value));
-        return gold.map(Denomination::value).orElse(FALLBACK_GOLD_UNIT);
+    /** Minimum money stake of a royal duel ({@code royal_duel.min_stake}, default "1g"). */
+    public static long royalMinStake() {
+        var plugin = org.bukkit.Bukkit.getPluginManager().getPlugin("LoveDuels");
+        if (plugin == null) return DEFAULT_ROYAL_MIN_STAKE;
+        try {
+            return Math.max(1L, dev.lovelace.lovecore.api.economy.MoneyConfig.get(
+                    plugin.getConfig(), "royal_duel.min_stake", DEFAULT_ROYAL_MIN_STAKE));
+        } catch (Throwable t) {
+            return DEFAULT_ROYAL_MIN_STAKE;
+        }
     }
 
-    public static long goldUnit() {
-        return goldUnit(tryEconomy().orElse(null));
+    /** Amount as coin glyphs (MiniMessage, resolve with {@link #resolveGlyphs}); plain text without LoveCore. */
+    public static String amount(long amount) {
+        Optional<LoveEconomy> eco = tryEconomy();
+        return eco.isPresent() ? formatGlyphs(eco.get(), amount) : amount + " монет";
+    }
+
+    /** MiniMessage text with glyphs → component for this player. */
+    public static Component component(org.bukkit.entity.Player player, String mm) {
+        return MM.deserialize(resolveGlyphs(player, mm));
     }
 
     public static String formatGlyphs(LoveEconomy eco, long amount) {

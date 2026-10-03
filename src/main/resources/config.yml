@@ -17,17 +17,21 @@ settings:
 
 royal_duel:
   ticket_cooldown_seconds: 3600
-  # Минимум ставки в «единицах экономики» (fallback, если нет золотого номинала)
-  min_money_bet: 50
-  # Минимум = 1 золотая монета (поиск по itemId/value в LoveEconomy)
-  min_gold_coins: 1
-  winner_bonus_percent: 25
+  # Минимальная денежная ставка королевской дуэли. Число (медные единицы) или строка: "1g" = 1 золотая.
+  # 2026-10-03: раньше минимум искался как «золотой номинал со значением 50–99», после смены номиналов
+  # (золотая = 2 000) такой поиск не нашёл бы монету; теперь сумма задаётся явно. Королевская дуэль —
+  # это «серьёзная» ставка, поэтому порог — одна золотая (ощутимо для обоих, но не разорительно).
+  # Мёртвые ключи min_money_bet / min_gold_coins / winner_bonus_percent удалены: код их не читал.
+  min_stake: "1g"
   honor_multiplier: 1.5
 
 spectators:
   free_slots: 15
-  base_price: 50
-  step_price: 25
+  # Цена места зрителя сверх бесплатных слотов: base + step за каждого следующего. Число или "2i".
+  # 2026-10-03: 50/25 → 200/100 (две/одна железная монета) вместе с пересчётом номиналов; индекс цен LoveCore
+  # применяется (economy.price-index).
+  base_price: "2i"
+  step_price: "1i"
   allow_spectator_flight_with_permission: true
   # Зрителям нельзя:
   block_drop: true
@@ -86,7 +90,6 @@ armistice:
 
 bet_confirm:
   enabled: true
-  money_threshold: 5000
 
 blood_revenge:
   enabled: true
