@@ -23,11 +23,16 @@ public final class CoinFormat {
     private CoinFormat() {}
 
     public static String getCoinGlyph(Denomination den) {
-        if (den == null || den.itemId() == null) return "%img_copper_coin%";
+        if (den == null || den.itemId() == null) return wrapGlyph("%img_copper_coin%");
         String id = den.itemId();
         int colon = id.indexOf(':');
         String tag = colon >= 0 ? id.substring(colon + 1) : id;
-        return "%img_" + tag + "%";
+        return wrapGlyph("%img_" + tag + "%");
+    }
+
+    /** White colour before and after the glyph so it never inherits the neighbouring text colour. */
+    static String wrapGlyph(String placeholder) {
+        return "<white>" + placeholder + "</white>";
     }
 
     public static String getCoinName(Denomination den) {
@@ -58,13 +63,13 @@ public final class CoinFormat {
     }
 
     public static String formatGlyphs(LoveEconomy eco, long amount) {
-        if (eco == null) return "%img_copper_coin% x0";
+        if (eco == null) return wrapGlyph("%img_copper_coin%") + " x0";
         List<Denomination> dens = new ArrayList<>(eco.denominations());
         dens.sort(Comparator.comparingLong(Denomination::value).reversed());
 
         if (amount <= 0) {
             Denomination smallest = dens.isEmpty() ? null : dens.get(dens.size() - 1);
-            return (smallest != null ? getCoinGlyph(smallest) : "%img_copper_coin%") + " x0";
+            return (smallest != null ? getCoinGlyph(smallest) : wrapGlyph("%img_copper_coin%")) + " x0";
         }
 
         StringBuilder sb = new StringBuilder();
@@ -80,7 +85,7 @@ public final class CoinFormat {
         }
         if (sb.length() == 0) {
             Denomination smallest = dens.isEmpty() ? null : dens.get(dens.size() - 1);
-            return (smallest != null ? getCoinGlyph(smallest) : "%img_copper_coin%") + " x0";
+            return (smallest != null ? getCoinGlyph(smallest) : wrapGlyph("%img_copper_coin%")) + " x0";
         }
         return sb.toString();
     }
@@ -88,7 +93,7 @@ public final class CoinFormat {
     public static List<Component> formatGlyphLines(LoveEconomy eco, long amount) {
         List<Component> lines = new ArrayList<>();
         if (eco == null) {
-            lines.add(MM.deserialize("%img_copper_coin% <yellow>x0</yellow>"));
+            lines.add(MM.deserialize(wrapGlyph("%img_copper_coin%") + " <yellow>x0</yellow>"));
             return lines;
         }
         List<Denomination> dens = new ArrayList<>(eco.denominations());
@@ -96,7 +101,7 @@ public final class CoinFormat {
 
         if (amount <= 0) {
             Denomination smallest = dens.isEmpty() ? null : dens.get(dens.size() - 1);
-            String glyph = smallest != null ? getCoinGlyph(smallest) : "%img_copper_coin%";
+            String glyph = smallest != null ? getCoinGlyph(smallest) : wrapGlyph("%img_copper_coin%");
             lines.add(MM.deserialize(glyph + " <yellow>x0</yellow>"));
             return lines;
         }
@@ -112,7 +117,7 @@ public final class CoinFormat {
         }
         if (lines.isEmpty()) {
             Denomination smallest = dens.isEmpty() ? null : dens.get(dens.size() - 1);
-            String glyph = smallest != null ? getCoinGlyph(smallest) : "%img_copper_coin%";
+            String glyph = smallest != null ? getCoinGlyph(smallest) : wrapGlyph("%img_copper_coin%");
             lines.add(MM.deserialize(glyph + " <yellow>x0</yellow>"));
         }
         return lines;
