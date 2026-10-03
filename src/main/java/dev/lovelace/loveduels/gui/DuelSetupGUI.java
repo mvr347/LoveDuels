@@ -255,6 +255,7 @@ public final class DuelSetupGUI extends CustomGUI {
             honorLine = "\n<gray>Честь: <yellow>" + effectiveHonor + "</yellow>";
         }
 
+        moneyLine = CoinFormat.resolveGlyphs(opponent, moneyLine);
         Component invite = MiniMessage.miniMessage().deserialize(
                 prefix +
                 "<white><gold>" + player.getName() + "</gold> вызывает вас.\n" +
@@ -381,7 +382,9 @@ public final class DuelSetupGUI extends CustomGUI {
             if (selectedDenomIndex >= dens.size()) selectedDenomIndex = 0;
             Denomination sel = dens.get(selectedDenomIndex);
             lore.add("<gray>Номинал: </gray>" + CoinFormat.getCoinGlyph(sel));
-            lore.add("<yellow>Shift</yellow> — сменить · <yellow>ЛКМ</yellow> + · <red>ПКМ</red> −");
+            lore.add("<yellow>Shift</yellow> <dark_gray>—</dark_gray> <white>сменить номинал</white>");
+            lore.add("<yellow>ЛКМ</yellow> <dark_gray>—</dark_gray> <white>+ номинал</white>");
+            lore.add("<red>ПКМ</red> <dark_gray>—</dark_gray> <white>− номинал</white>");
         }
 
         String balance = CoinFormat.formatBalanceLine(duelManager.getEconomyBridge(),
@@ -392,7 +395,8 @@ public final class DuelSetupGUI extends CustomGUI {
         String name = mode.isRoyal()
                 ? "<gradient:#FFD700:#C9A227>Ставка монетами</gradient>"
                 : "<gold>Ставка монетами</gold>";
-        return HeadTextures.head(mode.isRoyal() ? HeadTextures.CROWN : HeadTextures.COIN, name, lore);
+        return HeadTextures.head(mode.isRoyal() ? HeadTextures.CROWN : HeadTextures.COIN, name,
+                CoinFormat.resolveGlyphs(player, lore));
     }
 
     private ItemStack createHonorBetItem() {
