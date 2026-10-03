@@ -172,6 +172,13 @@ public final class DuelSetupGUI extends CustomGUI {
             return;
         }
 
+        // Checked before any ticket/cooldown is spent: arenas are typed (melee / ranged / mounted).
+        if (!duelManager.getArenaManager().hasArenaFor(selectedType)) {
+            player.sendMessage(MiniMessage.miniMessage().deserialize(
+                    "<red>Для режима <white>" + selectedType.getDisplayNameMiniMessage() + "</white><red> нет настроенной арены."));
+            return;
+        }
+
         boolean royal = mode.isRoyal();
         boolean training = mode.isTraining();
 

@@ -35,6 +35,12 @@ public final class SimpleArenaManager implements ArenaManager {
     }
 
     @Override
+    public boolean hasArenaFor(DuelType type) {
+        return arenas.values().stream()
+                .anyMatch(a -> a.isEnabled() && a.isConfigured() && a.supportsType(type));
+    }
+
+    @Override
     public Optional<Arena> getArena(String id) {
         if (id == null) return Optional.empty();
         return Optional.ofNullable(arenas.get(id.toLowerCase()));

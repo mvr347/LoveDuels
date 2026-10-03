@@ -796,12 +796,15 @@ public abstract class AbstractMatch implements Match {
 
         // Restore players after 2 seconds (or immediately if server is disabling)
         Runnable cleanupTask = () -> {
-            restoreFighter(player1, snapshots.get(player1Id));
-            restoreFighter(player2, snapshots.get(player2Id));
-
-            // Return arena to free
-            arena.setState(ArenaState.FREE);
-            state = MatchState.ENDED;
+            try {
+                restoreFighter(player1, snapshots.get(player1Id));
+                restoreFighter(player2, snapshots.get(player2Id));
+            } finally {
+                // The arena must be freed even if restoring a fighter throws, otherwise it stays BUSY forever.
+                // A disabled arena keeps its DISABLED state.
+                arena.setState(arena.isEnabled() ? ArenaState.FREE : ArenaState.DISABLED);
+                state = MatchState.ENDED;
+            }
 
             // Notify MatchManager
             matchManager.endMatch(this, winnerId, reason);

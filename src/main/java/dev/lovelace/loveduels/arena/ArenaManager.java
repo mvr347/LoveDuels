@@ -9,6 +9,9 @@ public interface ArenaManager {
 
     Optional<Arena> findAvailableArena(DuelType type);
 
+    /** True when at least one enabled, fully configured arena supports the type (busy or not). */
+    boolean hasArenaFor(DuelType type);
+
     Optional<Arena> getArena(String id);
 
     Collection<Arena> getAllArenas();
