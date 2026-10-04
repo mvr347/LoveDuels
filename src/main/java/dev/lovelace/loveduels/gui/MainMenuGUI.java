@@ -14,8 +14,7 @@ public final class MainMenuGUI extends CustomGUI {
     private final DuelManager duelManager;
 
     public MainMenuGUI(Player player, DuelManager duelManager) {
-        super(player, 45, MiniMessage.miniMessage().deserialize(
-                "<gradient:#C9A227:#E8D48B>Турниры и дуэли</gradient>"));
+        super(player, 45, dev.lovelace.loveduels.util.Lang.component("gui.main_menu.title"));
         this.duelManager = duelManager;
     }
 
@@ -25,21 +24,13 @@ public final class MainMenuGUI extends CustomGUI {
 
         // Рабочая зона: два пункта по центру (слоты 21 и 23)
         setItem(21, HeadTextures.head(HeadTextures.SWORD,
-                "<gold>Бросить вызов</gold>",
-                List.of(
-                        "<gray>Тренировка, обычная или королевская дуэль.",
-                        "",
-                        "<yellow>ЛКМ</yellow> <dark_gray>—</dark_gray> <white>выбрать режим</white>"
-                )
+                dev.lovelace.loveduels.util.Lang.get("gui.main_menu.challenge.name"),
+                dev.lovelace.loveduels.util.Lang.list("gui.main_menu.challenge.lore")
         ), e -> new ChallengeModeGUI(player, duelManager).open());
 
         setItem(23, HeadTextures.head(HeadTextures.EYE,
-                "<light_purple>Наблюдение</light_purple>",
-                List.of(
-                        "<gray>Смотрите идущие поединки с трибун.",
-                        "",
-                        "<yellow>ЛКМ</yellow> <dark_gray>—</dark_gray> <white>список боёв</white>"
-                )
+                dev.lovelace.loveduels.util.Lang.get("gui.main_menu.spectate.name"),
+                dev.lovelace.loveduels.util.Lang.list("gui.main_menu.spectate.lore")
         ), e -> new SpectateListGUI(player, duelManager).open());
     }
 }

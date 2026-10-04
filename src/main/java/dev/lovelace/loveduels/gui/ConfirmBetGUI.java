@@ -18,7 +18,7 @@ public final class ConfirmBetGUI extends CustomGUI {
     private final Runnable onCancel;
 
     public ConfirmBetGUI(Player player, long moneyBet, int honorBet, Runnable onConfirm, Runnable onCancel) {
-        super(player, 9, MiniMessage.miniMessage().deserialize("<red><b>Подтверждение ставки</b>"));
+        super(player, 9, dev.lovelace.loveduels.util.Lang.component("gui.confirm_bet.title"));
         this.moneyBet = moneyBet;
         this.honorBet = honorBet;
         this.onConfirm = onConfirm;
@@ -33,21 +33,30 @@ public final class ConfirmBetGUI extends CustomGUI {
         setItem(6, glass, null);
         setItem(8, glass, null);
 
-        setItem(1, HeadTextures.head(HeadTextures.CONFIRM, "<green><b>✔ Подтвердить</b>", CoinFormat.resolveGlyphs(player, List.of(
-                "<gray>Ставка: </gray>" + CoinFormat.amount(moneyBet),
-                honorBet > 0 ? "<gray>Честь: <yellow>" + honorBet : "<gray>Честь: <white>нет",
-                "",
-                "<green>ЛКМ — отправить вызов"
-        ))), e -> {
+        String honorStr = honorBet > 0
+                ? dev.lovelace.loveduels.util.Lang.get("gui.confirm_bet.honor_line", "honor", String.valueOf(honorBet))
+                : dev.lovelace.loveduels.util.Lang.get("gui.confirm_bet.honor_none");
+
+        List<String> confirmLore = dev.lovelace.loveduels.util.Lang.list(
+                "gui.confirm_bet.confirm_lore",
+                "money", CoinFormat.amount(moneyBet),
+                "honor", honorStr
+        );
+
+        setItem(1, HeadTextures.head(
+                HeadTextures.CONFIRM,
+                dev.lovelace.loveduels.util.Lang.get("gui.confirm_bet.confirm_name"),
+                CoinFormat.resolveGlyphs(player, confirmLore)
+        ), e -> {
             player.closeInventory();
             if (onConfirm != null) onConfirm.run();
         });
 
-        setItem(7, HeadTextures.head(HeadTextures.CANCEL, "<red><b>✖ Отмена</b>", List.of(
-                "<gray>Вернуться к настройке дуэли",
-                "",
-                "<red>ЛКМ — отмена"
-        )), e -> {
+        setItem(7, HeadTextures.head(
+                HeadTextures.CANCEL,
+                dev.lovelace.loveduels.util.Lang.get("gui.confirm_bet.cancel_name"),
+                dev.lovelace.loveduels.util.Lang.list("gui.confirm_bet.cancel_lore")
+        ), e -> {
             player.closeInventory();
             if (onCancel != null) onCancel.run();
         });

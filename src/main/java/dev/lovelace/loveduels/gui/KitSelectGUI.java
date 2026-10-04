@@ -17,7 +17,7 @@ public final class KitSelectGUI extends CustomGUI {
     private final Consumer<Kit> onSelect;
 
     public KitSelectGUI(Player player, DuelManager duelManager, Consumer<Kit> onSelect) {
-        super(player, 45, MiniMessage.miniMessage().deserialize("<aqua><b>🛡 Выбор набора снаряжения (Кита)</b></aqua>"));
+        super(player, 45, dev.lovelace.loveduels.util.Lang.component("gui.kit_select.title"));
         this.duelManager = duelManager;
         this.onSelect = onSelect;
     }
@@ -32,8 +32,8 @@ public final class KitSelectGUI extends CustomGUI {
         if (kits.isEmpty()) {
             setItem(22, HeadTextures.head(
                     HeadTextures.CHEST,
-                    "<red><b>Наборы не найдены</b></red>",
-                    List.of("<gray>На сервере пока нет настроенных китов.")
+                    dev.lovelace.loveduels.util.Lang.get("gui.kit_select.no_kits_name"),
+                    dev.lovelace.loveduels.util.Lang.list("gui.kit_select.no_kits_lore")
             ), null);
             return;
         }
@@ -47,22 +47,23 @@ public final class KitSelectGUI extends CustomGUI {
                 if (onSelect != null) {
                     onSelect.accept(kit);
                 } else {
-                    player.sendMessage(MiniMessage.miniMessage().deserialize(
-                            "<green>🛡 Выбран набор: " + kit.displayName()
-                    ));
+                    dev.lovelace.loveduels.util.Lang.send(player, "gui.kit_select.kit_selected_chat", "name", kit.displayName());
                 }
             });
         }
     }
 
     private ItemStack createKitItem(Kit kit) {
-        String name = "<aqua><b>" + kit.displayName() + "</b></aqua>";
-        List<String> lore = new ArrayList<>();
-        lore.add("<gray>Идентификатор: <white>" + kit.id());
-        lore.add("");
-        lore.add("<yellow>Эффекты: <white>" + (kit.effects().isEmpty() ? "Нет" : kit.effects().size() + " шт."));
-        lore.add("");
-        lore.add("<yellow>➤ Нажмите для выбора этого кита");
+        String name = dev.lovelace.loveduels.util.Lang.get("gui.kit_select.kit_item_name", "name", kit.displayName());
+        String effectsStr = kit.effects().isEmpty()
+                ? dev.lovelace.loveduels.util.Lang.get("gui.kit_select.kit_effects_none")
+                : dev.lovelace.loveduels.util.Lang.get("gui.kit_select.kit_effects_count", "count", String.valueOf(kit.effects().size()));
+
+        List<String> lore = dev.lovelace.loveduels.util.Lang.list(
+                "gui.kit_select.kit_item_lore",
+                "id", kit.id(),
+                "effects", effectsStr
+        );
 
         return HeadTextures.head(HeadTextures.CHEST, name, lore);
     }

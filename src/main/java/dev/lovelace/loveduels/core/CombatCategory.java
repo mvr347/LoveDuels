@@ -39,11 +39,11 @@ public enum CombatCategory {
     }
 
     public String getDisplayName() {
-        return displayName;
+        return dev.lovelace.loveduels.util.Lang.getOrDefault("categories." + id + ".name", displayName);
     }
 
     public String getDescription() {
-        return description;
+        return dev.lovelace.loveduels.util.Lang.getOrDefault("categories." + id + ".description", description);
     }
 
     public List<DuelType> getSubtypes() {

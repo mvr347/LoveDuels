@@ -41,8 +41,16 @@ public final class DuelSetupGUI extends CustomGUI {
     private int honorBet;
     private int selectedDenomIndex = 0;
 
+    private static Component titleFor(ChallengeMode mode) {
+        return switch (mode) {
+            case TRAINING -> dev.lovelace.loveduels.util.Lang.component("gui.duel_setup.title_training");
+            case ROYAL -> dev.lovelace.loveduels.util.Lang.component("gui.duel_setup.title_royal");
+            default -> dev.lovelace.loveduels.util.Lang.component("gui.duel_setup.title_normal");
+        };
+    }
+
     public DuelSetupGUI(Player player, Player opponent, DuelManager duelManager, ChallengeMode mode) {
-        super(player, 45, MiniMessage.miniMessage().deserialize(titleFor(mode)));
+        super(player, 45, titleFor(mode));
         this.opponent = opponent;
         this.duelManager = duelManager;
         this.mode = mode;
@@ -63,14 +71,6 @@ public final class DuelSetupGUI extends CustomGUI {
         this(player, opponent, duelManager, royal ? ChallengeMode.ROYAL : ChallengeMode.NORMAL);
     }
 
-    private static String titleFor(ChallengeMode mode) {
-        return switch (mode) {
-            case TRAINING -> "<aqua>Тренировка</aqua>";
-            case ROYAL -> "<gradient:#FFD700:#F5E6A3:#C9A227>Королевская дуэль</gradient>";
-            default -> "<gold>Настройка дуэли</gold>";
-        };
-    }
-
     private long minRoyalBet() {
         return CoinFormat.royalMinStake();
     }
@@ -78,7 +78,8 @@ public final class DuelSetupGUI extends CustomGUI {
     private void clampRoyalMoney() {
         if (mode.isRoyal()) {
             long min = minRoyalBet();
-            if (moneyBet < min) moneyBet = min;
+            if (moneyBet < min)
+                moneyBet = min;
         }
     }
 
@@ -119,7 +120,8 @@ public final class DuelSetupGUI extends CustomGUI {
                     moneyBet += 1;
                 }
             } else {
-                if (selectedDenomIndex >= dens.size()) selectedDenomIndex = 0;
+                if (selectedDenomIndex >= dens.size())
+                    selectedDenomIndex = 0;
                 if (e.isShiftClick()) {
                     selectedDenomIndex = (selectedDenomIndex + 1) % dens.size();
                 } else {
@@ -155,27 +157,25 @@ public final class DuelSetupGUI extends CustomGUI {
 
     private void sendChallenge() {
         if (!opponent.isOnline()) {
-            player.sendMessage(MiniMessage.miniMessage().deserialize("<red>Игрок покинул сервер."));
+            dev.lovelace.loveduels.util.Lang.send(player, "gui.duel_setup.errors.offline");
             player.closeInventory();
             return;
         }
         if (duelManager.getMatchManager().isInMatch(opponent.getUniqueId())) {
-            player.sendMessage(MiniMessage.miniMessage().deserialize("<red>Этот игрок уже в бою."));
+            dev.lovelace.loveduels.util.Lang.send(player, "gui.duel_setup.errors.in_match");
             return;
         }
 
-        long cd = duelManager.getCooldownManager().getChallengeRemainingSeconds(player.getUniqueId(), opponent.getUniqueId());
+        long cd = duelManager.getCooldownManager().getChallengeRemainingSeconds(player.getUniqueId(),
+                opponent.getUniqueId());
         if (cd > 0) {
-            player.sendMessage(MiniMessage.miniMessage().deserialize(
-                    "<red>Кулдаун вызова: <gold>" + cd + "с</gold>."
-            ));
+            dev.lovelace.loveduels.util.Lang.send(player, "gui.duel_setup.errors.cooldown", "cd", String.valueOf(cd));
             return;
         }
 
         // Checked before any ticket/cooldown is spent: arenas are typed (melee / ranged / mounted).
         if (!duelManager.getArenaManager().hasArenaFor(selectedType)) {
-            player.sendMessage(MiniMessage.miniMessage().deserialize(
-                    "<red>Для режима <white>" + selectedType.getDisplayNameMiniMessage() + "</white><red> нет настроенной арены."));
+            dev.lovelace.loveduels.util.Lang.send(player, "gui.duel_setup.errors.no_arena", "type", selectedType.getDisplayNameMiniMessage());
             return;
         }
 
@@ -184,26 +184,22 @@ public final class DuelSetupGUI extends CustomGUI {
 
         if (royal) {
             if (duelManager.getMatchManager().hasActiveRoyalDuel()) {
-                player.sendMessage(MiniMessage.miniMessage().deserialize("<red>Уже идёт королевская дуэль."));
+                dev.lovelace.loveduels.util.Lang.send(player, "gui.duel_setup.errors.royal_active");
                 return;
             }
             long royalCd = duelManager.getCooldownManager().getRoyalTicketRemainingSeconds(player.getUniqueId());
             if (royalCd > 0) {
-                player.sendMessage(MiniMessage.miniMessage().deserialize(
-                        "<red>Кулдаун билета: <gold>" +
-                        dev.lovelace.loveduels.core.CooldownManager.formatDuration(royalCd) + "</gold>."
-                ));
+                dev.lovelace.loveduels.util.Lang.send(player, "gui.duel_setup.errors.royal_ticket_cd",
+                        "cd", dev.lovelace.loveduels.core.CooldownManager.formatDuration(royalCd));
                 return;
             }
             if (!hasRoyalTicket(player)) {
-                player.sendMessage(MiniMessage.miniMessage().deserialize("<red>Нет билета королевской дуэли."));
+                dev.lovelace.loveduels.util.Lang.send(player, "gui.duel_setup.errors.no_royal_ticket");
                 return;
             }
             clampRoyalMoney();
             if (moneyBet < minRoyalBet()) {
-                player.sendMessage(MiniMessage.miniMessage().deserialize(
-                        "<red>Минимум для королевской: " + CoinFormat.amount(minRoyalBet())
-                ));
+                dev.lovelace.loveduels.util.Lang.send(player, "gui.duel_setup.errors.min_royal_bet", "min", CoinFormat.amount(minRoyalBet()));
                 return;
             }
         }
@@ -227,49 +223,51 @@ public final class DuelSetupGUI extends CustomGUI {
                 bet,
                 royal,
                 training,
-                90_000L
-        );
+                90_000L);
 
         duelManager.getMatchManager().sendRequest(req);
         player.closeInventory();
 
-        player.sendMessage(MiniMessage.miniMessage().deserialize(
-                "<green>Вызов отправлен <gold>" + opponent.getName() + "</gold>."
-        ));
+        dev.lovelace.loveduels.util.Lang.send(player, "gui.duel_setup.invite.sent", "opponent", opponent.getName());
         player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.2f);
 
         Component acceptBtn = MiniMessage.miniMessage().deserialize(
-                        royal ? "<gradient:#FFD700:#C9A227>[Принять]</gradient>" : "<green>[Принять]</green>")
+                royal ? dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.invite.accept_btn_royal")
+                      : dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.invite.accept_btn"))
                 .clickEvent(ClickEvent.runCommand("/duel accept " + player.getName()))
-                .hoverEvent(HoverEvent.showText(MiniMessage.miniMessage().deserialize("<green>Принять</green>")));
-        Component denyBtn = MiniMessage.miniMessage().deserialize("<red>[Отклонить]</red>")
+                .hoverEvent(HoverEvent.showText(dev.lovelace.loveduels.util.Lang.component("gui.duel_setup.invite.hover_accept")));
+        Component denyBtn = MiniMessage.miniMessage().deserialize(dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.invite.deny_btn"))
                 .clickEvent(ClickEvent.runCommand("/duel deny " + player.getName()))
-                .hoverEvent(HoverEvent.showText(MiniMessage.miniMessage().deserialize("<red>Отклонить</red>")));
+                .hoverEvent(HoverEvent.showText(dev.lovelace.loveduels.util.Lang.component("gui.duel_setup.invite.hover_deny")));
 
         String prefix = royal
-                ? "<gradient:#FFD700:#F5E6A3:#C9A227>══ Королевский вызов ══</gradient>\n"
+                ? dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.invite.prefix_royal")
                 : training
-                    ? "<aqua>[Тренировочный вызов]</aqua>\n"
-                    : "<gold>[Вызов на дуэль]</gold>\n";
+                        ? dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.invite.prefix_training")
+                        : dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.invite.prefix_normal");
 
         String moneyLine;
         String honorLine;
         if (training) {
-            moneyLine = "<gray>Без ставок</gray>";
+            moneyLine = dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.invite.money_free");
             honorLine = "";
         } else {
-            moneyLine = "<gray>Монеты: </gray>" + CoinFormat.formatBalanceLine(duelManager.getEconomyBridge(), effectiveMoney);
-            honorLine = "\n<gray>Честь: <yellow>" + effectiveHonor + "</yellow>";
+            moneyLine = dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.invite.money_line", "money",
+                    CoinFormat.formatBalanceLine(duelManager.getEconomyBridge(), effectiveMoney));
+            honorLine = dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.invite.honor_line", "honor", String.valueOf(effectiveHonor));
         }
 
         moneyLine = CoinFormat.resolveGlyphs(opponent, moneyLine);
-        Component invite = MiniMessage.miniMessage().deserialize(
-                prefix +
-                "<white><gold>" + player.getName() + "</gold> вызывает вас.\n" +
-                "<gray>Категория: <white>" + category.getDisplayName() + "</white>\n" +
-                "<gray>Режим: </gray>" + selectedType.getDisplayNameMiniMessage() + "\n" +
-                moneyLine + honorLine + "\n"
-        ).append(acceptBtn).append(Component.text("  ")).append(denyBtn);
+        String body = dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.invite.body",
+                "player", player.getName(),
+                "category", category.getDisplayName(),
+                "type", selectedType.getDisplayNameMiniMessage(),
+                "money", moneyLine,
+                "honor", honorLine
+        );
+
+        Component invite = MiniMessage.miniMessage().deserialize(prefix + body)
+                .append(acceptBtn).append(Component.text("  ")).append(denyBtn);
 
         opponent.sendMessage(invite);
         opponent.playSound(opponent.getLocation(),
@@ -282,7 +280,8 @@ public final class DuelSetupGUI extends CustomGUI {
 
     private List<Denomination> denominations() {
         Optional<LoveEconomy> eco = CoinFormat.tryEconomy();
-        if (eco.isEmpty()) return List.of();
+        if (eco.isEmpty())
+            return List.of();
         List<Denomination> dens = new ArrayList<>(eco.get().denominations());
         dens.sort(Comparator.comparingLong(Denomination::value));
         dens.removeIf(d -> d.value() <= 0);
@@ -291,7 +290,8 @@ public final class DuelSetupGUI extends CustomGUI {
 
     private boolean hasRoyalTicket(Player p) {
         for (ItemStack item : p.getInventory().getContents()) {
-            if (duelManager.getRoyalManager().getTicketItem().isTicket(item)) return true;
+            if (duelManager.getRoyalManager().getTicketItem().isTicket(item))
+                return true;
         }
         return false;
     }
@@ -308,28 +308,22 @@ public final class DuelSetupGUI extends CustomGUI {
     }
 
     private ItemStack createOpponentInfoItem() {
-        String name = mode.isRoyal()
-                ? "<gradient:#FFD700:#C9A227>" + opponent.getName() + "</gradient>"
-                : "<gold>" + opponent.getName() + "</gold>";
-        return HeadTextures.playerHead(opponent,
-                MiniMessage.miniMessage().deserialize(name),
-                List.of(
-                        MiniMessage.miniMessage().deserialize(
-                                "<gray>HP <red>" + (int) opponent.getHealth() + "</red> · пинг <white>" + opponent.getPing() + "</white>")
-                )
+        Component name = dev.lovelace.loveduels.util.Lang.component("gui.duel_setup.opponent_info.name", "name", opponent.getName());
+        List<Component> lore = dev.lovelace.loveduels.util.Lang.componentList(
+                "gui.duel_setup.opponent_info.lore",
+                "health", String.valueOf((int) opponent.getHealth()),
+                "ping", String.valueOf(opponent.getPing())
         );
+        return HeadTextures.playerHead(opponent, name, lore);
     }
 
     private ItemStack createCategoryItem() {
-        String name = mode.isRoyal()
-                ? "<gradient:#FFD700:#C9A227>Категория: " + category.getDisplayName() + "</gradient>"
-                : "<gold>Категория: <white>" + category.getDisplayName() + "</white></gold>";
+        String name = dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.category.name", "category", category.getDisplayName());
         List<String> lore = List.of(
                 "<gray>" + category.getDescription(),
                 "",
-                "<yellow>ЛКМ</yellow> <dark_gray>—</dark_gray> <white>следующая</white>",
-                "<yellow>ПКМ</yellow> <dark_gray>—</dark_gray> <white>предыдущая</white>"
-        );
+                dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.category.hint_next"),
+                dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.category.hint_prev"));
         String tex = switch (category) {
             case MELEE -> HeadTextures.SWORD;
             case RANGED -> HeadTextures.BOW;
@@ -339,20 +333,20 @@ public final class DuelSetupGUI extends CustomGUI {
     }
 
     private ItemStack createSubtypeItem() {
-        String name = "<aqua>Режим: </aqua>" + selectedType.getDisplayNameMiniMessage();
+        String name = dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.subtype.name", "type", selectedType.getDisplayNameMiniMessage());
         List<String> lore = new ArrayList<>();
         lore.add("<gray>" + selectedType.getDescription());
         lore.add("");
         if (category.getSubtypes().size() > 1) {
-            lore.add("<yellow>ЛКМ</yellow> <dark_gray>—</dark_gray> <white>следующий</white>");
-            lore.add("<yellow>ПКМ</yellow> <dark_gray>—</dark_gray> <white>предыдущий</white>");
-            lore.add("");
             for (DuelType t : category.getSubtypes()) {
                 String mark = t == selectedType ? "<green>●</green> " : "<dark_gray>○</dark_gray> ";
                 lore.add(mark + t.getDisplayNameMiniMessage());
             }
+            lore.add("");
+            lore.add(dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.subtype.hint_next"));
+            lore.add(dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.subtype.hint_prev"));
         } else {
-            lore.add("<dark_gray>Единственный вариант</dark_gray>");
+            lore.add(dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.subtype.only_one"));
         }
         String tex = switch (selectedType) {
             case FISTS -> HeadTextures.SKULL;
@@ -368,11 +362,11 @@ public final class DuelSetupGUI extends CustomGUI {
     private ItemStack createMoneyBetItem() {
         List<String> lore = new ArrayList<>();
         if (mode.isRoyal()) {
-            lore.add("<gradient:#FFD700:#C9A227>Королевская ставка</gradient>");
-            lore.add("<gray>Минимум: </gray>" + CoinFormat.amount(minRoyalBet()));
+            lore.add(dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.money_bet.royal_header"));
+            lore.add(dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.money_bet.royal_min", "min", CoinFormat.amount(minRoyalBet())));
             lore.add("");
         }
-        lore.add("<gray>Текущая ставка:</gray>");
+        lore.add(dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.money_bet.current"));
 
         Optional<LoveEconomy> eco = CoinFormat.tryEconomy();
         if (eco.isPresent()) {
@@ -386,49 +380,47 @@ public final class DuelSetupGUI extends CustomGUI {
         lore.add("");
         List<Denomination> dens = denominations();
         if (!dens.isEmpty()) {
-            if (selectedDenomIndex >= dens.size()) selectedDenomIndex = 0;
+            if (selectedDenomIndex >= dens.size())
+                selectedDenomIndex = 0;
             Denomination sel = dens.get(selectedDenomIndex);
-            lore.add("<gray>Номинал: </gray>" + CoinFormat.getCoinGlyph(sel));
-            lore.add("<yellow>Shift</yellow> <dark_gray>—</dark_gray> <white>сменить номинал</white>");
-            lore.add("<yellow>ЛКМ</yellow> <dark_gray>—</dark_gray> <white>+ номинал</white>");
-            lore.add("<red>ПКМ</red> <dark_gray>—</dark_gray> <white>− номинал</white>");
+            lore.add(dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.money_bet.denom", "glyph", CoinFormat.getCoinGlyph(sel)));
+            lore.add(dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.money_bet.controls"));
         }
 
         String balance = CoinFormat.formatBalanceLine(duelManager.getEconomyBridge(),
                 duelManager.getEconomyBridge().getBalance(player));
         lore.add("");
-        lore.add("<gray>Баланс: </gray>" + balance);
+        lore.add(dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.money_bet.balance", "balance", balance));
 
         String name = mode.isRoyal()
-                ? "<gradient:#FFD700:#C9A227>Ставка монетами</gradient>"
-                : "<gold>Ставка монетами</gold>";
+                ? dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.money_bet.name_royal")
+                : dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.money_bet.name_normal");
         return HeadTextures.head(mode.isRoyal() ? HeadTextures.CROWN : HeadTextures.COIN, name,
                 CoinFormat.resolveGlyphs(player, lore));
     }
 
     private ItemStack createHonorBetItem() {
-        String name = mode.isRoyal()
-                ? "<gradient:#FFD700:#C9A227>Честь: " + honorBet + "</gradient>"
-                : "<yellow>Честь: <white>" + honorBet + "</white></yellow>";
-        List<String> lore = List.of(
-                "<gray>База: " + BASE_HONOR + ". Победитель получает, проигравший теряет.",
-                mode.isRoyal() ? "<gray>В королевской дуэли Честь выше ценится.</gray>" : "",
-                "",
-                "<yellow>ЛКМ</yellow> <dark_gray>—</dark_gray> <white>×2</white>",
-                "<red>ПКМ</red> <dark_gray>—</dark_gray> <white>÷2 (или база)</white>"
-        );
+        String name = dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.honor_bet.name");
+        List<String> lore = new ArrayList<>();
+        lore.add(dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.honor_bet.current", "honor", String.valueOf(honorBet)));
+        if (mode.isRoyal()) {
+            lore.add(dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.honor_bet.royal_note"));
+        }
+        lore.add("");
+        lore.add(dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.honor_bet.hint_multiply"));
+        lore.add(dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.honor_bet.hint_divide"));
         return HeadTextures.head(HeadTextures.STAR, name, lore);
     }
 
     private ItemStack createSendButton() {
         String name = mode.isRoyal()
-                ? "<gradient:#FFD700:#F5E6A3:#C9A227>Отправить королевский вызов</gradient>"
+                ? dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.send_button.name_royal")
                 : mode.isTraining()
-                    ? "<aqua>Отправить вызов</aqua>"
-                    : "<green>Отправить вызов</green>";
+                        ? dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.send_button.name_training")
+                        : dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.send_button.name_normal");
         List<String> lore = mode.isTraining()
-                ? List.of("<gray>Без ставок. Соперник примет — и сразу бой.")
-                : List.of("<gray>Соперник увидит параметры и сможет принять.");
+                ? dev.lovelace.loveduels.util.Lang.list("gui.duel_setup.send_button.lore_training")
+                : dev.lovelace.loveduels.util.Lang.list("gui.duel_setup.send_button.lore_normal");
         return HeadTextures.head(mode.isRoyal() ? HeadTextures.CROWN : HeadTextures.SWORD, name, lore);
     }
 }
