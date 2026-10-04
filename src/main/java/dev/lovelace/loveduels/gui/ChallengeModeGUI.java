@@ -15,8 +15,7 @@ public final class ChallengeModeGUI extends CustomGUI {
     private final DuelManager duelManager;
 
     public ChallengeModeGUI(Player player, DuelManager duelManager) {
-        super(player, 27, MiniMessage.miniMessage().deserialize(
-                "<gold>Выбор режима вызова</gold>"));
+        super(player, 27, dev.lovelace.loveduels.util.Lang.component("gui.challenge_mode.title"));
         this.duelManager = duelManager;
     }
 
@@ -25,33 +24,18 @@ public final class ChallengeModeGUI extends CustomGUI {
         applyStandardBorders(true, () -> new MainMenuGUI(player, duelManager).open());
 
         setItem(11, HeadTextures.head(HeadTextures.READY,
-                "<aqua>Тренировочная дуэль</aqua>",
-                List.of(
-                        "<gray>Без ставок и без изменения Чести.",
-                        "<gray>Только практика и разминка.",
-                        "",
-                        "<yellow>ЛКМ</yellow> <dark_gray>—</dark_gray> <white>выбрать соперника</white>"
-                )
+                dev.lovelace.loveduels.util.Lang.get("gui.challenge_mode.training.name"),
+                dev.lovelace.loveduels.util.Lang.list("gui.challenge_mode.training.lore")
         ), e -> new PlayerSelectGUI(player, duelManager, ChallengeMode.TRAINING).open());
 
         setItem(13, HeadTextures.head(HeadTextures.SWORD,
-                "<gold>Дуэль</gold>",
-                List.of(
-                        "<gray>Обычный поединок со ставками",
-                        "<gray>и рейтингом Чести.",
-                        "",
-                        "<yellow>ЛКМ</yellow> <dark_gray>—</dark_gray> <white>выбрать соперника</white>"
-                )
+                dev.lovelace.loveduels.util.Lang.get("gui.challenge_mode.normal.name"),
+                dev.lovelace.loveduels.util.Lang.list("gui.challenge_mode.normal.lore")
         ), e -> new PlayerSelectGUI(player, duelManager, ChallengeMode.NORMAL).open());
 
         setItem(15, HeadTextures.head(HeadTextures.CROWN,
-                "<gradient:#C9A227:#E8D48B>Королевская дуэль</gradient>",
-                List.of(
-                        "<gray>Нужен билет. Глашатай, бонусы,",
-                        "<gray>Discord и повышенная Честь.",
-                        "",
-                        "<yellow>ЛКМ</yellow> <dark_gray>—</dark_gray> <white>выбрать соперника</white>"
-                )
+                dev.lovelace.loveduels.util.Lang.get("gui.challenge_mode.royal.name"),
+                dev.lovelace.loveduels.util.Lang.list("gui.challenge_mode.royal.lore")
         ), e -> new PlayerSelectGUI(player, duelManager, ChallengeMode.ROYAL).open());
     }
 }

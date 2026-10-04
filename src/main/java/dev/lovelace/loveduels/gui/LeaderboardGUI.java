@@ -18,7 +18,7 @@ public final class LeaderboardGUI extends CustomGUI {
     private final DuelManager duelManager;
 
     public LeaderboardGUI(Player player, DuelManager duelManager) {
-        super(player, 54, MiniMessage.miniMessage().deserialize("<gold><b>🏆 Зал Славы — Топ Дуэлянтов</b></gold>"));
+        super(player, 54, dev.lovelace.loveduels.util.Lang.component("gui.leaderboard.title"));
         this.duelManager = duelManager;
     }
 
@@ -56,15 +56,16 @@ public final class LeaderboardGUI extends CustomGUI {
         SkullMeta meta = (SkullMeta) item.getItemMeta();
         if (meta != null) {
             meta.setOwningPlayer(player);
-            meta.displayName(MiniMessage.miniMessage().deserialize(
-                    "<yellow><b>Ваша статистика (" + player.getName() + ")</b></yellow>"
-            ).decoration(TextDecoration.ITALIC, false));
-            meta.lore(List.of(
-                    MiniMessage.miniMessage().deserialize("<gray>Рейтинг Чести: <gold>" + data.honor()).decoration(TextDecoration.ITALIC, false),
-                    MiniMessage.miniMessage().deserialize("<gray>Побед: <green>" + data.wins() + " <gray>| Поражений: <red>" + data.losses()).decoration(TextDecoration.ITALIC, false),
-                    MiniMessage.miniMessage().deserialize("<gray>Винрейт: <yellow>" + String.format("%.1f%%", data.winRate())).decoration(TextDecoration.ITALIC, false),
-                    MiniMessage.miniMessage().deserialize("<gray>Текущая серия: <white>" + data.currentStreak() + " <gray>(Лучшая: " + data.bestStreak() + ")").decoration(TextDecoration.ITALIC, false),
-                    MiniMessage.miniMessage().deserialize("<gray>Королевских побед: <gold>" + data.royalWins()).decoration(TextDecoration.ITALIC, false)
+            meta.displayName(dev.lovelace.loveduels.util.Lang.component("gui.leaderboard.my_stats_name", "player", player.getName()));
+            meta.lore(dev.lovelace.loveduels.util.Lang.componentList(
+                    "gui.leaderboard.my_stats_lore",
+                    "honor", String.valueOf(data.honor()),
+                    "wins", String.valueOf(data.wins()),
+                    "losses", String.valueOf(data.losses()),
+                    "winrate", String.format("%.1f", data.winRate()),
+                    "streak", String.valueOf(data.currentStreak()),
+                    "best_streak", String.valueOf(data.bestStreak()),
+                    "royal_wins", String.valueOf(data.royalWins())
             ));
             item.setItemMeta(meta);
         }
@@ -76,23 +77,22 @@ public final class LeaderboardGUI extends CustomGUI {
         SkullMeta meta = (SkullMeta) item.getItemMeta();
         if (meta != null) {
             meta.setOwningPlayer(Bukkit.getOfflinePlayer(data.uuid()));
-            String rankColor = switch (rank) {
-                case 1 -> "<gold><b>#1 👑 ";
-                case 2 -> "<white><b>#2 🥈 ";
-                case 3 -> "<yellow><b>#3 🥉 ";
-                default -> "<gray>#" + rank + " ";
+            String rankKey = switch (rank) {
+                case 1 -> "gui.leaderboard.top_rank_1";
+                case 2 -> "gui.leaderboard.top_rank_2";
+                case 3 -> "gui.leaderboard.top_rank_3";
+                default -> "gui.leaderboard.top_rank_other";
             };
 
-            meta.displayName(MiniMessage.miniMessage().deserialize(
-                    rankColor + data.name() + "</b>"
-            ).decoration(TextDecoration.ITALIC, false));
-
-            meta.lore(List.of(
-                    MiniMessage.miniMessage().deserialize("<gray>Рейтинг Чести: <gold><b>" + data.honor() + "</b>").decoration(TextDecoration.ITALIC, false),
-                    MiniMessage.miniMessage().deserialize("<gray>Побед: <green>" + data.wins() + " <gray>| Поражений: <red>" + data.losses()).decoration(TextDecoration.ITALIC, false),
-                    MiniMessage.miniMessage().deserialize("<gray>Винрейт: <yellow>" + String.format("%.1f%%", data.winRate())).decoration(TextDecoration.ITALIC, false),
-                    MiniMessage.miniMessage().deserialize("<gray>Серия побед: <white>" + data.currentStreak()).decoration(TextDecoration.ITALIC, false),
-                    MiniMessage.miniMessage().deserialize("<gray>Королевских побед: <gold>" + data.royalWins()).decoration(TextDecoration.ITALIC, false)
+            meta.displayName(dev.lovelace.loveduels.util.Lang.component(rankKey, "name", data.name(), "rank", String.valueOf(rank)));
+            meta.lore(dev.lovelace.loveduels.util.Lang.componentList(
+                    "gui.leaderboard.top_stats_lore",
+                    "honor", String.valueOf(data.honor()),
+                    "wins", String.valueOf(data.wins()),
+                    "losses", String.valueOf(data.losses()),
+                    "winrate", String.format("%.1f", data.winRate()),
+                    "streak", String.valueOf(data.currentStreak()),
+                    "royal_wins", String.valueOf(data.royalWins())
             ));
             item.setItemMeta(meta);
         }

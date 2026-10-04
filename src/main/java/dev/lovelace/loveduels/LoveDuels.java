@@ -23,6 +23,7 @@ public final class LoveDuels extends JavaPlugin {
     public void onEnable() {
         saveDefaultConfig();
         dev.lovelace.loveduels.gui.HeadsConfig.load(this);
+        dev.lovelace.loveduels.util.Lang.load(this);
 
         this.duelManager = new DuelManager(this);
 

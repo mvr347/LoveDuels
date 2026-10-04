@@ -29,10 +29,10 @@ public final class StakeConfirmGUI extends CustomGUI {
     private int selectedDenomIndex = 0;
 
     public StakeConfirmGUI(Player viewer, DuelManager duelManager, StakeConfirmSession session) {
-        super(viewer, 27, MiniMessage.miniMessage().deserialize(
+        super(viewer, 27, dev.lovelace.loveduels.util.Lang.component(
                 session.getRequest().royal()
-                        ? "<gradient:#FFD700:#C9A227>Королевское подтверждение</gradient>"
-                        : "<gold>Подтверждение дуэли</gold>"
+                        ? "gui.stake_confirm.title_royal"
+                        : "gui.stake_confirm.title_normal"
         ));
         this.duelManager = duelManager;
         this.session = session;
@@ -54,15 +54,20 @@ public final class StakeConfirmGUI extends CustomGUI {
         setItem(11, createStatusItem(p1, session.isReady(session.getPlayer1())), null);
         setItem(15, createStatusItem(p2, session.isReady(session.getPlayer2())), null);
 
-        List<String> infoLore = new ArrayList<>();
-        infoLore.add("<gray>Режим: </gray>" + type.getDisplayNameMiniMessage());
-        infoLore.add("<gray>Честь: <yellow>" + session.getHonorBet() + "</yellow>");
+        List<String> infoLore = dev.lovelace.loveduels.util.Lang.list(
+                "gui.stake_confirm.params_lore",
+                "type", type.getDisplayNameMiniMessage(),
+                "honor", String.valueOf(session.getHonorBet())
+        );
         if (royal) {
-            infoLore.add("<gradient:#FFD700:#C9A227>Королевская дуэль</gradient>");
-            infoLore.add("<gray>Минимум ставки: </gray>" + CoinFormat.amount(minMoney()));
+            infoLore.add(dev.lovelace.loveduels.util.Lang.get("gui.stake_confirm.params_royal_header"));
+            infoLore.add(dev.lovelace.loveduels.util.Lang.get("gui.stake_confirm.params_royal_min", "min", CoinFormat.amount(minMoney())));
         }
+        String paramsName = royal
+                ? dev.lovelace.loveduels.util.Lang.get("gui.stake_confirm.params_name_royal")
+                : dev.lovelace.loveduels.util.Lang.get("gui.stake_confirm.params_name_normal");
         setItem(4, HeadTextures.head(royal ? HeadTextures.CROWN : HeadTextures.SCROLL,
-                royal ? "<gradient:#FFD700:#C9A227>Параметры</gradient>" : "<gold>Параметры</gold>",
+                paramsName,
                 CoinFormat.resolveGlyphs(player, infoLore)
         ), null);
 
@@ -94,12 +99,12 @@ public final class StakeConfirmGUI extends CustomGUI {
         setItem(22, createReadyButton(myReady, royal), e -> {
             long need = session.getMoneyBet();
             if (need > 0 && !duelManager.getEconomyBridge().has(player, need)) {
-                player.sendMessage(MiniMessage.miniMessage().deserialize("<red>Недостаточно средств для ставки."));
+                dev.lovelace.loveduels.util.Lang.send(player, "gui.stake_confirm.err_no_money");
                 player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 1.0f);
                 return;
             }
             if (royal && need < minMoney()) {
-                player.sendMessage(MiniMessage.miniMessage().deserialize("<red>Минимум: " + CoinFormat.amount(minMoney())));
+                dev.lovelace.loveduels.util.Lang.send(player, "gui.stake_confirm.err_min_royal", "min", CoinFormat.amount(minMoney()));
                 return;
             }
             session.toggleReady(player.getUniqueId());
@@ -107,28 +112,30 @@ public final class StakeConfirmGUI extends CustomGUI {
         });
 
         setItem(size - 3, HeadTextures.head(HeadTextures.CANCEL,
-                "<red>Отменить</red>",
-                List.of("<gray>Отказаться от дуэли")
+                dev.lovelace.loveduels.util.Lang.get("gui.stake_confirm.cancel_name"),
+                dev.lovelace.loveduels.util.Lang.list("gui.stake_confirm.cancel_lore")
         ), e -> session.cancel(player.getUniqueId()));
     }
 
     private ItemStack createStatusItem(Player target, boolean ready) {
         String name = target != null ? target.getName() : "Игрок";
-        String status = ready ? "<green>Готов</green>" : "<red>Не готов</red>";
+        String status = ready
+                ? dev.lovelace.loveduels.util.Lang.get("gui.stake_confirm.status_ready")
+                : dev.lovelace.loveduels.util.Lang.get("gui.stake_confirm.status_not_ready");
         return HeadTextures.playerHead(target,
-                MiniMessage.miniMessage().deserialize("<gold>" + name + "</gold> · " + status),
-                List.of(MiniMessage.miniMessage().deserialize("<gray>Оба должны подтвердить"))
+                dev.lovelace.loveduels.util.Lang.component("gui.stake_confirm.status_header", "name", name, "status", status),
+                dev.lovelace.loveduels.util.Lang.componentList("gui.stake_confirm.status_lore")
         );
     }
 
     private ItemStack createMoneyItem(boolean royal) {
         List<String> lore = new ArrayList<>();
         if (royal) {
-            lore.add("<gradient:#FFD700:#C9A227>Королевская ставка</gradient>");
-            lore.add("<gray>Не ниже </gray>" + CoinFormat.amount(minMoney()));
+            lore.add(dev.lovelace.loveduels.util.Lang.get("gui.stake_confirm.money_royal_header"));
+            lore.add(dev.lovelace.loveduels.util.Lang.get("gui.stake_confirm.money_royal_min", "min", CoinFormat.amount(minMoney())));
             lore.add("");
         }
-        lore.add("<gray>Ставка (на каждого):</gray>");
+        lore.add(dev.lovelace.loveduels.util.Lang.get("gui.stake_confirm.money_current"));
         Optional<LoveEconomy> eco = CoinFormat.tryEconomy();
         if (eco.isPresent()) {
             for (Component line : CoinFormat.formatGlyphLines(eco.get(), session.getMoneyBet())) {
@@ -142,26 +149,29 @@ public final class StakeConfirmGUI extends CustomGUI {
         if (!dens.isEmpty()) {
             if (selectedDenomIndex >= dens.size()) selectedDenomIndex = 0;
             Denomination sel = dens.get(selectedDenomIndex);
-            lore.add("<gray>Номинал: </gray>" + CoinFormat.getCoinGlyph(sel));
-            lore.add("<yellow>Shift</yellow> <dark_gray>—</dark_gray> <white>сменить номинал</white>");
-            lore.add("<yellow>ЛКМ</yellow> <dark_gray>—</dark_gray> <white>+ номинал</white>");
-            lore.add("<red>ПКМ</red> <dark_gray>—</dark_gray> <white>− номинал</white>");
+            lore.add(dev.lovelace.loveduels.util.Lang.get("gui.stake_confirm.denom_line", "glyph", CoinFormat.getCoinGlyph(sel)));
+            lore.add(dev.lovelace.loveduels.util.Lang.get("gui.stake_confirm.controls_shift"));
+            lore.add(dev.lovelace.loveduels.util.Lang.get("gui.stake_confirm.controls_plus"));
+            lore.add(dev.lovelace.loveduels.util.Lang.get("gui.stake_confirm.controls_minus"));
         }
         lore.add("");
-        lore.add("<dark_gray>Смена ставки сбрасывает готовность</dark_gray>");
+        lore.add(dev.lovelace.loveduels.util.Lang.get("gui.stake_confirm.reset_hint"));
+        String name = royal
+                ? dev.lovelace.loveduels.util.Lang.get("gui.stake_confirm.money_item_name_royal")
+                : dev.lovelace.loveduels.util.Lang.get("gui.stake_confirm.money_item_name_normal");
         return HeadTextures.head(royal ? HeadTextures.CROWN : HeadTextures.COIN,
-                royal ? "<gradient:#FFD700:#C9A227>Ставка монетами</gradient>" : "<gold>Ставка монетами</gold>",
+                name,
                 CoinFormat.resolveGlyphs(player, lore));
     }
 
     private ItemStack createReadyButton(boolean ready, boolean royal) {
         String tex = ready ? HeadTextures.READY : HeadTextures.NOT_READY;
         String name = ready
-                ? "<green>Вы готовы</green> <dark_gray>(клик — отменить)</dark_gray>"
+                ? dev.lovelace.loveduels.util.Lang.get("gui.stake_confirm.ready_btn_done")
                 : (royal
-                    ? "<gradient:#FFD700:#C9A227>Готов к королевскому поединку</gradient>"
-                    : "<yellow>Нажмите: готов</yellow>");
-        return HeadTextures.head(tex, name, List.of("<gray>Когда оба готовы — старт"));
+                    ? dev.lovelace.loveduels.util.Lang.get("gui.stake_confirm.ready_btn_royal")
+                    : dev.lovelace.loveduels.util.Lang.get("gui.stake_confirm.ready_btn_normal"));
+        return HeadTextures.head(tex, name, dev.lovelace.loveduels.util.Lang.list("gui.stake_confirm.ready_btn_lore"));
     }
 
     private List<Denomination> denominations() {

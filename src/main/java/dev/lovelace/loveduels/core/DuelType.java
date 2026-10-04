@@ -68,11 +68,11 @@ public enum DuelType {
     }
 
     public Component getDisplayName() {
-        return MiniMessage.miniMessage().deserialize(displayNameMiniMessage);
+        return MiniMessage.miniMessage().deserialize(getDisplayNameMiniMessage());
     }
 
     public String getDisplayNameMiniMessage() {
-        return displayNameMiniMessage;
+        return dev.lovelace.loveduels.util.Lang.getOrDefault("types." + id + ".name", displayNameMiniMessage);
     }
 
     public Material getIcon() {
@@ -80,7 +80,7 @@ public enum DuelType {
     }
 
     public String getDescription() {
-        return description;
+        return dev.lovelace.loveduels.util.Lang.getOrDefault("types." + id + ".description", description);
     }
 
     public boolean requiresReadinessSession() {

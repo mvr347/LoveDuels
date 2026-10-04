@@ -15,8 +15,16 @@ public final class PlayerSelectGUI extends CustomGUI {
     private final DuelManager duelManager;
     private final ChallengeMode mode;
 
+    private static Component titleFor(ChallengeMode mode) {
+        return switch (mode) {
+            case TRAINING -> dev.lovelace.loveduels.util.Lang.component("gui.player_select.title_training");
+            case ROYAL -> dev.lovelace.loveduels.util.Lang.component("gui.player_select.title_royal");
+            default -> dev.lovelace.loveduels.util.Lang.component("gui.player_select.title_normal");
+        };
+    }
+
     public PlayerSelectGUI(Player player, DuelManager duelManager, ChallengeMode mode) {
-        super(player, 54, MiniMessage.miniMessage().deserialize(titleFor(mode)));
+        super(player, 54, titleFor(mode));
         this.duelManager = duelManager;
         this.mode = mode;
     }
@@ -25,14 +33,6 @@ public final class PlayerSelectGUI extends CustomGUI {
     @Deprecated
     public PlayerSelectGUI(Player player, DuelManager duelManager, boolean royal) {
         this(player, duelManager, royal ? ChallengeMode.ROYAL : ChallengeMode.NORMAL);
-    }
-
-    private static String titleFor(ChallengeMode mode) {
-        return switch (mode) {
-            case TRAINING -> "<aqua>Соперник · тренировка</aqua>";
-            case ROYAL -> "<gradient:#C9A227:#E8D48B>Соперник · королевская</gradient>";
-            default -> "<gold>Соперник · дуэль</gold>";
-        };
     }
 
     @Override
@@ -65,19 +65,19 @@ public final class PlayerSelectGUI extends CustomGUI {
     }
 
     private ItemStack createOpponentHead(Player opp) {
-        Component name = MiniMessage.miniMessage().deserialize("<gold>" + opp.getName() + "</gold>");
+        Component name = dev.lovelace.loveduels.util.Lang.component("gui.player_select.player_card.name", "name", opp.getName());
 
         long cd = duelManager.getCooldownManager().getChallengeRemainingSeconds(player.getUniqueId(), opp.getUniqueId());
-        String cdInfo = cd > 0
-                ? "<red>Кулдаун вызова: " + cd + "с</red>"
-                : "<green>Готов к вызову</green>";
+        Component cdComp = cd > 0
+                ? dev.lovelace.loveduels.util.Lang.component("gui.player_select.player_card.cooldown", "cd", String.valueOf(cd))
+                : dev.lovelace.loveduels.util.Lang.component("gui.player_select.player_card.ready");
 
         List<Component> lore = List.of(
-                MiniMessage.miniMessage().deserialize("<gray>Здоровье: <red>" + (int) opp.getHealth() + "</red>"),
-                MiniMessage.miniMessage().deserialize("<gray>Пинг: <white>" + opp.getPing() + " ms</white>"),
-                MiniMessage.miniMessage().deserialize(cdInfo),
+                dev.lovelace.loveduels.util.Lang.component("gui.player_select.player_card.health", "health", String.valueOf((int) opp.getHealth())),
+                dev.lovelace.loveduels.util.Lang.component("gui.player_select.player_card.ping", "ping", String.valueOf(opp.getPing())),
+                cdComp,
                 Component.empty(),
-                MiniMessage.miniMessage().deserialize("<yellow>ЛКМ</yellow> <dark_gray>—</dark_gray> <white>настроить дуэль</white>")
+                dev.lovelace.loveduels.util.Lang.component("gui.player_select.player_card.click_hint")
         );
 
         return HeadTextures.playerHead(opp, name, lore);
@@ -86,11 +86,8 @@ public final class PlayerSelectGUI extends CustomGUI {
     private ItemStack createNoPlayersItem() {
         return HeadTextures.head(
                 HeadTextures.EYE,
-                "<gray>Нет доступных игроков</gray>",
-                List.of(
-                        "<gray>Все оффлайн или уже в бою.",
-                        "<yellow>Пригласите кого-нибудь на сервер.</yellow>"
-                )
+                dev.lovelace.loveduels.util.Lang.get("gui.player_select.no_players.name"),
+                dev.lovelace.loveduels.util.Lang.list("gui.player_select.no_players.lore")
         );
     }
 }

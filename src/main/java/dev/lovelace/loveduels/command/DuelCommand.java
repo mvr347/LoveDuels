@@ -39,7 +39,7 @@ public final class DuelCommand implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage(MiniMessage.miniMessage().deserialize("<red>Команда только для игроков."));
+            dev.lovelace.loveduels.util.Lang.send(sender, "commands.only-players");
             return true;
         }
 
@@ -55,9 +55,7 @@ public final class DuelCommand implements CommandExecutor, TabCompleter {
             case "deny", "отклонить", "decline" -> handleDeny(player, args);
             case "leave", "выйти", "покинуть" -> handleLeave(player);
             case "spectate", "наблюдать", "spec" -> handleSpectate(player, args);
-            case "top", "топ", "leaderboard" -> player.sendMessage(MiniMessage.miniMessage().deserialize(
-                    "<gray>Ранги по видам дуэлей — в разработке. Статистика: <yellow>/duel stats</yellow>"
-            ));
+            case "top", "топ", "leaderboard" -> dev.lovelace.loveduels.util.Lang.send(player, "commands.duel-stats");
             case "stats", "статистика" -> handleStats(player, args);
             case "rematch", "реванш", "revenge", "месть" -> handleRematch(player);
             case "forfeit", "surrender", "сдаться" -> handleForfeit(player);
@@ -66,11 +64,9 @@ public final class DuelCommand implements CommandExecutor, TabCompleter {
                 if (target != null && !target.equals(player)) {
                     new DuelSetupGUI(player, target, duelManager, ChallengeMode.NORMAL).open();
                 } else if (target != null) {
-                    player.sendMessage(MiniMessage.miniMessage().deserialize("<red>Нельзя вызвать самого себя."));
+                    dev.lovelace.loveduels.util.Lang.send(player, "commands.self-challenge");
                 } else {
-                    player.sendMessage(MiniMessage.miniMessage().deserialize(
-                            "<red>Игрок <gold>" + args[0] + "</gold> не найден. <yellow>/duel help</yellow>"
-                    ));
+                    dev.lovelace.loveduels.util.Lang.send(player, "commands.player-not-found");
                 }
             }
         }

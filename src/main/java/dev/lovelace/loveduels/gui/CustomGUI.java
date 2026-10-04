@@ -124,23 +124,27 @@ public abstract class CustomGUI implements InventoryHolder {
         SkullMeta meta = (SkullMeta) item.getItemMeta();
         if (meta != null) {
             meta.setOwningPlayer(p);
-            meta.displayName(MiniMessage.miniMessage().deserialize(
-                    "<gold>" + p.getName() + "</gold>"
-            ).decoration(TextDecoration.ITALIC, false));
-            meta.lore(List.of(
-                    MiniMessage.miniMessage().deserialize("<gray>Профиль LoveDuels</gray>").decoration(TextDecoration.ITALIC, false)
-            ));
+            meta.displayName(dev.lovelace.loveduels.util.Lang.component("gui.common.profile.name", "player", p.getName()));
+            meta.lore(dev.lovelace.loveduels.util.Lang.componentList("gui.common.profile.lore", "player", p.getName()));
             item.setItemMeta(meta);
         }
         return item;
     }
 
     protected ItemStack createBackButton() {
-        return HeadTextures.head(HeadTextures.BACK, "<yellow>Назад</yellow>", List.of("<gray>Предыдущее меню</gray>"));
+        return HeadTextures.head(
+                HeadTextures.BACK,
+                dev.lovelace.loveduels.util.Lang.get("gui.common.back.name"),
+                dev.lovelace.loveduels.util.Lang.list("gui.common.back.lore")
+        );
     }
 
     protected ItemStack createCloseButton() {
-        return HeadTextures.head(HeadTextures.CLOSE, "<red>Закрыть</red>", List.of("<gray>Закрыть окно</gray>"));
+        return HeadTextures.head(
+                HeadTextures.CLOSE,
+                dev.lovelace.loveduels.util.Lang.get("gui.common.close.name"),
+                dev.lovelace.loveduels.util.Lang.list("gui.common.close.lore")
+        );
     }
 
     @Override

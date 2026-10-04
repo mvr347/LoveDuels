@@ -12,7 +12,7 @@ public final class RoyalDuelGUI extends CustomGUI {
     private final DuelManager duelManager;
 
     public RoyalDuelGUI(Player player, DuelManager duelManager) {
-        super(player, 45, MiniMessage.miniMessage().deserialize("<gradient:#FFD700:#FFA500><b>👑 Королевские Дуэли Королевства</b></gradient>"));
+        super(player, 45, dev.lovelace.loveduels.util.Lang.component("gui.royal_duel.title"));
         this.duelManager = duelManager;
     }
 
@@ -33,15 +33,15 @@ public final class RoyalDuelGUI extends CustomGUI {
         // Challenge Button (Slot 24)
         setItem(24, createChallengeButtonItem(hasTicket, serverActive, cd), e -> {
             if (!hasTicket) {
-                player.sendMessage(MiniMessage.miniMessage().deserialize("<red>❌ У вас нет Билета Королевской Дуэли!"));
+                dev.lovelace.loveduels.util.Lang.send(player, "gui.royal_duel.err_no_ticket");
                 return;
             }
             if (serverActive) {
-                player.sendMessage(MiniMessage.miniMessage().deserialize("<red>❌ На сервере уже идёт Королевская Дуэль!"));
+                dev.lovelace.loveduels.util.Lang.send(player, "gui.royal_duel.err_active_duel");
                 return;
             }
             if (cd > 0) {
-                player.sendMessage(MiniMessage.miniMessage().deserialize("<red>⏳ Подождите кулдаун билета: " + cd + "с."));
+                dev.lovelace.loveduels.util.Lang.send(player, "gui.royal_duel.err_cd", "cd", String.valueOf(cd));
                 return;
             }
             new PlayerSelectGUI(player, duelManager, true).open();
@@ -58,31 +58,29 @@ public final class RoyalDuelGUI extends CustomGUI {
     }
 
     private ItemStack createOverviewItem() {
-        String name = "<gradient:#FFD700:#FFA500><b>Правила Королевской Дуэли</b></gradient>";
-        List<String> lore = List.of(
-                "<gray>Самый престижный турнирный бой.",
-                "",
-                "<yellow>▪ Обязательная ставка деньгами",
-                "<yellow>▪ Серверные оповещения Глашатая",
-                "<yellow>▪ Победитель забирает банк + <gold>25% бонус",
-                "<yellow>▪ Увеличенный прирост Чести (<green>+150%</green>)",
-                "<yellow>▪ Оповещение в канале Discord",
-                "<yellow>▪ Ограничение: 1 дуэль на сервер одновременно"
-        );
+        String name = dev.lovelace.loveduels.util.Lang.get("gui.royal_duel.rules_name");
+        List<String> lore = dev.lovelace.loveduels.util.Lang.list("gui.royal_duel.rules_lore");
         return HeadTextures.head(HeadTextures.SCROLL, name, lore);
     }
 
     private ItemStack createStatusItem(boolean hasTicket, boolean serverActive, long cd) {
         boolean can = hasTicket && !serverActive && cd <= 0;
-        String ticketStr = hasTicket ? "<green>✔ В наличии" : "<red>✖ Отсутствует";
-        String arenaStr = serverActive ? "<red>✖ Занято (идёт бой)" : "<green>✔ Свободно";
-        String cdStr = cd <= 0 ? "<green>✔ Готов" : "<red>⏳ " + cd + "с";
+        String ticketStr = hasTicket
+                ? dev.lovelace.loveduels.util.Lang.get("gui.royal_duel.ticket_yes")
+                : dev.lovelace.loveduels.util.Lang.get("gui.royal_duel.ticket_no");
+        String arenaStr = serverActive
+                ? dev.lovelace.loveduels.util.Lang.get("gui.royal_duel.arena_busy")
+                : dev.lovelace.loveduels.util.Lang.get("gui.royal_duel.arena_free");
+        String cdStr = cd <= 0
+                ? dev.lovelace.loveduels.util.Lang.get("gui.royal_duel.cd_ready")
+                : dev.lovelace.loveduels.util.Lang.get("gui.royal_duel.cd_wait", "cd", String.valueOf(cd));
 
-        String name = "<gold><b>Статус готовности:</b></gold>";
-        List<String> lore = List.of(
-                "<gray>Наличие билета: " + ticketStr,
-                "<gray>Статус турнира: " + arenaStr,
-                "<gray>Кулдаун билета: " + cdStr
+        String name = dev.lovelace.loveduels.util.Lang.get("gui.royal_duel.status_name");
+        List<String> lore = dev.lovelace.loveduels.util.Lang.list(
+                "gui.royal_duel.status_lore",
+                "ticket", ticketStr,
+                "arena", arenaStr,
+                "cd", cdStr
         );
 
         return HeadTextures.head(can ? HeadTextures.READY : HeadTextures.NOT_READY, name, lore);
@@ -90,11 +88,12 @@ public final class RoyalDuelGUI extends CustomGUI {
 
     private ItemStack createChallengeButtonItem(boolean hasTicket, boolean serverActive, long cd) {
         boolean can = hasTicket && !serverActive && cd <= 0;
-        String name = can ? "<gradient:#FFD700:#FFA500><b>⚔ БРОСИТЬ КОРОЛЕВСКИЙ ВЫЗОВ</b></gradient>"
-                          : "<red><b>Недоступно для вызова</b></red>";
-        List<String> lore = List.of(
-                can ? "<yellow>➤ Нажмите для выбора оппонента" : "<gray>Проверьте условия готовности"
-        );
+        String name = can
+                ? dev.lovelace.loveduels.util.Lang.get("gui.royal_duel.btn_available")
+                : dev.lovelace.loveduels.util.Lang.get("gui.royal_duel.btn_unavailable");
+        List<String> lore = can
+                ? dev.lovelace.loveduels.util.Lang.list("gui.royal_duel.btn_lore_available")
+                : dev.lovelace.loveduels.util.Lang.list("gui.royal_duel.btn_lore_unavailable");
         return HeadTextures.head(can ? HeadTextures.CROWN : HeadTextures.CANCEL, name, lore);
     }
 }

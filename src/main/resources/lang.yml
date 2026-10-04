@@ -1,0 +1,362 @@
+prefix: "<gradient:#FFD700:#C9A227>[LoveDuels]</gradient> "
+
+categories:
+  melee:
+    name: "Ближний бой"
+    description: "Кулаки, рыцарское снаряжение или свои вещи."
+  ranged:
+    name: "Дальний бой"
+    description: "Луки и арбалеты."
+  mounted:
+    name: "Всадники"
+    description: "Турнир на копьях верхом."
+
+types:
+  own_inventory:
+    name: "<gold>Свои вещи</gold>"
+    description: "Сражение в собственной экипировке."
+  kit:
+    name: "<aqua>Рыцарское снаряжение</aqua>"
+    description: "Равный набор брони и оружия."
+  sword:
+    name: "<yellow>Мечи</yellow>"
+    description: "Классическая дуэль на мечах."
+  bow:
+    name: "<green>Луки</green>"
+    description: "Стрелковая дуэль на луках."
+  crossbow:
+    name: "<dark_aqua>Арбалеты</dark_aqua>"
+    description: "Дуэль на арбалетах."
+  horse_spear:
+    name: "<gold>Копьё</gold>"
+    description: "Турнир верхом с зарядом копья."
+  fists:
+    name: "<red>Кулаки</red>"
+    description: "Голые руки, без оружия и брони."
+
+gui:
+  common:
+    back:
+      name: "<yellow>Назад</yellow>"
+      lore:
+        - "<gray>Предыдущее меню</gray>"
+    close:
+      name: "<red>Закрыть</red>"
+      lore:
+        - "<gray>Закрыть окно</gray>"
+    profile:
+      name: "<gold>{player}</gold>"
+      lore:
+        - "<gray>Профиль LoveDuels</gray>"
+
+  main_menu:
+    title: "<gradient:#C9A227:#E8D48B>Турниры и дуэли</gradient>"
+    challenge:
+      name: "<gold>Бросить вызов</gold>"
+      lore:
+        - "<gray>Тренировка, обычная или королевская дуэль."
+        - ""
+        - "<yellow>ЛКМ</yellow> <dark_gray>—</dark_gray> <white>выбрать режим</white>"
+    spectate:
+      name: "<light_purple>Наблюдение</light_purple>"
+      lore:
+        - "<gray>Смотрите идущие поединки с трибун."
+        - ""
+        - "<yellow>ЛКМ</yellow> <dark_gray>—</dark_gray> <white>список боёв</white>"
+
+  challenge_mode:
+    title: "<gold>Выбор режима вызова</gold>"
+    training:
+      name: "<aqua>Тренировочная дуэль</aqua>"
+      lore:
+        - "<gray>Без ставок и без изменения Чести."
+        - "<gray>Только практика и разминка."
+        - ""
+        - "<yellow>ЛКМ</yellow> <dark_gray>—</dark_gray> <white>выбрать соперника</white>"
+    normal:
+      name: "<gold>Дуэль</gold>"
+      lore:
+        - "<gray>Обычный поединок со ставками"
+        - "<gray>и рейтингом Чести."
+        - ""
+        - "<yellow>ЛКМ</yellow> <dark_gray>—</dark_gray> <white>выбрать соперника</white>"
+    royal:
+      name: "<gradient:#C9A227:#E8D48B>Королевская дуэль</gradient>"
+      lore:
+        - "<gray>Нужен билет. Глашатай, бонусы,"
+        - "<gray>Discord и повышенная Честь."
+        - ""
+        - "<yellow>ЛКМ</yellow> <dark_gray>—</dark_gray> <white>выбрать соперника</white>"
+
+  player_select:
+    title_training: "<aqua>Соперник · тренировка</aqua>"
+    title_normal: "<gold>Соперник · дуэль</gold>"
+    title_royal: "<gradient:#C9A227:#E8D48B>Соперник · королевская</gradient>"
+    no_players:
+      name: "<gray>Нет доступных игроков</gray>"
+      lore:
+        - "<gray>Все оффлайн или уже в бою."
+        - "<yellow>Пригласите кого-нибудь на сервер.</yellow>"
+    player_card:
+      name: "<gold>{name}</gold>"
+      health: "<gray>Здоровье: <red>{health}</red>"
+      ping: "<gray>Пинг: <white>{ping} ms</white>"
+      cooldown: "<red>Кулдаун вызова: {cd}с</red>"
+      ready: "<green>Готов к вызову</green>"
+      click_hint: "<yellow>ЛКМ</yellow> <dark_gray>—</dark_gray> <white>настроить дуэль</white>"
+
+  duel_setup:
+    title_training: "<aqua>Тренировка</aqua>"
+    title_normal: "<gold>Настройка дуэли</gold>"
+    title_royal: "<gradient:#FFD700:#F5E6A3:#C9A227>Королевская дуэль</gradient>"
+    opponent_info:
+      name: "<gold>{name}</gold>"
+      lore:
+        - "<gray>HP <red>{health}</red> · пинг <white>{ping}</white>"
+    category:
+      name: "<gold>Категория: </gold><white>{category}</white>"
+      hint_next: "<yellow>ЛКМ</yellow> <dark_gray>—</dark_gray> <white>следующая</white>"
+      hint_prev: "<yellow>ПКМ</yellow> <dark_gray>—</dark_gray> <white>предыдущая</white>"
+    subtype:
+      name: "<aqua>Режим: </aqua>{type}"
+      only_one: "<dark_gray>Единственный вариант</dark_gray>"
+      hint_next: "<yellow>ЛКМ</yellow> <dark_gray>—</dark_gray> <gray>следующий</gray>"
+      hint_prev: "<yellow>ПКМ</yellow> <dark_gray>—</dark_gray> <gray>предыдущий</gray>"
+    money_bet:
+      name_normal: "<gold>Ставка монетами</gold>"
+      name_royal: "<gradient:#FFD700:#C9A227>Ставка монетами</gradient>"
+      royal_header: "<gradient:#FFD700:#C9A227>Королевская ставка</gradient>"
+      royal_min: "<gray>Минимум: </gray>{min}"
+      current: "<gray>Текущая ставка:</gray>"
+      denom: "<gray>Номинал: </gray>{glyph}"
+      controls: "<yellow>Shift</yellow> <gray>•</gray> <gray>сменить</gray>  <yellow>ЛКМ</yellow> <gray>•</gray> <gray>+</gray>  <red>ПКМ</red> <gray>•</gray> <gray>−</gray>"
+      balance: "<gray>Баланс: </gray>{balance}"
+    honor_bet:
+      name: "<gold>Ставка чести</gold>"
+      current: "<gray>Текущая ставка: <yellow>{honor}</yellow>"
+      royal_note: "<gray>В королевской дуэли Честь выше ценится.</gray>"
+      hint_multiply: "<yellow>ЛКМ</yellow> <dark_gray>—</dark_gray> <white>×2</white>"
+      hint_divide: "<red>ПКМ</red> <dark_gray>—</dark_gray> <white>÷2 (или база)</white>"
+    send_button:
+      name_training: "<aqua>Отправить вызов</aqua>"
+      name_normal: "<green>Отправить вызов</green>"
+      name_royal: "<gradient:#FFD700:#F5E6A3:#C9A227>Отправить королевский вызов</gradient>"
+      lore_training:
+        - "<gray>Без ставок. Соперник примет — и сразу бой."
+      lore_normal:
+        - "<gray>Соперник увидит параметры и сможет принять."
+    invite:
+      prefix_royal: "<gradient:#FFD700:#F5E6A3:#C9A227>══ Королевский вызов ══</gradient>\n"
+      prefix_training: "<aqua>[Тренировочный вызов]</aqua>\n"
+      prefix_normal: "<gold>[Вызов на дуэль]</gold>\n"
+      money_free: "<gray>Без ставок</gray>"
+      money_line: "<gray>Монеты: </gray>{money}"
+      honor_line: "\n<gray>Честь: <yellow>{honor}</yellow>"
+      body: "<white><gold>{player}</gold> вызывает вас.\n<gray>Категория: <white>{category}</white>\n<gray>Режим: </gray>{type}\n{money}{honor}\n"
+      accept_btn: "<green>[Принять]</green>"
+      accept_btn_royal: "<gradient:#FFD700:#C9A227>[Принять]</gradient>"
+      deny_btn: "<red>[Отклонить]</red>"
+      hover_accept: "<green>Принять</green>"
+      hover_deny: "<red>Отклонить</red>"
+      sent: "<green>Вызов отправлен <gold>{opponent}</gold>."
+    errors:
+      offline: "<red>Игрок покинул сервер."
+      in_match: "<red>Этот игрок уже в бою."
+      cooldown: "<red>Кулдаун вызова: <gold>{cd}с</gold>."
+      no_arena: "<red>Для режима <white>{type}</white><red> нет настроенной арены."
+      royal_active: "<red>Уже идёт королевская дуэль."
+      royal_ticket_cd: "<red>Кулдаун билета: <gold>{cd}</gold>."
+      no_royal_ticket: "<red>Нет билета королевской дуэли."
+      min_royal_bet: "<red>Минимум для королевской: {min}"
+
+  confirm_bet:
+    title: "<red><b>Подтверждение ставки</b>"
+    confirm_name: "<green><b>✔ Подтвердить</b>"
+    confirm_lore:
+      - "<gray>Ставка: </gray>{money}"
+      - "{honor}"
+      - ""
+      - "<green>ЛКМ — отправить вызов"
+    honor_line: "<gray>Честь: <yellow>{honor}"
+    honor_none: "<gray>Честь: <white>нет"
+    cancel_name: "<red><b>✖ Отмена</b>"
+    cancel_lore:
+      - "<gray>Вернуться к настройке дуэли"
+      - ""
+      - "<red>ЛКМ — отмена"
+
+  kit_select:
+    title: "<aqua><b>🛡 Выбор набора снаряжения (Кита)</b></aqua>"
+    no_kits_name: "<red><b>Наборы не найдены</b></red>"
+    no_kits_lore:
+      - "<gray>На сервере пока нет настроенных китов."
+    kit_item_name: "<aqua><b>{name}</b></aqua>"
+    kit_item_lore:
+      - "<gray>Идентификатор: <white>{id}"
+      - ""
+      - "<yellow>Эффекты: <white>{effects}"
+      - ""
+      - "<yellow>➤ Нажмите для выбора этого кита"
+    kit_effects_none: "Нет"
+    kit_effects_count: "{count} шт."
+    kit_selected_chat: "<green>🛡 Выбран набор: {name}"
+
+  leaderboard:
+    title: "<gold><b>🏆 Зал Славы — Топ Дуэлянтов</b></gold>"
+    my_stats_name: "<yellow><b>Ваша статистика ({player})</b></yellow>"
+    my_stats_lore:
+      - "<gray>Рейтинг Чести: <gold>{honor}"
+      - "<gray>Побед: <green>{wins} <gray>| Поражений: <red>{losses}"
+      - "<gray>Винрейт: <yellow>{winrate}%"
+      - "<gray>Текущая серия: <white>{streak} <gray>(Лучшая: {best_streak})"
+      - "<gray>Королевских побед: <gold>{royal_wins}"
+    top_rank_1: "<gold><b>#1 👑 {name}</b>"
+    top_rank_2: "<white><b>#2 🥈 {name}</b>"
+    top_rank_3: "<yellow><b>#3 🥉 {name}</b>"
+    top_rank_other: "<gray>#{rank} {name}</b>"
+    top_stats_lore:
+      - "<gray>Рейтинг Чести: <gold><b>{honor}</b>"
+      - "<gray>Побед: <green>{wins} <gray>| Поражений: <red>{losses}"
+      - "<gray>Винрейт: <yellow>{winrate}%"
+      - "<gray>Серия побед: <white>{streak}"
+      - "<gray>Королевских побед: <gold>{royal_wins}"
+
+  post_duel:
+    title: "<gold><b>⚔ Итоги поединка</b></gold>"
+    stats_name: "<gold><b>Боевая статистика</b></gold>"
+    stats_lore:
+      - "<gray>Причина завершения: <white>{reason}"
+      - "<gray>Длительность: <white>{duration}с"
+      - ""
+      - "<gray>Нанесённый урон: <red>{damage}❤"
+      - "<gray>Набранные очки: <yellow>{points}"
+    draw_name: "<yellow><b>⌛ НИЧЬЯ</b></yellow>"
+    draw_lore:
+      - "<gray>Исход: <yellow>{reason}"
+      - "<gray>Деньги: {money}"
+      - "<gray>Честь: <white>Без изменений"
+    draw_money_burned: "<red>Ставки сгорели в казне"
+    draw_money_refunded: "<green>Ставки возвращены"
+    win_name: "<green><b>🏆 ВЫ ПОБЕДИЛИ!</b>"
+    win_lore:
+      - "<gray>Деньги: <green>+</green>{money}"
+      - "<gray>Честь: <gold>+{honor}"
+    defeat_name: "<red><b>💀 ПОРАЖЕНИЕ</b>"
+    defeat_lore:
+      - "<gray>Деньги: <red>Потеряна ставка"
+      - "<gray>Честь: <gray>-{honor}"
+    rematch_name: "<yellow><b>⚔ РЕВАНШ</b></yellow>"
+    rematch_lore:
+      - "<gray>Соперник: <gold>{opponent}"
+      - ""
+      - "<yellow>➤ Нажмите, чтобы предложить реванш!"
+    rematch_opp_offline: "<red>❌ Соперник уже не в сети."
+
+  readiness:
+    title: "<gradient:#FFD700:#FFA500><b>⚔ Подтверждение готовности</b></gradient>"
+    status_ready: "<green><b>✔ ГОТОВ К БОЮ</b>"
+    status_not_ready: "<red><b>✖ НЕ ГОТОВ</b>"
+    status_header: "<gold><b>{player}</b>: {status}"
+    status_lore:
+      - "<gray>Оба бойца должны подтвердить"
+      - "<gray>готовность перед началом поединка."
+    toggle_ready: "<green><b>✔ ВЫ ГОТОВЫ!</b> (Нажмите для отмены)"
+    toggle_not_ready: "<yellow><b>➤ НАЖМИТЕ: Я ГОТОВ!</b>"
+    toggle_lore:
+      - "<gray>Нажмите, чтобы изменить статус готовности."
+    cancel_name: "<red><b>✖ Отменить дуэль</b>"
+    cancel_lore:
+      - "<gray>Отказаться от поединка и закрыть окно"
+
+  royal_duel:
+    title: "<gradient:#FFD700:#FFA500><b>👑 Королевские Дуэли Королевства</b></gradient>"
+    rules_name: "<gradient:#FFD700:#FFA500><b>Правила Королевской Дуэли</b></gradient>"
+    rules_lore:
+      - "<gray>Самый престижный турнирный бой."
+      - ""
+      - "<yellow>▪ Обязательная ставка деньгами"
+      - "<yellow>▪ Серверные оповещения Глашатая"
+      - "<yellow>▪ Победитель забирает банк + <gold>25% бонус"
+      - "<yellow>▪ Увеличенный прирост Чести (<green>+150%</green>)"
+      - "<yellow>▪ Оповещение в канале Discord"
+      - "<yellow>▪ Ограничение: 1 дуэль на сервер одновременно"
+    status_name: "<gold><b>Статус готовности:</b></gold>"
+    status_lore:
+      - "<gray>Наличие билета: {ticket}"
+      - "<gray>Статус турнира: {arena}"
+      - "<gray>Кулдаун билета: {cd}"
+    ticket_yes: "<green>✔ В наличии"
+    ticket_no: "<red>✖ Отсутствует"
+    arena_busy: "<red>✖ Занято (идёт бой)"
+    arena_free: "<green>✔ Свободно"
+    cd_ready: "<green>✔ Готов"
+    cd_wait: "<red>⏳ {cd}с"
+    btn_available: "<gradient:#FFD700:#FFA500><b>⚔ БРОСИТЬ КОРОЛЕВСКИЙ ВЫЗОВ</b></gradient>"
+    btn_unavailable: "<red><b>Недоступно для вызова</b></red>"
+    btn_lore_available:
+      - "<yellow>➤ Нажмите для выбора оппонента"
+    btn_lore_unavailable:
+      - "<gray>Проверьте условия готовности"
+    err_no_ticket: "<red>❌ У вас нет Билета Королевской Дуэли!"
+    err_active_duel: "<red>❌ На сервере уже идёт Королевская Дуэль!"
+    err_cd: "<red>⏳ Подождите кулдаун билета: {cd}с."
+
+  spectate_list:
+    title: "<light_purple><b>👁 Наблюдение за активными дуэлями</b></light_purple>"
+    no_matches_name: "<gray>В данный момент нет активных дуэлей"
+    no_matches_lore:
+      - "<gray>Сейчас все арены свободны."
+      - "<yellow>Вы можете бросить вызов сами!"
+    match_card_title: "{prefix}<b>{p1} <gray>vs <white>{p2}</b>"
+    match_card_prefix_normal: "<gold>⚔ "
+    match_card_prefix_royal: "<gradient:#FFD700:#FFA500>👑 "
+    ticket_free: "<green>БЕСПЛАТНО"
+    match_card_lore:
+      - "<gray>Режим: <white>{type}"
+      - "<gray>Арена: <yellow>{arena}"
+      - "<gray>Зрителей: <aqua>{spectators}"
+      - "<gray>Цена билета: {fee}"
+      - ""
+      - "<yellow>➤ Нажмите, чтобы перейти на трибуны"
+
+  stake_confirm:
+    title_normal: "<gold>Подтверждение дуэли</gold>"
+    title_royal: "<gradient:#FFD700:#C9A227>Королевское подтверждение</gradient>"
+    params_name_normal: "<gold>Параметры</gold>"
+    params_name_royal: "<gradient:#FFD700:#C9A227>Параметры</gradient>"
+    params_lore:
+      - "<gray>Режим: </gray>{type}"
+      - "<gray>Честь: <yellow>{honor}</yellow>"
+    params_royal_header: "<gradient:#FFD700:#C9A227>Королевская дуэль</gradient>"
+    params_royal_min: "<gray>Минимум ставки: </gray>{min}"
+    money_royal_header: "<gradient:#FFD700:#C9A227>Королевская ставка</gradient>"
+    money_royal_min: "<gray>Не ниже </gray>{min}"
+    money_current: "<gray>Ставка (на каждого):</gray>"
+    denom_line: "<gray>Номинал: </gray>{glyph}"
+    controls_shift: "<yellow>Shift</yellow> <dark_gray>—</dark_gray> <white>сменить номинал</white>"
+    controls_plus: "<yellow>ЛКМ</yellow> <dark_gray>—</dark_gray> <white>+ номинал</white>"
+    controls_minus: "<red>ПКМ</red> <dark_gray>—</dark_gray> <white>− номинал</white>"
+    reset_hint: "<dark_gray>Смена ставки сбрасывает готовность</dark_gray>"
+    money_item_name_normal: "<gold>Ставка монетами</gold>"
+    money_item_name_royal: "<gradient:#FFD700:#C9A227>Ставка монетами</gradient>"
+    status_ready: "<green>Готов</green>"
+    status_not_ready: "<red>Не готов</red>"
+    status_header: "<gold>{name}</gold> · {status}"
+    status_lore:
+      - "<gray>Оба должны подтвердить"
+    ready_btn_done: "<green>Вы готовы</green> <dark_gray>(клик — отменить)</dark_gray>"
+    ready_btn_normal: "<yellow>Нажмите: готов</yellow>"
+    ready_btn_royal: "<gradient:#FFD700:#C9A227>Готов к королевскому поединку</gradient>"
+    ready_btn_lore:
+      - "<gray>Когда оба готовы — старт"
+    cancel_name: "<red>Отменить</red>"
+    cancel_lore:
+      - "<gray>Отказаться от дуэли"
+    err_no_money: "<red>Недостаточно средств для ставки."
+    err_min_royal: "<red>Минимум: {min}"
+
+commands:
+  only-players: "<red>Команда только для игроков."
+  duel-stats: "<gray>Ранги по видам дуэлей — в разработке. Статистика: <yellow>/duel stats</yellow>"
+  self-challenge: "<red>Нельзя вызвать самого себя."
+  player-not-found: "<red>Игрок не найден или не в сети."

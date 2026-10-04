@@ -17,7 +17,7 @@ public final class ReadinessGUI extends CustomGUI {
     private final Player player2;
 
     public ReadinessGUI(Player viewer, ReadinessSession session) {
-        super(viewer, 27, MiniMessage.miniMessage().deserialize("<gradient:#FFD700:#FFA500><b>⚔ Подтверждение готовности</b></gradient>"));
+        super(viewer, 27, dev.lovelace.loveduels.util.Lang.component("gui.readiness.title"));
         this.session = session;
         this.player1 = Bukkit.getPlayer(session.getPlayer1());
         this.player2 = Bukkit.getPlayer(session.getPlayer2());
@@ -48,29 +48,28 @@ public final class ReadinessGUI extends CustomGUI {
 
     private ItemStack createStatusItem(Player target, boolean ready) {
         String name = (target != null) ? target.getName() : "Игрок";
-        String status = ready ? "<green><b>✔ ГОТОВ К БОЮ</b>" : "<red><b>✖ НЕ ГОТОВ</b>";
-        var compName = MiniMessage.miniMessage().deserialize("<gold><b>" + name + "</b>: " + status);
-        var compLore = List.of(
-                MiniMessage.miniMessage().deserialize("<gray>Оба бойца должны подтвердить"),
-                MiniMessage.miniMessage().deserialize("<gray>готовность перед началом поединка.")
-        );
+        String status = ready
+                ? dev.lovelace.loveduels.util.Lang.get("gui.readiness.status_ready")
+                : dev.lovelace.loveduels.util.Lang.get("gui.readiness.status_not_ready");
+        var compName = dev.lovelace.loveduels.util.Lang.component("gui.readiness.status_header", "player", name, "status", status);
+        var compLore = dev.lovelace.loveduels.util.Lang.componentList("gui.readiness.status_lore");
         return HeadTextures.playerHead(target, compName, compLore);
     }
 
     private ItemStack createToggleButton(boolean ready) {
         String texture = ready ? HeadTextures.READY : HeadTextures.NOT_READY;
-        String name = ready ? "<green><b>✔ ВЫ ГОТОВЫ!</b> (Нажмите для отмены)" : "<yellow><b>➤ НАЖМИТЕ: Я ГОТОВ!</b>";
-        List<String> lore = List.of(
-                "<gray>Нажмите, чтобы изменить статус готовности."
-        );
+        String name = ready
+                ? dev.lovelace.loveduels.util.Lang.get("gui.readiness.toggle_ready")
+                : dev.lovelace.loveduels.util.Lang.get("gui.readiness.toggle_not_ready");
+        List<String> lore = dev.lovelace.loveduels.util.Lang.list("gui.readiness.toggle_lore");
         return HeadTextures.head(texture, name, lore);
     }
 
     private ItemStack createCancelButton() {
         return HeadTextures.head(
                 HeadTextures.CANCEL,
-                "<red><b>✖ Отменить дуэль</b>",
-                List.of("<gray>Отказаться от поединка и закрыть окно")
+                dev.lovelace.loveduels.util.Lang.get("gui.readiness.cancel_name"),
+                dev.lovelace.loveduels.util.Lang.list("gui.readiness.cancel_lore")
         );
     }
 

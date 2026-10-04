@@ -8,6 +8,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -16,7 +17,7 @@ public final class SpectateListGUI extends CustomGUI {
     private final DuelManager duelManager;
 
     public SpectateListGUI(Player player, DuelManager duelManager) {
-        super(player, 45, MiniMessage.miniMessage().deserialize("<light_purple><b>👁 Наблюдение за активными дуэлями</b></light_purple>"));
+        super(player, 45, dev.lovelace.loveduels.util.Lang.component("gui.spectate_list.title"));
         this.duelManager = duelManager;
     }
 
@@ -47,23 +48,39 @@ public final class SpectateListGUI extends CustomGUI {
     private ItemStack createMatchItem(Match match) {
         String p1 = match.getPlayer1().getName();
         String p2 = match.getPlayer2().getName();
-        String prefix = match.isRoyal() ? "<gradient:#FFD700:#FFA500>👑 " : "<gold>⚔ ";
+        String prefix = match.isRoyal()
+                ? dev.lovelace.loveduels.util.Lang.get("gui.spectate_list.match_card_prefix_royal")
+                : dev.lovelace.loveduels.util.Lang.get("gui.spectate_list.match_card_prefix_normal");
 
-        Component nameComp = MiniMessage.miniMessage().deserialize(
-                prefix + "<b>" + p1 + " <gray>vs <white>" + p2 + "</b>"
+        Component nameComp = dev.lovelace.loveduels.util.Lang.component(
+                "gui.spectate_list.match_card_title",
+                "prefix", prefix,
+                "p1", p1,
+                "p2", p2
         );
 
         long fee = duelManager.getSpectatorManager().calculateSpectatorFee(match);
-        String feeStr = (fee <= 0) ? "<green>БЕСПЛАТНО" : CoinFormat.amount(fee);
+        String feeStr = (fee <= 0)
+                ? dev.lovelace.loveduels.util.Lang.get("gui.spectate_list.ticket_free")
+                : CoinFormat.amount(fee);
 
-        List<Component> lore = List.of(
-                MiniMessage.miniMessage().deserialize("<gray>Режим: <white>" + match.getType().getDisplayNameMiniMessage()),
-                MiniMessage.miniMessage().deserialize("<gray>Арена: <yellow>" + match.getArena().getName()),
-                MiniMessage.miniMessage().deserialize("<gray>Зрителей: <aqua>" + match.getSpectators().size()),
-                MiniMessage.miniMessage().deserialize(CoinFormat.resolveGlyphs(player, "<gray>Цена билета: " + feeStr)),
-                Component.empty(),
-                MiniMessage.miniMessage().deserialize("<yellow>➤ Нажмите, чтобы перейти на трибуны")
+        List<String> rawLore = dev.lovelace.loveduels.util.Lang.list(
+                "gui.spectate_list.match_card_lore",
+                "type", match.getType().getDisplayNameMiniMessage(),
+                "arena", match.getArena().getName(),
+                "spectators", String.valueOf(match.getSpectators().size()),
+                "fee", feeStr
         );
+
+        List<Component> lore = new ArrayList<>();
+        for (String line : CoinFormat.resolveGlyphs(player, rawLore)) {
+            if (line.isEmpty()) {
+                lore.add(Component.empty());
+            } else {
+                lore.add(net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().deserialize(line)
+                        .decoration(net.kyori.adventure.text.format.TextDecoration.ITALIC, false));
+            }
+        }
 
         return HeadTextures.playerHead(match.getPlayer1().getUniqueId(), nameComp, lore);
     }
@@ -71,11 +88,8 @@ public final class SpectateListGUI extends CustomGUI {
     private ItemStack createNoMatchesItem() {
         return HeadTextures.head(
                 HeadTextures.EYE,
-                "<gray>В данный момент нет активных дуэлей",
-                List.of(
-                        "<gray>Сейчас все арены свободны.",
-                        "<yellow>Вы можете бросить вызов сами!"
-                )
+                dev.lovelace.loveduels.util.Lang.get("gui.spectate_list.no_matches_name"),
+                dev.lovelace.loveduels.util.Lang.list("gui.spectate_list.no_matches_lore")
         );
     }
 }

@@ -18,7 +18,7 @@ public final class PostDuelSummaryGUI extends CustomGUI {
     private final DuelManager duelManager;
 
     public PostDuelSummaryGUI(Player player, MatchResult result, DuelManager duelManager) {
-        super(player, 27, MiniMessage.miniMessage().deserialize("<gold><b>⚔ Итоги поединка</b></gold>"));
+        super(player, 27, dev.lovelace.loveduels.util.Lang.component("gui.post_duel.title"));
         this.result = result;
         this.duelManager = duelManager;
     }
@@ -41,7 +41,7 @@ public final class PostDuelSummaryGUI extends CustomGUI {
 
         setItem(15, createRematchButton(opp), e -> {
             if (opp == null || !opp.isOnline()) {
-                player.sendMessage(MiniMessage.miniMessage().deserialize("<red>❌ Соперник уже не в сети."));
+                dev.lovelace.loveduels.util.Lang.send(player, "gui.post_duel.rematch_opp_offline");
                 return;
             }
             player.closeInventory();
@@ -53,13 +53,13 @@ public final class PostDuelSummaryGUI extends CustomGUI {
         double myDmg = player.getUniqueId().equals(result.player1Id()) ? result.player1DamageDealt() : result.player2DamageDealt();
         int myPts = player.getUniqueId().equals(result.player1Id()) ? result.player1Points() : result.player2Points();
 
-        String name = "<gold><b>Боевая статистика</b></gold>";
-        List<String> lore = List.of(
-                "<gray>Причина завершения: <white>" + result.reason().getDescription(),
-                "<gray>Длительность: <white>" + result.durationSeconds() + "с",
-                "",
-                "<gray>Нанесённый урон: <red>" + String.format("%.1f", myDmg) + "❤",
-                "<gray>Набранные очки: <yellow>" + myPts
+        String name = dev.lovelace.loveduels.util.Lang.get("gui.post_duel.stats_name");
+        List<String> lore = dev.lovelace.loveduels.util.Lang.list(
+                "gui.post_duel.stats_lore",
+                "reason", result.reason().getDescription(),
+                "duration", String.valueOf(result.durationSeconds()),
+                "damage", String.format("%.1f", myDmg),
+                "points", String.valueOf(myPts)
         );
 
         return HeadTextures.head(HeadTextures.SCROLL, name, lore);
@@ -68,43 +68,40 @@ public final class PostDuelSummaryGUI extends CustomGUI {
     private ItemStack createOutcomeItem(boolean isWinner) {
         if (result.isDraw()) {
             String moneyStr = (result.royal() && result.reason() == dev.lovelace.loveduels.match.MatchEndReason.TIMEOUT)
-                    ? "<red>Ставки сгорели в казне"
-                    : "<green>Ставки возвращены";
+                    ? dev.lovelace.loveduels.util.Lang.get("gui.post_duel.draw_money_burned")
+                    : dev.lovelace.loveduels.util.Lang.get("gui.post_duel.draw_money_refunded");
 
-            String name = "<yellow><b>⌛ НИЧЬЯ</b></yellow>";
-            List<String> lore = List.of(
-                    "<gray>Исход: <yellow>" + result.reason().getDescription(),
-                    "<gray>Деньги: " + moneyStr,
-                    "<gray>Честь: <white>Без изменений"
+            String name = dev.lovelace.loveduels.util.Lang.get("gui.post_duel.draw_name");
+            List<String> lore = dev.lovelace.loveduels.util.Lang.list(
+                    "gui.post_duel.draw_lore",
+                    "reason", result.reason().getDescription(),
+                    "money", moneyStr
             );
             return HeadTextures.head(HeadTextures.CLOCK, name, lore);
         }
 
         if (isWinner) {
-            String name = "<green><b>🏆 ВЫ ПОБЕДИЛИ!</b>";
-            List<String> lore = List.of(
-                    "<gray>Деньги: <green>+</green>" + CoinFormat.amount(result.moneyPrizeWon()),
-                    "<gray>Честь: <gold>+" + result.honorWon()
+            String name = dev.lovelace.loveduels.util.Lang.get("gui.post_duel.win_name");
+            List<String> lore = dev.lovelace.loveduels.util.Lang.list(
+                    "gui.post_duel.win_lore",
+                    "money", CoinFormat.amount(result.moneyPrizeWon()),
+                    "honor", String.valueOf(result.honorWon())
             );
             return HeadTextures.head(HeadTextures.TROPHY, name, CoinFormat.resolveGlyphs(player, lore));
         } else {
-            String name = "<red><b>💀 ПОРАЖЕНИЕ</b>";
-            List<String> lore = List.of(
-                    "<gray>Деньги: <red>Потеряна ставка",
-                    "<gray>Честь: <gray>-" + result.honorLost()
+            String name = dev.lovelace.loveduels.util.Lang.get("gui.post_duel.defeat_name");
+            List<String> lore = dev.lovelace.loveduels.util.Lang.list(
+                    "gui.post_duel.defeat_lore",
+                    "honor", String.valueOf(result.honorLost())
             );
             return HeadTextures.head(HeadTextures.SKULL, name, lore);
         }
     }
 
     private ItemStack createRematchButton(Player opp) {
-        String name = "<yellow><b>⚔ РЕВАНШ!</b></yellow>";
-        List<String> lore = List.of(
-                "<gray>Бросить повторный вызов игроку",
-                "<gray>на тех же условиях поединка.",
-                "",
-                opp != null && opp.isOnline() ? "<green>➤ Нажмите для предложения реванша" : "<red>Соперник офлайн"
-        );
+        String oppName = opp != null ? opp.getName() : "---";
+        String name = dev.lovelace.loveduels.util.Lang.get("gui.post_duel.rematch_name");
+        List<String> lore = dev.lovelace.loveduels.util.Lang.list("gui.post_duel.rematch_lore", "opponent", oppName);
         return HeadTextures.head(HeadTextures.SWORD, name, lore);
     }
 }
