@@ -1,5 +1,6 @@
 package dev.lovelace.loveduels.integration;
 
+import dev.lovelace.loveduels.util.Notify;
 import dev.lovelace.lovecore.api.LoveCore;
 import dev.lovelace.lovecore.api.economy.LoveEconomy;
 import dev.lovelace.loveduels.storage.PayoutStore;
@@ -81,7 +82,7 @@ public final class LoveEconomyBridge {
         long owed = payouts.takePending(player.getUniqueId());
         if (owed <= 0) return;
         eco.get().give(player, owed);
-        player.sendMessage(dev.lovelace.loveduels.util.CoinFormat.component(player,
+        Notify.important(player, dev.lovelace.loveduels.util.CoinFormat.component(player,
                 "<green>💰 Вам выплачено</green> " + dev.lovelace.loveduels.util.CoinFormat.amount(owed)
                         + " <green>по завершённым дуэлям, пока вы были не в сети.</green>"));
     }

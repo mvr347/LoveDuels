@@ -1,5 +1,6 @@
 package dev.lovelace.loveduels.command;
 
+import dev.lovelace.loveduels.util.Notify;
 import dev.lovelace.loveduels.core.ChallengeMode;
 import dev.lovelace.loveduels.core.DuelManager;
 import dev.lovelace.loveduels.core.DuelRequest;
@@ -125,7 +126,7 @@ public final class DuelCommand implements CommandExecutor, TabCompleter {
 
         // Тренировка: без меню ставок — сразу старт
         if (req.isTraining()) {
-            challenger.sendMessage(MiniMessage.miniMessage().deserialize(
+            Notify.event(challenger, MiniMessage.miniMessage().deserialize(
                     "<aqua>" + player.getName() + " принял тренировочный вызов. Старт."
             ));
             player.sendMessage(MiniMessage.miniMessage().deserialize("<aqua>Тренировка начинается."));
@@ -141,8 +142,8 @@ public final class DuelCommand implements CommandExecutor, TabCompleter {
                     Player p1 = Bukkit.getPlayer(acceptedReq.senderId());
                     Player p2 = Bukkit.getPlayer(acceptedReq.targetId());
                     if (p1 == null || !p1.isOnline() || p2 == null || !p2.isOnline()) {
-                        if (p1 != null) p1.sendMessage(MiniMessage.miniMessage().deserialize("<red>Соперник офлайн — дуэль отменена."));
-                        if (p2 != null) p2.sendMessage(MiniMessage.miniMessage().deserialize("<red>Соперник офлайн — дуэль отменена."));
+                        if (p1 != null) Notify.event(p1, MiniMessage.miniMessage().deserialize("<red>Соперник офлайн — дуэль отменена."));
+                        if (p2 != null) Notify.event(p2, MiniMessage.miniMessage().deserialize("<red>Соперник офлайн — дуэль отменена."));
                         return;
                     }
 
@@ -150,21 +151,21 @@ public final class DuelCommand implements CommandExecutor, TabCompleter {
                     if (money > 0) {
                         if (!duelManager.getEconomyBridge().has(p1, money)
                                 || !duelManager.getEconomyBridge().has(p2, money)) {
-                            p1.sendMessage(MiniMessage.miniMessage().deserialize("<red>Недостаточно средств — дуэль отменена."));
-                            p2.sendMessage(MiniMessage.miniMessage().deserialize("<red>Недостаточно средств — дуэль отменена."));
+                            Notify.important(p1, MiniMessage.miniMessage().deserialize("<red>Недостаточно средств — дуэль отменена."));
+                            Notify.important(p2, MiniMessage.miniMessage().deserialize("<red>Недостаточно средств — дуэль отменена."));
                             closeStakeGuis(p1, p2);
                             return;
                         }
                         if (!duelManager.getEconomyBridge().charge(p1, money)) {
-                            p1.sendMessage(MiniMessage.miniMessage().deserialize("<red>Не удалось списать ставку."));
-                            p2.sendMessage(MiniMessage.miniMessage().deserialize("<red>Дуэль отменена."));
+                            Notify.important(p1, MiniMessage.miniMessage().deserialize("<red>Не удалось списать ставку."));
+                            Notify.important(p2, MiniMessage.miniMessage().deserialize("<red>Дуэль отменена."));
                             closeStakeGuis(p1, p2);
                             return;
                         }
                         if (!duelManager.getEconomyBridge().charge(p2, money)) {
                             duelManager.getEconomyBridge().give(p1, money);
-                            p1.sendMessage(MiniMessage.miniMessage().deserialize("<red>У соперника не списалась ставка. Возврат."));
-                            p2.sendMessage(MiniMessage.miniMessage().deserialize("<red>Не удалось списать ставку."));
+                            Notify.important(p1, MiniMessage.miniMessage().deserialize("<red>У соперника не списалась ставка. Возврат."));
+                            Notify.important(p2, MiniMessage.miniMessage().deserialize("<red>Не удалось списать ставку."));
                             closeStakeGuis(p1, p2);
                             return;
                         }
@@ -183,8 +184,8 @@ public final class DuelCommand implements CommandExecutor, TabCompleter {
                     Player canceller = cancelledBy != null ? Bukkit.getPlayer(cancelledBy) : null;
                     String cName = canceller != null ? canceller.getName()
                             : (cancelledBy == null ? "время истекло" : "игрок");
-                    if (p1 != null) p1.sendMessage(MiniMessage.miniMessage().deserialize("<red>Дуэль отменена (" + cName + ")."));
-                    if (p2 != null) p2.sendMessage(MiniMessage.miniMessage().deserialize("<red>Дуэль отменена (" + cName + ")."));
+                    if (p1 != null) Notify.event(p1, MiniMessage.miniMessage().deserialize("<red>Дуэль отменена (" + cName + ")."));
+                    if (p2 != null) Notify.event(p2, MiniMessage.miniMessage().deserialize("<red>Дуэль отменена (" + cName + ")."));
                 })
         );
 
@@ -200,7 +201,7 @@ public final class DuelCommand implements CommandExecutor, TabCompleter {
         String msg = req.royal()
                 ? "<gradient:#FFD700:#C9A227>" + player.getName() + " принял королевский вызов. Подтвердите ставки.</gradient>"
                 : "<green>" + player.getName() + " принял вызов. Подтвердите ставки.";
-        challenger.sendMessage(MiniMessage.miniMessage().deserialize(msg));
+        Notify.event(challenger, MiniMessage.miniMessage().deserialize(msg));
         player.sendMessage(MiniMessage.miniMessage().deserialize(
                 req.royal()
                         ? "<gradient:#FFD700:#C9A227>Подтвердите королевские ставки в меню.</gradient>"
@@ -236,7 +237,7 @@ public final class DuelCommand implements CommandExecutor, TabCompleter {
         duelManager.getMatchManager().removePendingRequest(player.getUniqueId());
         Player challenger = Bukkit.getPlayer(req.senderId());
         if (challenger != null && challenger.isOnline()) {
-            challenger.sendMessage(MiniMessage.miniMessage().deserialize(
+            Notify.event(challenger, MiniMessage.miniMessage().deserialize(
                     "<red>Игрок <gold>" + player.getName() + "</gold> отклонил вызов."
             ));
         }

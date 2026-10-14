@@ -1,5 +1,6 @@
 package dev.lovelace.loveduels.gui;
 
+import dev.lovelace.loveduels.util.Notify;
 import dev.lovelace.lovecore.api.economy.Denomination;
 import dev.lovelace.lovecore.api.economy.LoveEconomy;
 import dev.lovelace.loveduels.core.ChallengeMode;
@@ -269,7 +270,7 @@ public final class DuelSetupGUI extends CustomGUI {
         Component invite = MiniMessage.miniMessage().deserialize(prefix + body)
                 .append(acceptBtn).append(Component.text("  ")).append(denyBtn);
 
-        opponent.sendMessage(invite);
+        Notify.interactive(opponent, invite);
         opponent.playSound(opponent.getLocation(),
                 royal ? Sound.UI_TOAST_CHALLENGE_COMPLETE : Sound.BLOCK_NOTE_BLOCK_BELL, 1.0f, 1.0f);
 

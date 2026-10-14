@@ -1,5 +1,6 @@
 package dev.lovelace.loveduels.spectator;
 
+import dev.lovelace.loveduels.util.Notify;
 import dev.lovelace.loveduels.util.CoinFormat;
 import dev.lovelace.loveduels.arena.Arena;
 import dev.lovelace.loveduels.core.InventorySnapshot;
@@ -78,7 +79,7 @@ public final class SimpleSpectatorManager implements SpectatorManager {
                 ));
                 return false;
             }
-            player.sendMessage(CoinFormat.component(player,
+            Notify.important(player, CoinFormat.component(player,
                     "<green>✔ Вы приобрели место на трибунах за</green> " + CoinFormat.amount(fee)
             ));
         }

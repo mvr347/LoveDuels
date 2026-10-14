@@ -55,9 +55,9 @@
 
         <!-- LoveCore API -->
         <dependency>
-            <groupId>dev.lovelace</groupId>
+            <groupId>com.github.mvr347.LoveCore</groupId>
             <artifactId>lovecore-api</artifactId>
-            <version>1.0.0</version>
+            <version>ff8d28387d</version>
             <scope>provided</scope>
         </dependency>
 

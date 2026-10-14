@@ -1,5 +1,6 @@
 package dev.lovelace.loveduels.match;
 
+import dev.lovelace.loveduels.util.Notify;
 import dev.lovelace.loveduels.util.CoinFormat;
 import dev.lovelace.loveduels.arena.Arena;
 import dev.lovelace.loveduels.arena.ArenaState;
@@ -132,6 +133,18 @@ public abstract class AbstractMatch implements Match {
     @Override
     public DuelBet getBet() {
         return bet;
+    }
+
+    /**
+     * End-of-duel notice that is critical (always mirrored to chat) only when stakes were
+     * involved; a stakeless duel just gets the ordinary event notice.
+     */
+    private void notifyOutcome(Player player, Component message) {
+        if (bet.hasMoney()) {
+            Notify.important(player, message);
+        } else {
+            Notify.event(player, message);
+        }
     }
 
     @Override
@@ -464,14 +477,14 @@ public abstract class AbstractMatch implements Match {
         if (player1.isOnline()) {
             player1.showTitle(title);
             player1.playSound(player1.getLocation(), Sound.BLOCK_BEACON_ACTIVATE, 1.0f, 1.2f);
-            player1.sendMessage(MiniMessage.miniMessage().deserialize(
+            Notify.event(player1, MiniMessage.miniMessage().deserialize(
                     "<gold>🏳 <b>Объявлено перемирие на " + duration + " сек!</b> Урон заморожен. Вы можете сдаться со скидкой (<white>/duel forfeit</white>) или дождаться ничьей."
             ));
         }
         if (player2.isOnline()) {
             player2.showTitle(title);
             player2.playSound(player2.getLocation(), Sound.BLOCK_BEACON_ACTIVATE, 1.0f, 1.2f);
-            player2.sendMessage(MiniMessage.miniMessage().deserialize(
+            Notify.event(player2, MiniMessage.miniMessage().deserialize(
                     "<gold>🏳 <b>Объявлено перемирие на " + duration + " сек!</b> Урон заморожен. Вы можете сдаться со скидкой (<white>/duel forfeit</white>) или дождаться ничьей."
             ));
         }
@@ -665,11 +678,11 @@ public abstract class AbstractMatch implements Match {
 
             winner.playSound(winner.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 1.0f, 1.0f);
             if (armisticeSurrender) {
-                winner.sendMessage(CoinFormat.component(winner,
+                Notify.important(winner, CoinFormat.component(winner,
                         "<gold>⚔ <b>ПОБЕДА!</b> Противник сдался во время перемирия! <green>(+</green>" + CoinFormat.amount(finalPrizeMoney) + "<green>, +" + finalHonorDelta + " Чести)</green>"
                 ));
             } else {
-                winner.sendMessage(CoinFormat.component(winner,
+                Notify.important(winner, CoinFormat.component(winner,
                         "<gold>⚔ <b>ПОБЕДА!</b> Вы победили в дуэли против <white>" + (loser != null ? loser.getName() : "противника") +
                         "</white>! <green>(+</green>" + CoinFormat.amount(finalPrizeMoney) + "<green>, +" + finalHonorDelta + " Чести)</green>"
                 ));
@@ -687,12 +700,12 @@ public abstract class AbstractMatch implements Match {
             loser.playSound(loser.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 0.8f);
             if (armisticeSurrender) {
                 int stakePercent = plugin.getConfig().getInt("armistice.surrender_stake_percent", 25);
-                loser.sendMessage(CoinFormat.component(loser,
+                Notify.important(loser, CoinFormat.component(loser,
                         "<red>🏳 <b>СДАЧА В ПЕРЕМИРИЕ!</b> Вы сдались. Списано " + stakePercent + "% ставки (-</red>" + CoinFormat.amount(loserActualLoss) +
                         "<red>), возвращено</red> " + CoinFormat.amount(finalLoserRefund)
                 ));
             } else {
-                loser.sendMessage(MiniMessage.miniMessage().deserialize(
+                Notify.important(loser, MiniMessage.miniMessage().deserialize(
                         "<red>⚔ <b>ПОРАЖЕНИЕ!</b> Вы проиграли дуэль против <white>" + (winner != null ? winner.getName() : "противника") +
                         "</white>. <gray>(-" + finalHonorDelta + " Чести)"
                 ));
@@ -718,14 +731,14 @@ public abstract class AbstractMatch implements Match {
                     if (player1.isOnline()) {
                         player1.showTitle(drawTitle);
                         player1.playSound(player1.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 0.8f);
-                        player1.sendMessage(MiniMessage.miniMessage().deserialize(
+                        Notify.important(player1, MiniMessage.miniMessage().deserialize(
                                 "<gold>👑 <b>КОРОЛЕВСКАЯ НИЧЬЯ!</b> Время вышло. Победитель не определён, ставки сгорели в казне."
                         ));
                     }
                     if (player2.isOnline()) {
                         player2.showTitle(drawTitle);
                         player2.playSound(player2.getLocation(), Sound.ENTITY_VILLAGER_NO, 1.0f, 0.8f);
-                        player2.sendMessage(MiniMessage.miniMessage().deserialize(
+                        Notify.important(player2, MiniMessage.miniMessage().deserialize(
                                 "<gold>👑 <b>КОРОЛЕВСКАЯ НИЧЬЯ!</b> Время вышло. Победитель не определён, ставки сгорели в казне."
                         ));
                     }
@@ -747,14 +760,14 @@ public abstract class AbstractMatch implements Match {
                     if (player1.isOnline()) {
                         player1.showTitle(drawTitle);
                         player1.playSound(player1.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 1.0f);
-                        player1.sendMessage(CoinFormat.component(player1,
+                        notifyOutcome(player1, CoinFormat.component(player1,
                                 "<yellow>⚔ <b>НИЧЬЯ!</b> Время поединка истекло." + refundMsg
                         ));
                     }
                     if (player2.isOnline()) {
                         player2.showTitle(drawTitle);
                         player2.playSound(player2.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 1.0f);
-                        player2.sendMessage(CoinFormat.component(player2,
+                        notifyOutcome(player2, CoinFormat.component(player2,
                                 "<yellow>⚔ <b>НИЧЬЯ!</b> Время поединка истекло." + refundMsg
                         ));
                     }
@@ -771,8 +784,8 @@ public abstract class AbstractMatch implements Match {
                 Component stopMsg = MiniMessage.miniMessage().deserialize(
                         "<yellow>⚠ <b>Поединок остановлен администрацией/сервером.</b> Ставки возвращены."
                 );
-                if (player1.isOnline()) player1.sendMessage(stopMsg);
-                if (player2.isOnline()) player2.sendMessage(stopMsg);
+                if (player1.isOnline()) notifyOutcome(player1, stopMsg);
+                if (player2.isOnline()) notifyOutcome(player2, stopMsg);
             }
         }
 
