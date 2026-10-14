@@ -1,5 +1,6 @@
 package dev.lovelace.loveduels.match;
 
+import dev.lovelace.loveduels.util.Notify;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import dev.lovelace.loveduels.arena.Arena;
@@ -178,8 +179,8 @@ public final class SimpleMatchManager implements MatchManager {
     public void createAndStartMatch(Player p1, Player p2, DuelType type, String kitId, DuelBet bet, boolean royal) {
         Optional<Arena> arenaOpt = arenaManager.findAvailableArena(type);
         if (arenaOpt.isEmpty()) {
-            p1.sendMessage(MiniMessage.miniMessage().deserialize("<red>Нет свободных арен для этого режима."));
-            p2.sendMessage(MiniMessage.miniMessage().deserialize("<red>Нет свободных арен для этого режима."));
+            Notify.event(p1, MiniMessage.miniMessage().deserialize("<red>Нет свободных арен для этого режима."));
+            Notify.event(p2, MiniMessage.miniMessage().deserialize("<red>Нет свободных арен для этого режима."));
             if (bet.hasMoney()) {
                 economyBridge.give(p1, bet.moneyBet());
                 economyBridge.give(p2, bet.moneyBet());
@@ -207,8 +208,8 @@ public final class SimpleMatchManager implements MatchManager {
 
         if (royal) {
             if (!royalManager.registerRoyalDuel(match)) {
-                p1.sendMessage(MiniMessage.miniMessage().deserialize("<red>На сервере уже идёт королевская дуэль."));
-                p2.sendMessage(MiniMessage.miniMessage().deserialize("<red>На сервере уже идёт королевская дуэль."));
+                Notify.event(p1, MiniMessage.miniMessage().deserialize("<red>На сервере уже идёт королевская дуэль."));
+                Notify.event(p2, MiniMessage.miniMessage().deserialize("<red>На сервере уже идёт королевская дуэль."));
                 if (bet.hasMoney()) {
                     economyBridge.give(p1, bet.moneyBet());
                     economyBridge.give(p2, bet.moneyBet());

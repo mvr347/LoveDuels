@@ -1,5 +1,6 @@
 package dev.lovelace.loveduels.spectator;
 
+import dev.lovelace.loveduels.util.Notify;
 import dev.lovelace.loveduels.arena.Arena;
 import dev.lovelace.loveduels.match.Match;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -73,7 +74,7 @@ public final class SpectatorZoneGuard implements Listener {
             }
 
             player.teleportAsync(safe);
-            player.sendMessage(MiniMessage.miniMessage().deserialize(
+            Notify.actionBar(player, MiniMessage.miniMessage().deserialize(
                     "<red>⚠ Вы вышли за пределы зоны наблюдения! Вас вернули на трибуну."
             ));
         }
@@ -95,7 +96,7 @@ public final class SpectatorZoneGuard implements Listener {
             event.setCancelled(true);
             player.setFlying(false);
             player.setAllowFlight(false);
-            player.sendMessage(MiniMessage.miniMessage().deserialize(
+            Notify.actionBar(player, MiniMessage.miniMessage().deserialize(
                     "<red>⚠ У вас нет права свободного полёта в режиме зрителя!"
             ));
         }

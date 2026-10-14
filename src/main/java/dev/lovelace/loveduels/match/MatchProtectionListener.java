@@ -1,5 +1,6 @@
 package dev.lovelace.loveduels.match;
 
+import dev.lovelace.loveduels.util.Notify;
 import dev.lovelace.loveduels.arena.Arena;
 import dev.lovelace.loveduels.spectator.SpectatorManager;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -90,7 +91,7 @@ public final class MatchProtectionListener implements Listener {
                     player.teleportAsync(spawn);
                 }
             }
-            player.sendMessage(MiniMessage.miniMessage().deserialize(
+            Notify.actionBar(player, MiniMessage.miniMessage().deserialize(
                     "<red>Не выходите за границы боевой арены."
             ));
         }
@@ -267,7 +268,7 @@ public final class MatchProtectionListener implements Listener {
                 var matchOpt = matchManager.getMatch(player.getUniqueId());
                 if (matchOpt.isPresent() && !matchOpt.get().getArena().isInCombatBounds(event.getTo())) {
                     event.setCancelled(true);
-                    player.sendMessage(MiniMessage.miniMessage().deserialize("<red>Телепортация за пределы арены запрещена."));
+                    Notify.actionBar(player, MiniMessage.miniMessage().deserialize("<red>Телепортация за пределы арены запрещена."));
                 }
             }
         }

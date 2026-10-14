@@ -1,5 +1,6 @@
 package dev.lovelace.loveduels.match;
 
+import dev.lovelace.loveduels.util.Notify;
 import dev.lovelace.loveduels.arena.Arena;
 import dev.lovelace.loveduels.core.DuelBet;
 import dev.lovelace.loveduels.core.DuelType;
@@ -159,7 +160,7 @@ public final class HorseSpearMatch extends AbstractMatch {
         Horse horse = tournamentHorses.get(player.getUniqueId());
         if (horse != null && horse.isValid()) {
             horse.addPassenger(player);
-            player.sendMessage(MiniMessage.miniMessage().deserialize("<red>⚠ Запрещено слезать с коня во время турнира!"));
+            Notify.actionBar(player, MiniMessage.miniMessage().deserialize("<red>⚠ Запрещено слезать с коня во время турнира!"));
         }
     }
 
