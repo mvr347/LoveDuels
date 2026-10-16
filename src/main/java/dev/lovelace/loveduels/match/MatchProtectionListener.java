@@ -274,6 +274,31 @@ public final class MatchProtectionListener implements Listener {
         }
     }
 
+    // Fighters get their full snapshot back on restore: anything dropped or stashed in a
+    // container during the duel would be duplicated, so block it for everyone in a match.
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onFighterDrop(PlayerDropItemEvent event) {
+        if (matchManager.isInMatch(event.getPlayer().getUniqueId())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onFighterPickup(EntityPickupItemEvent event) {
+        if (event.getEntity() instanceof Player p && matchManager.isInMatch(p.getUniqueId())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onFighterOpenContainer(org.bukkit.event.inventory.InventoryOpenEvent event) {
+        if (!(event.getPlayer() instanceof Player p) || !matchManager.isInMatch(p.getUniqueId())) return;
+        switch (event.getInventory().getType()) {
+            case CHEST, ENDER_CHEST, SHULKER_BOX, BARREL, HOPPER, DROPPER, DISPENSER -> event.setCancelled(true);
+            default -> { }
+        }
+    }
+
     @EventHandler(priority = EventPriority.LOWEST)
     public void onSpectatorDrop(PlayerDropItemEvent event) {
         if (!plugin.getConfig().getBoolean("spectators.block_drop", true)) return;

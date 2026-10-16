@@ -58,7 +58,7 @@ public final class DuelManager {
             plugin.getLogger().warning("Refunding " + orphaned + " duel(s) that were still running when the server stopped; "
                     + "stakes are paid out when the fighters join.");
         }
-        this.economyBridge = new LoveEconomyBridge(payoutStore);
+        this.economyBridge = new LoveEconomyBridge(plugin, payoutStore);
         this.behaviorBridge = new LoveBehaviorBridge(plugin.getLogger());
         this.leaderboardsBridge = new LoveLeaderboardsBridge();
 

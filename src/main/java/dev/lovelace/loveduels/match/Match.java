@@ -60,6 +60,9 @@ public interface Match {
 
     void handleDisconnect(Player player);
 
+    /** Immediately restores fighters of an already-ended match (onDisable); idempotent. */
+    default void restoreNow() {}
+
     void registerDamage(Player attacker, Player victim, double damage);
 
     double getDamageDealt(UUID player);

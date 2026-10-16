@@ -126,6 +126,9 @@ public final class HorseSpearMatch extends AbstractMatch {
 
     private Horse spawnHorse(Player rider, org.bukkit.Location spawnLoc) {
         Horse horse = (Horse) spawnLoc.getWorld().spawnEntity(spawnLoc, EntityType.HORSE);
+        // Tournament horses must not outlive the match: a persistent horse is saved with the chunk
+        // and survives a crash/restart as a stray saddled horse.
+        horse.setPersistent(false);
         horse.setTamed(true);
         horse.setOwner(rider);
         horse.getInventory().setSaddle(new ItemStack(Material.SADDLE));

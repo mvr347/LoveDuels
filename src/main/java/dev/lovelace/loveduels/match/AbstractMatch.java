@@ -811,8 +811,7 @@ public abstract class AbstractMatch implements Match {
         // Restore players after 2 seconds (or immediately if server is disabling)
         Runnable cleanupTask = () -> {
             try {
-                restoreFighter(player1, snapshots.get(player1Id));
-                restoreFighter(player2, snapshots.get(player2Id));
+                restoreFighters();
             } finally {
                 // The arena must be freed even if restoring a fighter throws, otherwise it stays BUSY forever.
                 // A disabled arena keeps its DISABLED state.
@@ -831,6 +830,35 @@ public abstract class AbstractMatch implements Match {
         }
     }
 
+    /**
+     * Restores each online fighter's snapshot exactly once: the snapshot is removed from the map
+     * before restoring, so the delayed cleanup, a quit and onDisable can all call this safely.
+     */
+    private void restoreFighters() {
+        restoreIfOnline(player1, player1Id);
+        restoreIfOnline(player2, player2Id);
+    }
+
+    private void restoreIfOnline(Player player, UUID id) {
+        if (player != null && player.isOnline()) {
+            restoreFighter(player, snapshots.remove(id));
+        }
+    }
+
+    /**
+     * Immediate cleanup for an already-ended match whose delayed cleanup has not run yet
+     * (used by onDisable, where scheduled tasks never fire).
+     */
+    @Override
+    public void restoreNow() {
+        try {
+            restoreFighters();
+        } finally {
+            arena.setState(arena.isEnabled() ? ArenaState.FREE : ArenaState.DISABLED);
+            state = MatchState.ENDED;
+        }
+    }
+
     protected void restoreFighter(Player player, InventorySnapshot snapshot) {
         if (player != null && player.isOnline() && snapshot != null) {
             snapshot.restore(player);
@@ -839,8 +867,8 @@ public abstract class AbstractMatch implements Match {
 
     @Override
     public void handleDisconnect(Player player) {
-        if (isEnded()) return;
-
+        // Restore even if the match already ended: the delayed cleanup (2s) has not run yet and
+        // would find the player offline, leaving the arena kit saved as their real inventory.
         // Synchronously restore the disconnecting player before their session is saved and closed
         InventorySnapshot discSnap = snapshots.remove(player.getUniqueId());
         if (discSnap != null) {
@@ -850,6 +878,8 @@ public abstract class AbstractMatch implements Match {
                 player.teleport(ret);
             }
         }
+
+        if (isEnded()) return;
 
         Player opponent = getOpponent(player.getUniqueId());
         UUID winnerId = (opponent != null) ? opponent.getUniqueId() : null;

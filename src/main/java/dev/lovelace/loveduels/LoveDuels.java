@@ -84,8 +84,15 @@ public final class LoveDuels extends JavaPlugin {
     @Override
     public void onDisable() {
         if (duelManager != null) {
+            // From here on money bookkeeping must be durable before we return: drain the async queue
+            duelManager.getEconomyBridge().enterShutdownMode();
             for (Match match : duelManager.getMatchManager().getActiveMatches()) {
-                match.end(null, MatchEndReason.ADMIN_FORCE);
+                if (match.isEnded()) {
+                    // Ended but the delayed cleanup never fires during shutdown: restore now
+                    match.restoreNow();
+                } else {
+                    match.end(null, MatchEndReason.ADMIN_FORCE);
+                }
             }
             duelManager.shutdown();
         }
