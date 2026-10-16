@@ -21,9 +21,11 @@ import java.util.UUID;
  */
 public final class LoveEconomyBridge {
 
+    private final org.bukkit.plugin.Plugin plugin;
     private final PayoutStore payouts;
 
-    public LoveEconomyBridge(PayoutStore payouts) {
+    public LoveEconomyBridge(org.bukkit.plugin.Plugin plugin, PayoutStore payouts) {
+        this.plugin = plugin;
         this.payouts = payouts;
     }
 
@@ -74,17 +76,38 @@ public final class LoveEconomyBridge {
         }
     }
 
-    /** Delivers everything queued for the player; called on join. */
+    /** Switch DB bookkeeping to synchronous mode; call first thing in onDisable. */
+    public void enterShutdownMode() {
+        payouts.enterSynchronousMode();
+    }
+
+    /** Delivers everything queued for the player; called on join. The DB read is off the main thread. */
     public void deliverPending(Player player) {
         if (player == null || !player.isOnline()) return;
-        Optional<LoveEconomy> eco = economy();
-        if (eco.isEmpty()) return;
-        long owed = payouts.takePending(player.getUniqueId());
-        if (owed <= 0) return;
-        eco.get().give(player, owed);
-        Notify.important(player, dev.lovelace.loveduels.util.CoinFormat.component(player,
-                "<green>💰 Вам выплачено</green> " + dev.lovelace.loveduels.util.CoinFormat.amount(owed)
-                        + " <green>по завершённым дуэлям, пока вы были не в сети.</green>"));
+        if (economy().isEmpty()) return;
+        UUID id = player.getUniqueId();
+        payouts.takePendingAsync(id).thenAccept(owed -> {
+            if (owed <= 0) return;
+            Runnable pay = () -> {
+                Player p = Bukkit.getPlayer(id);
+                Optional<LoveEconomy> eco = economy();
+                if (p == null || !p.isOnline() || eco.isEmpty()) {
+                    // Row is already removed: put the coins back instead of losing them
+                    payouts.queue(id, owed);
+                    return;
+                }
+                eco.get().give(p, owed);
+                Notify.important(p, dev.lovelace.loveduels.util.CoinFormat.component(p,
+                        "<green>💰 Вам выплачено</green> " + dev.lovelace.loveduels.util.CoinFormat.amount(owed)
+                                + " <green>по завершённым дуэлям, пока вы были не в сети.</green>"));
+            };
+            try {
+                Bukkit.getScheduler().runTask(plugin, pay);
+            } catch (RuntimeException e) {
+                // Plugin disabled between read and callback
+                payouts.queue(id, owed);
+            }
+        });
     }
 
     /** Records the stakes just charged from both fighters so a crash cannot swallow them. */

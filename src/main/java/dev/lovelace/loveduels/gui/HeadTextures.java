@@ -55,6 +55,8 @@ public final class HeadTextures {
     public static final String DEFAULT_RESET = urlToBase64("1a6f1ca5bb421d09e863339bf4f9d2d0b67bf5ab5ff9a3a936a6db9d18");
     public static final String DEFAULT_SCROLL = urlToBase64("b517743015a9951ee19cd8e411b026cc3dbb1e42bfae1bc97e74288b8fa7");
     public static final String DEFAULT_SKULL = urlToBase64("e5d59ce51e39b7d85c88b9bf92bb3bfa8be80a6b57df332d7ba5ab4ebc8");
+    public static final String DEFAULT_PREVIOUS = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmQ2OWUwNmU1ZGFkZmQ4NGU1ZjNkMWMyMWYyZjhjY2ZlYTA0MzIzZDkxMWIzNTIxYTdhZmQ3MTc5YTA3YWU3OSJ9fX0=";
+    public static final String DEFAULT_NEXT = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMTliZjMyOTJlMTI2YTEwNWI1NGViYTcxM2FhMWIxNTJkNTQxYTFkODkzODgyOWM1NjM2NTZkMjMyNjZiZCJ9fX0=";
     public static final String DEFAULT_CLOCK = urlToBase64("853c80e3c21934e650ef3164cb89547cb0b5cc4ab7cb9345094d4d62b66d48");
 
     // =========================================================================
@@ -84,6 +86,8 @@ public final class HeadTextures {
     public static final String SCROLL = "scroll";
     public static final String SKULL = "skull";
     public static final String CLOCK = "clock";
+    public static final String PREVIOUS = "previous";
+    public static final String NEXT = "next";
 
     private static final Map<String, String> FALLBACKS = new HashMap<>();
 
@@ -108,6 +112,8 @@ public final class HeadTextures {
         FALLBACKS.put(SCROLL, DEFAULT_SCROLL);
         FALLBACKS.put(SKULL, DEFAULT_SKULL);
         FALLBACKS.put(CLOCK, DEFAULT_CLOCK);
+        FALLBACKS.put(PREVIOUS, DEFAULT_PREVIOUS);
+        FALLBACKS.put(NEXT, DEFAULT_NEXT);
     }
 
     /**

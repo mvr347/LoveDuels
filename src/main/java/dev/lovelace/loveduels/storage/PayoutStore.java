@@ -5,6 +5,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -15,28 +20,74 @@ import java.util.logging.Logger;
  *     <li>{@code pending_escrow} - stakes charged for a duel that has not finished yet, refunded on
  *         the next start if the server died before the duel ended.</li>
  * </ul>
- * All calls are synchronous on purpose: the row must exist before the caller moves on.
+ * Writes go through a single ordered worker thread so the main thread never blocks on SQLite
+ * and {@code holdEscrow -> releaseEscrow} can never be reordered (a reordered release would leave
+ * an orphaned escrow row that refunds the stake a second time on the next start). During shutdown
+ * ({@link #enterSynchronousMode()}) the queue is drained and every call runs inline instead, because
+ * scheduled work is not guaranteed to run once the plugin is disabling.
  */
 public final class PayoutStore {
 
     private final Database database;
     private final Logger logger;
 
+    private final ExecutorService ordered = Executors.newSingleThreadExecutor(r -> {
+        Thread t = new Thread(r, "LoveDuels-Payouts");
+        t.setDaemon(true);
+        return t;
+    });
+    private volatile boolean synchronous = false;
+
     public PayoutStore(Database database, Logger logger) {
         this.database = database;
         this.logger = logger;
     }
 
+    /** Runs the task on the ordered worker, or inline once in synchronous (shutdown) mode. */
+    private void run(Runnable task) {
+        if (synchronous) {
+            task.run();
+            return;
+        }
+        try {
+            ordered.execute(task);
+        } catch (RejectedExecutionException e) {
+            task.run();
+        }
+    }
+
+    /** Drains already queued writes, then makes every later call synchronous. Call first thing in onDisable. */
+    public void enterSynchronousMode() {
+        synchronous = true;
+        ordered.shutdown();
+        try {
+            if (!ordered.awaitTermination(10, TimeUnit.SECONDS)) {
+                logger.severe("Payout queue did not drain within 10s; some writes may be lost");
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    /** Async variant of {@link #takePending}, ordered after previously queued writes. */
+    public CompletableFuture<Long> takePendingAsync(UUID player) {
+        CompletableFuture<Long> future = new CompletableFuture<>();
+        run(() -> future.complete(takePending(player)));
+        return future;
+    }
+
     public void queue(UUID player, long amount) {
         if (player == null || amount <= 0) return;
-        try {
-            database.querySync(conn -> {
-                insertPayout(conn, player, amount);
-                return null;
-            });
-        } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Failed to queue payout of " + amount + " for " + player, e);
-        }
+        run(() -> {
+            try {
+                database.querySync(conn -> {
+                    insertPayout(conn, player, amount);
+                    return null;
+                });
+            } catch (SQLException e) {
+                logger.log(Level.SEVERE, "Failed to queue payout of " + amount + " for " + player, e);
+            }
+        });
     }
 
     /** Removes and returns everything owed to the player (0 if nothing). */
@@ -77,35 +128,39 @@ public final class PayoutStore {
 
     public void holdEscrow(UUID challenger, UUID target, long amountEach) {
         if (amountEach <= 0) return;
-        try {
-            database.querySync(conn -> {
-                try (PreparedStatement ps = conn.prepareStatement(
-                        "INSERT OR REPLACE INTO pending_escrow (challenger, target, amount_each, created_at) VALUES (?, ?, ?, ?)")) {
-                    ps.setString(1, challenger.toString());
-                    ps.setString(2, target.toString());
-                    ps.setLong(3, amountEach);
-                    ps.setLong(4, System.currentTimeMillis());
-                    ps.executeUpdate();
-                }
-                return null;
-            });
-        } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Failed to record escrow for " + challenger, e);
-        }
+        run(() -> {
+            try {
+                database.querySync(conn -> {
+                    try (PreparedStatement ps = conn.prepareStatement(
+                            "INSERT OR REPLACE INTO pending_escrow (challenger, target, amount_each, created_at) VALUES (?, ?, ?, ?)")) {
+                        ps.setString(1, challenger.toString());
+                        ps.setString(2, target.toString());
+                        ps.setLong(3, amountEach);
+                        ps.setLong(4, System.currentTimeMillis());
+                        ps.executeUpdate();
+                    }
+                    return null;
+                });
+            } catch (SQLException e) {
+                logger.log(Level.SEVERE, "Failed to record escrow for " + challenger, e);
+            }
+        });
     }
 
     public void releaseEscrow(UUID challenger) {
-        try {
-            database.querySync(conn -> {
-                try (PreparedStatement ps = conn.prepareStatement("DELETE FROM pending_escrow WHERE challenger = ?")) {
-                    ps.setString(1, challenger.toString());
-                    ps.executeUpdate();
-                }
-                return null;
-            });
-        } catch (SQLException e) {
-            logger.log(Level.SEVERE, "Failed to release escrow for " + challenger, e);
-        }
+        run(() -> {
+            try {
+                database.querySync(conn -> {
+                    try (PreparedStatement ps = conn.prepareStatement("DELETE FROM pending_escrow WHERE challenger = ?")) {
+                        ps.setString(1, challenger.toString());
+                        ps.executeUpdate();
+                    }
+                    return null;
+                });
+            } catch (SQLException e) {
+                logger.log(Level.SEVERE, "Failed to release escrow for " + challenger, e);
+            }
+        });
     }
 
     /**
