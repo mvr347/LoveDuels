@@ -3,6 +3,7 @@ package dev.lovelace.loveduels.gui;
 import dev.lovelace.loveduels.core.ChallengeMode;
 import dev.lovelace.loveduels.core.DuelManager;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -109,8 +110,7 @@ public final class PlayerSelectGUI extends CustomGUI {
         List<Component> lore = List.of(
                 dev.lovelace.loveduels.util.Lang.component("gui.player_select.player_card.health", "health", String.valueOf((int) opp.getHealth())),
                 dev.lovelace.loveduels.util.Lang.component("gui.player_select.player_card.ping", "ping", String.valueOf(opp.getPing())),
-                cdComp,
-                Component.empty(),
+                MiniMessage.miniMessage().deserialize("<dark_gray><st>─────────────────────</st></dark_gray>").decoration(TextDecoration.ITALIC, false),
                 dev.lovelace.loveduels.util.Lang.component("gui.player_select.player_card.click_hint")
         );
 
