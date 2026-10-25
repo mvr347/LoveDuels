@@ -4,7 +4,7 @@ main: dev.lovelace.loveduels.LoveDuels
 api-version: '1.21'
 author: Lovelace
 description: Advanced 1v1 duels system with bets, custom Horse+Spear mechanics, Royal duels, and spectator zones.
-depend: [LoveCore]
+depend: [LoveCore, LoveEssential]
 softdepend: [PlaceholderAPI, LoveLeaderboards, LoveBehavior]
 
 commands:
