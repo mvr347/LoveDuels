@@ -42,8 +42,8 @@ public final class LoveDuelsAdminCommand implements CommandExecutor, TabComplete
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+        // Silent on purpose: a command the sender cannot use is simply not theirs.
         if (!sender.hasPermission("loveduels.admin")) {
-            sender.sendMessage(mm.deserialize("<red>❌ У вас нет прав администратора LoveDuels."));
             return true;
         }
 
@@ -250,7 +250,10 @@ public final class LoveDuelsAdminCommand implements CommandExecutor, TabComplete
     }
 
     private void handleArenaSetPos1(CommandSender sender, String[] args) {
-        if (!(sender instanceof Player p)) return;
+        if (!(sender instanceof Player p)) {
+            dev.lovelace.loveduels.util.Lang.send(sender, "commands.only-players");
+            return;
+        }
         Arena arena = resolveArena(p, args, 2);
         if (arena == null) return;
 
@@ -271,7 +274,10 @@ public final class LoveDuelsAdminCommand implements CommandExecutor, TabComplete
     }
 
     private void handleArenaSetPos2(CommandSender sender, String[] args) {
-        if (!(sender instanceof Player p)) return;
+        if (!(sender instanceof Player p)) {
+            dev.lovelace.loveduels.util.Lang.send(sender, "commands.only-players");
+            return;
+        }
         Arena arena = resolveArena(p, args, 2);
         if (arena == null) return;
 
@@ -302,7 +308,10 @@ public final class LoveDuelsAdminCommand implements CommandExecutor, TabComplete
     }
 
     private void handleArenaSetSpectator(CommandSender sender, String[] args) {
-        if (!(sender instanceof Player p)) return;
+        if (!(sender instanceof Player p)) {
+            dev.lovelace.loveduels.util.Lang.send(sender, "commands.only-players");
+            return;
+        }
         Arena arena = resolveArena(p, args, 2);
         if (arena == null) return;
 
@@ -328,7 +337,10 @@ public final class LoveDuelsAdminCommand implements CommandExecutor, TabComplete
     }
 
     private void handleArenaSetBound1(CommandSender sender, String[] args) {
-        if (!(sender instanceof Player p)) return;
+        if (!(sender instanceof Player p)) {
+            dev.lovelace.loveduels.util.Lang.send(sender, "commands.only-players");
+            return;
+        }
         Arena arena = resolveArena(p, args, 2);
         if (arena == null) return;
 
@@ -350,7 +362,10 @@ public final class LoveDuelsAdminCommand implements CommandExecutor, TabComplete
     }
 
     private void handleArenaSetBound2(CommandSender sender, String[] args) {
-        if (!(sender instanceof Player p)) return;
+        if (!(sender instanceof Player p)) {
+            dev.lovelace.loveduels.util.Lang.send(sender, "commands.only-players");
+            return;
+        }
         Arena arena = resolveArena(p, args, 2);
         if (arena == null) return;
 
@@ -417,7 +432,10 @@ public final class LoveDuelsAdminCommand implements CommandExecutor, TabComplete
     }
 
     private void handleArenaSetHeight(CommandSender sender, String[] args) {
-        if (!(sender instanceof Player p)) return;
+        if (!(sender instanceof Player p)) {
+            dev.lovelace.loveduels.util.Lang.send(sender, "commands.only-players");
+            return;
+        }
         if (args.length < 4) {
             p.sendMessage(mm.deserialize("<red>❌ Укажите ID и высоту в блоках: <yellow>/lda arena setheight <id> <высота></yellow>"));
             return;
@@ -458,7 +476,10 @@ public final class LoveDuelsAdminCommand implements CommandExecutor, TabComplete
     }
 
     private void handleArenaSetSpecBound1(CommandSender sender, String[] args) {
-        if (!(sender instanceof Player p)) return;
+        if (!(sender instanceof Player p)) {
+            dev.lovelace.loveduels.util.Lang.send(sender, "commands.only-players");
+            return;
+        }
         Arena arena = resolveArena(p, args, 2);
         if (arena == null) return;
 
@@ -479,7 +500,10 @@ public final class LoveDuelsAdminCommand implements CommandExecutor, TabComplete
     }
 
     private void handleArenaSetSpecBound2(CommandSender sender, String[] args) {
-        if (!(sender instanceof Player p)) return;
+        if (!(sender instanceof Player p)) {
+            dev.lovelace.loveduels.util.Lang.send(sender, "commands.only-players");
+            return;
+        }
         Arena arena = resolveArena(p, args, 2);
         if (arena == null) return;
 
@@ -518,7 +542,10 @@ public final class LoveDuelsAdminCommand implements CommandExecutor, TabComplete
     }
 
     private void handleArenaFinish(CommandSender sender, String[] args) {
-        if (!(sender instanceof Player p)) return;
+        if (!(sender instanceof Player p)) {
+            dev.lovelace.loveduels.util.Lang.send(sender, "commands.only-players");
+            return;
+        }
         Arena arena = resolveArena(p, args, 2);
         if (arena == null) return;
 
@@ -526,7 +553,10 @@ public final class LoveDuelsAdminCommand implements CommandExecutor, TabComplete
     }
 
     private void handleArenaCancel(CommandSender sender) {
-        if (!(sender instanceof Player p)) return;
+        if (!(sender instanceof Player p)) {
+            dev.lovelace.loveduels.util.Lang.send(sender, "commands.only-players");
+            return;
+        }
         ArenaSetupSession session = setupSessions.remove(p.getUniqueId());
         if (session != null) {
             p.sendMessage(mm.deserialize("<yellow>✔ Вы вышли из мастера настройки арены <gold>" + session.getArenaId() + "</gold>."));
@@ -702,7 +732,10 @@ public final class LoveDuelsAdminCommand implements CommandExecutor, TabComplete
     }
 
     private void handleArenaPreview(CommandSender sender, String[] args) {
-        if (!(sender instanceof Player p)) return;
+        if (!(sender instanceof Player p)) {
+            dev.lovelace.loveduels.util.Lang.send(sender, "commands.only-players");
+            return;
+        }
         Arena arena = resolveArena(p, args, 2);
         if (arena == null) return;
 
@@ -718,7 +751,10 @@ public final class LoveDuelsAdminCommand implements CommandExecutor, TabComplete
     }
 
     private void handleArenaTp(CommandSender sender, String[] args) {
-        if (!(sender instanceof Player p)) return;
+        if (!(sender instanceof Player p)) {
+            dev.lovelace.loveduels.util.Lang.send(sender, "commands.only-players");
+            return;
+        }
         if (args.length < 3) {
             p.sendMessage(mm.deserialize("<red>❌ Укажите ID арены: <yellow>/lda arena tp <id> [pos1|pos2|spectator]</yellow>"));
             return;

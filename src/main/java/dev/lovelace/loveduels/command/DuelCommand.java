@@ -39,8 +39,20 @@ public final class DuelCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+        // Help and stats-by-name need no player, so console may use them.
         if (!(sender instanceof Player player)) {
-            dev.lovelace.loveduels.util.Lang.send(sender, "commands.only-players");
+            String first = args.length > 0 ? args[0].toLowerCase() : "";
+            switch (first) {
+                case "help", "помощь", "?", "commands", "команды" -> sendHelp(sender);
+                case "stats", "статистика" -> {
+                    if (args.length > 1) {
+                        handleStats(sender, args);
+                    } else {
+                        dev.lovelace.loveduels.util.Lang.send(sender, "commands.only-players");
+                    }
+                }
+                default -> dev.lovelace.loveduels.util.Lang.send(sender, "commands.only-players");
+            }
             return true;
         }
 
@@ -74,7 +86,7 @@ public final class DuelCommand implements CommandExecutor, TabCompleter {
         return true;
     }
 
-    private void sendHelp(Player player) {
+    private void sendHelp(CommandSender player) {
         MiniMessage mm = MiniMessage.miniMessage();
         Component header = mm.deserialize("\n<gradient:#C9A227:#E8D48B>LoveDuels — команды</gradient>");
         Component divider = mm.deserialize("<dark_gray>━━━━━━━━━━━━━━━━━━━━━━━━━━━━</dark_gray>");
@@ -274,8 +286,8 @@ public final class DuelCommand implements CommandExecutor, TabCompleter {
         new SpectateListGUI(player, duelManager).open();
     }
 
-    private void handleStats(Player player, String[] args) {
-        Player target = (args.length > 1) ? Bukkit.getPlayerExact(args[1]) : player;
+    private void handleStats(CommandSender player, String[] args) {
+        Player target = (args.length > 1) ? Bukkit.getPlayerExact(args[1]) : (player instanceof Player self ? self : null);
         if (target == null) {
             player.sendMessage(MiniMessage.miniMessage().deserialize("<red>Игрок не найден."));
             return;

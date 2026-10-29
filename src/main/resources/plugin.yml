@@ -13,10 +13,12 @@ commands:
     aliases: [дуэль, duels, дуэли]
     usage: /<command> [ник|принять|отклонить|выйти|наблюдать|топ|статистика|реванш|сдаться|месть]
     permission: loveduels.use
+    permission-message: ""
   loveduelsadmin:
     description: Админ-команды LoveDuels
     aliases: [lda, dueladmin, дуэльадмин]
     permission: loveduels.admin
+    permission-message: ""
     usage: /<command> [арена|кит|выдать|завершить|честь|перезагрузить]
 
 permissions:
