@@ -432,24 +432,21 @@ public final class LoveDuelsAdminCommand implements CommandExecutor, TabComplete
     }
 
     private void handleArenaSetHeight(CommandSender sender, String[] args) {
-        if (!(sender instanceof Player p)) {
-            dev.lovelace.loveduels.util.Lang.send(sender, "commands.only-players");
-            return;
-        }
+        // Only the id and the height are needed, so the console may run it too; the particle preview is for a player.
         if (args.length < 4) {
-            p.sendMessage(mm.deserialize("<red>❌ Укажите ID и высоту в блоках: <yellow>/lda arena setheight <id> <высота></yellow>"));
+            sender.sendMessage(mm.deserialize("<red>❌ Укажите ID и высоту в блоках: <yellow>/lda arena setheight <id> <высота></yellow>"));
             return;
         }
 
         Optional<Arena> opt = duelManager.getArenaManager().getArena(args[2]);
         if (opt.isEmpty()) {
-            p.sendMessage(mm.deserialize("<red>❌ Арена не найдена."));
+            sender.sendMessage(mm.deserialize("<red>❌ Арена не найдена."));
             return;
         }
 
         Arena arena = opt.get();
         if (arena.getBounds() == null) {
-            p.sendMessage(mm.deserialize("<red>❌ Сначала задайте границы арены: <yellow>/lda arena setbound1</yellow> и <yellow>setbound2</yellow>"));
+            sender.sendMessage(mm.deserialize("<red>❌ Сначала задайте границы арены: <yellow>/lda arena setbound1</yellow> и <yellow>setbound2</yellow>"));
             return;
         }
 
@@ -457,19 +454,21 @@ public final class LoveDuelsAdminCommand implements CommandExecutor, TabComplete
         try {
             height = Double.parseDouble(args[3]);
             if (height < 2.0 || height > 256.0) {
-                p.sendMessage(mm.deserialize("<red>❌ Высота должна быть от 2 до 256 блоков."));
+                sender.sendMessage(mm.deserialize("<red>❌ Высота должна быть от 2 до 256 блоков."));
                 return;
             }
         } catch (NumberFormatException e) {
-            p.sendMessage(mm.deserialize("<red>❌ Некорректное число высоты: " + args[3]));
+            sender.sendMessage(mm.deserialize("<red>❌ Некорректное число высоты: " + args[3]));
             return;
         }
 
         arena.setBoundsHeight(height);
         duelManager.getArenaManager().saveArenas();
-        ArenaParticlePreview.show(duelManager.getPlugin(), p, arena, 10);
+        if (sender instanceof Player p) {
+            ArenaParticlePreview.show(duelManager.getPlugin(), p, arena, 10);
+        }
 
-        p.sendMessage(mm.deserialize(String.format(
+        sender.sendMessage(mm.deserialize(String.format(
                 "<green>✔ Высота боевой зоны арены <gold>%s</gold> установлена на <yellow>%.0f</yellow> блоков! <gray>(Y: <white>%.0f → %.0f</white>)</gray>",
                 arena.getId(), height, arena.getBounds().getMinY(), arena.getBounds().getMaxY()
         )));
