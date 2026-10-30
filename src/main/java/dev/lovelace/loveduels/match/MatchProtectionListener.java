@@ -131,7 +131,7 @@ public final class MatchProtectionListener implements Listener {
         Match match = matchOpt.get();
         if (match.isEnded()) {
             event.setCancelled(true);
-            checkWestern(match, victim, event.getFinalDamage());
+            checkWestern(match, victim, event);
             return;
         }
 
@@ -207,10 +207,18 @@ public final class MatchProtectionListener implements Listener {
      * Easter egg: a second lethal blow on the other fighter right after the one that ended the match means both
      * fell at once. The result stays as it is (stakes and rating are untouched); both only get a remark.
      */
-    private void checkWestern(Match match, Player victim, double damage) {
+    private void checkWestern(Match match, Player victim, EntityDamageEvent event) {
         if (!plugin.getConfig().getBoolean("easter-eggs.western.enabled", true)) return;
         LethalEnd first = lethalEnds.get(match.getPlayer1Id());
-        if (first == null || victim.getHealth() - damage > 0.0) return;
+        if (first == null || victim.getHealth() - event.getFinalDamage() > 0.0) return;
+        // Only the other fighter's own blow counts: an outsider's hit is rejected like any other and is no find.
+        Player attacker = null;
+        if (event instanceof EntityDamageByEntityEvent by) {
+            if (by.getDamager() instanceof Player p) attacker = p;
+            else if (by.getDamager() instanceof Projectile proj && proj.getShooter() instanceof Player p) attacker = p;
+        }
+        if (attacker == null || !match.containsPlayer(attacker.getUniqueId())
+                || attacker.getUniqueId().equals(victim.getUniqueId())) return;
         int window = plugin.getConfig().getInt("easter-eggs.western.window-ticks", 2);
         if (!WesternRules.simultaneous(first.victim(), victim.getUniqueId(), first.tick(), Bukkit.getCurrentTick(), window)) {
             return;
