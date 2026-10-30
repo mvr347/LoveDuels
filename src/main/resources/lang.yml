@@ -379,3 +379,7 @@ commands:
   duel-stats: "<gray>Ранги по видам дуэлей — в разработке. Статистика: <yellow>/duel stats</yellow>"
   self-challenge: "<red>Нельзя вызвать самого себя."
   player-not-found: "<red>Игрок не найден или не в сети."
+
+# Пасхалки (добавлено 2026-10-30)
+easter:
+  western: "<gold>Оба упали одновременно — как в вестерне."

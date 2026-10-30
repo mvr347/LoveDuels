@@ -43,6 +43,10 @@ public final class MatchProtectionListener implements Listener {
     private final SpectatorManager spectatorManager;
     private final PostMatchGuard postMatchGuard;
     private final Set<String> allowedCommands;
+    /** Easter egg: which fighter the lethal blow that ended each match landed on, and in which tick. */
+    private final java.util.Map<UUID, LethalEnd> lethalEnds = new java.util.HashMap<>();
+
+    private record LethalEnd(UUID victim, long tick) {}
 
     public MatchProtectionListener(Plugin plugin, MatchManager matchManager, SpectatorManager spectatorManager, PostMatchGuard postMatchGuard) {
         this.plugin = plugin;
@@ -127,6 +131,7 @@ public final class MatchProtectionListener implements Listener {
         Match match = matchOpt.get();
         if (match.isEnded()) {
             event.setCancelled(true);
+            checkWestern(match, victim, event.getFinalDamage());
             return;
         }
 
@@ -179,6 +184,9 @@ public final class MatchProtectionListener implements Listener {
                 winnerId = (opp != null) ? opp.getUniqueId() : null;
             }
 
+            long now = Bukkit.getCurrentTick();
+            lethalEnds.values().removeIf(end -> now - end.tick() > 200);
+            lethalEnds.put(match.getPlayer1Id(), new LethalEnd(victim.getUniqueId(), now));
             match.end(winnerId, MatchEndReason.KILL);
         } else {
             if (event instanceof EntityDamageByEntityEvent byEntity) {
@@ -192,6 +200,26 @@ public final class MatchProtectionListener implements Listener {
                     match.registerDamage(attacker, victim, event.getFinalDamage());
                 }
             }
+        }
+    }
+
+    /**
+     * Easter egg: a second lethal blow on the other fighter right after the one that ended the match means both
+     * fell at once. The result stays as it is (stakes and rating are untouched); both only get a remark.
+     */
+    private void checkWestern(Match match, Player victim, double damage) {
+        if (!plugin.getConfig().getBoolean("easter-eggs.western.enabled", true)) return;
+        LethalEnd first = lethalEnds.get(match.getPlayer1Id());
+        if (first == null || victim.getHealth() - damage > 0.0) return;
+        int window = plugin.getConfig().getInt("easter-eggs.western.window-ticks", 2);
+        if (!WesternRules.simultaneous(first.victim(), victim.getUniqueId(), first.tick(), Bukkit.getCurrentTick(), window)) {
+            return;
+        }
+        lethalEnds.remove(match.getPlayer1Id());
+        for (Player fighter : new Player[] {match.getPlayer1(), match.getPlayer2()}) {
+            if (fighter == null || !fighter.isOnline()) continue;
+            Notify.actionBar(fighter, dev.lovelace.loveduels.util.Lang.component("easter.western"));
+            dev.lovelace.loveduels.integration.SecretsHook.discover(fighter.getUniqueId(), "western");
         }
     }
 
