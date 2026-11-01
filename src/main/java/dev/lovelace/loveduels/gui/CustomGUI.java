@@ -1,8 +1,6 @@
 package dev.lovelace.loveduels.gui;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -11,7 +9,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.SkullMeta;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -110,6 +107,23 @@ public abstract class CustomGUI implements InventoryHolder {
     }
 
     protected void setItem(int slot, ItemStack item, Consumer<InventoryClickEvent> handler) {
+        if (item != null
+                && item.hasItemMeta()
+                && slot != size - 1
+                && slot != size - 2
+                && slot != 36
+                && slot != 44) {
+            var meta = item.getItemMeta();
+            if (meta.hasLore()) {
+                meta.lore(
+                        GuiLore.normalize(
+                                meta.lore(),
+                                dev.lovelace.loveduels.util.Lang.component("gui.style.subtitle"),
+                                dev.lovelace.loveduels.util.Lang.component("gui.style.separator")));
+                item = item.clone();
+                item.setItemMeta(meta);
+            }
+        }
         inventory.setItem(slot, item);
         if (handler != null) {
             clickHandlers.put(slot, handler);
@@ -129,15 +143,12 @@ public abstract class CustomGUI implements InventoryHolder {
     }
 
     protected ItemStack createPlayerHead(Player p) {
-        ItemStack item = new ItemStack(Material.PLAYER_HEAD);
-        SkullMeta meta = (SkullMeta) item.getItemMeta();
-        if (meta != null) {
-            meta.setOwningPlayer(p);
-            meta.displayName(dev.lovelace.loveduels.util.Lang.component("gui.common.profile.name", "player", p.getName()));
-            meta.lore(dev.lovelace.loveduels.util.Lang.componentList("gui.common.profile.lore", "player", p.getName()));
-            item.setItemMeta(meta);
-        }
-        return item;
+        return HeadTextures.playerHead(
+                p,
+                dev.lovelace.loveduels.util.Lang.component(
+                        "gui.common.profile.name", "player", p.getName()),
+                dev.lovelace.loveduels.util.Lang.componentList(
+                        "gui.common.profile.lore", "player", p.getName()));
     }
 
     protected ItemStack createBackButton() {

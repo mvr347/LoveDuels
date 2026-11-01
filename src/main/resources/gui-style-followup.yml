@@ -1,0 +1,567 @@
+version: 20261102
+updates:
+- file: heads.yml
+  path: navigation.previous
+  before: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmQ2OWUwNmU1ZGFkZmQ4NGU1ZjNkMWMyMWYyZjhjY2ZlYTA0MzIzZDkxMWIzNTIxYTdhZmQ3MTc5YTA3YWU3OSJ9fX0="
+  value: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZjZkYWI3MjcxZjRmZjA0ZDU0NDAyMTkwNjdhMTA5YjVjMGMxZDFlMDFlYzYwMmMwMDIwNDc2ZjdlYjYxMjE4MCJ9fX0=
+  preserve-custom: true
+- file: heads.yml
+  path: navigation.next
+  before: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMTliZjMyOTJlMTI2YTEwNWI1NGViYTcxM2FhMWIxNTJkNTQxYTFkODkzODgyOWM1NjM2NTZkMjMyNjZiZCJ9fX0="
+  value: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvOGFhMTg3ZmVkZTg4ZGUwMDJjYmQ5MzA1NzVlYjdiYTQ4ZDNiMWEwNmQ5NjFiZGM1MzU4MDA3NTBhZjc2NDkyNiJ9fX0=
+  preserve-custom: true
+- file: lang.yml
+  path: gui.common.back.lore
+  before:
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<gray>Вернуться в предыдущее меню</gray>"
+  value: []
+  preserve-custom: true
+- file: lang.yml
+  path: gui.common.close.lore
+  before:
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<gray>Закрыть текущее окно</gray>"
+  value: []
+  preserve-custom: true
+- file: lang.yml
+  path: gui.common.previous.lore
+  before:
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<gray>Перейти на предыдущую страницу</gray>"
+  value: []
+  preserve-custom: true
+- file: lang.yml
+  path: gui.common.next.lore
+  before:
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<gray>Перейти на следующую страницу</gray>"
+  value: []
+  preserve-custom: true
+- file: lang.yml
+  path: gui.common.profile.lore
+  before:
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<gray>Ваш профиль в LoveDuels</gray>"
+
+  value:
+  - <dark_gray>Личный профиль
+  - ''
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<gray>Ваш профиль в LoveDuels</gray>"
+  preserve-custom: true
+- file: lang.yml
+  path: gui.main_menu.challenge.lore
+  before:
+  - "<gray>Тренировка, обычная или королевская дуэль."
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<green>ЛКМ</green> <dark_gray>—</dark_gray> <gray>выбрать режим</gray>"
+  value:
+  - <dark_gray>Турниры и дуэли
+  - ''
+  - "<gray>Тренировка, обычная или королевская дуэль."
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<green>ЛКМ</green> <dark_gray>—</dark_gray> <gray>выбрать режим</gray>"
+  preserve-custom: true
+- file: lang.yml
+  path: gui.main_menu.spectate.lore
+  before:
+  - "<gray>Смотрите идущие поединки с трибун."
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<green>ЛКМ</green> <dark_gray>—</dark_gray> <gray>список боёв</gray>"
+
+  value:
+  - <dark_gray>Турниры и дуэли
+  - ''
+  - "<gray>Смотрите идущие поединки с трибун."
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<green>ЛКМ</green> <dark_gray>—</dark_gray> <gray>список боёв</gray>"
+  preserve-custom: true
+- file: lang.yml
+  path: gui.challenge_mode.training.lore
+  before:
+  - "<gray>Без ставок и без изменения Чести."
+  - "<gray>Только практика и разминка."
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<green>ЛКМ</green> <dark_gray>—</dark_gray> <gray>выбрать соперника</gray>"
+  value:
+  - <dark_gray>Режим поединка
+  - ''
+  - "<gray>Без ставок и без изменения Чести."
+  - "<gray>Только практика и разминка."
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<green>ЛКМ</green> <dark_gray>—</dark_gray> <gray>выбрать соперника</gray>"
+  preserve-custom: true
+- file: lang.yml
+  path: gui.challenge_mode.normal.lore
+  before:
+  - "<gray>Обычный поединок со ставками"
+  - "<gray>и рейтингом Чести."
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<green>ЛКМ</green> <dark_gray>—</dark_gray> <gray>выбрать соперника</gray>"
+  value:
+  - <dark_gray>Режим поединка
+  - ''
+  - "<gray>Обычный поединок со ставками"
+  - "<gray>и рейтингом Чести."
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<green>ЛКМ</green> <dark_gray>—</dark_gray> <gray>выбрать соперника</gray>"
+  preserve-custom: true
+- file: lang.yml
+  path: gui.challenge_mode.royal.lore
+  before:
+  - "<gray>Нужен билет. Глашатай, бонусы,"
+  - "<gray>Discord и повышенная Честь."
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<green>ЛКМ</green> <dark_gray>—</dark_gray> <gray>выбрать соперника</gray>"
+
+  value:
+  - <dark_gray>Режим поединка
+  - ''
+  - "<gray>Нужен билет. Глашатай, бонусы,"
+  - "<gray>Discord и повышенная Честь."
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<green>ЛКМ</green> <dark_gray>—</dark_gray> <gray>выбрать соперника</gray>"
+  preserve-custom: true
+- file: lang.yml
+  path: gui.player_select.no_players.lore
+  before:
+  - "<gray>Все оффлайн или уже в бою."
+  - "<yellow>Пригласите кого-нибудь на сервер.</yellow>"
+  value:
+  - <dark_gray>Выбор соперника
+  - ''
+  - "<gray>Все оффлайн или уже в бою."
+  - "<yellow>Пригласите кого-нибудь на сервер.</yellow>"
+  preserve-custom: true
+- file: lang.yml
+  path: gui.duel_setup.opponent_info.lore
+  before:
+  - "<gray>HP <red>{health}</red> <dark_gray>•</dark_gray> пинг <white>{ping}</white>"
+  value:
+  - <dark_gray>Настройка поединка
+  - ''
+  - "<gray>HP <red>{health}</red> <dark_gray>•</dark_gray> пинг <white>{ping}</white>"
+  preserve-custom: true
+- file: lang.yml
+  path: gui.duel_setup.send_button.lore_training
+  before:
+  - "<gray>Без ставок. Соперник примет — и сразу бой."
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<green>ЛКМ</green> <dark_gray>—</dark_gray> <gray>отправить вызов</gray>"
+  value:
+  - <dark_gray>Настройка поединка
+  - ''
+  - "<gray>Без ставок. Соперник примет — и сразу бой."
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<green>ЛКМ</green> <dark_gray>—</dark_gray> <gray>отправить вызов</gray>"
+  preserve-custom: true
+- file: lang.yml
+  path: gui.duel_setup.send_button.lore_normal
+  before:
+  - "<gray>Соперник увидит параметры и сможет принять."
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<green>ЛКМ</green> <dark_gray>—</dark_gray> <gray>отправить вызов</gray>"
+  value:
+  - <dark_gray>Настройка поединка
+  - ''
+  - "<gray>Соперник увидит параметры и сможет принять."
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<green>ЛКМ</green> <dark_gray>—</dark_gray> <gray>отправить вызов</gray>"
+  preserve-custom: true
+- file: lang.yml
+  path: gui.confirm_bet.confirm_lore
+  before:
+  - "<gray>Ставка: </gray>{money}"
+  - "{honor}"
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<green>ЛКМ</green> <dark_gray>—</dark_gray> <gray>отправить вызов</gray>"
+  value:
+  - <dark_gray>Подтверждение ставки
+  - ''
+  - "<gray>Ставка: </gray>{money}"
+  - "{honor}"
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<green>ЛКМ</green> <dark_gray>—</dark_gray> <gray>отправить вызов</gray>"
+  preserve-custom: true
+- file: lang.yml
+  path: gui.confirm_bet.cancel_lore
+  before:
+  - "<gray>Вернуться к настройке дуэли"
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<red>ЛКМ</red> <dark_gray>—</dark_gray> <gray>отмена</gray>"
+
+  value:
+  - <dark_gray>Подтверждение ставки
+  - ''
+  - "<gray>Вернуться к настройке дуэли"
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<red>ЛКМ</red> <dark_gray>—</dark_gray> <gray>отмена</gray>"
+  preserve-custom: true
+- file: lang.yml
+  path: gui.kit_select.no_kits_lore
+  before:
+  - "<gray>На сервере пока нет настроенных китов."
+  value:
+  - <dark_gray>Наборы снаряжения
+  - ''
+  - "<gray>На сервере пока нет настроенных китов."
+  preserve-custom: true
+- file: lang.yml
+  path: gui.kit_select.kit_item_lore
+  before:
+  - "<gray>Идентификатор: <white>{id}</white>"
+  - "<gray>Эффекты: <white>{effects}</white>"
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<green>ЛКМ</green> <dark_gray>—</dark_gray> <gray>выбрать этот набор</gray>"
+  value:
+  - <dark_gray>Наборы снаряжения
+  - ''
+  - "<gray>Идентификатор: <white>{id}</white>"
+  - "<gray>Эффекты: <white>{effects}</white>"
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<green>ЛКМ</green> <dark_gray>—</dark_gray> <gray>выбрать этот набор</gray>"
+  preserve-custom: true
+- file: lang.yml
+  path: gui.leaderboard.my_stats_lore
+  before:
+  - "<gray>Рейтинг Чести: <gold>{honor}</gold>"
+  - "<gray>Побед: <green>{wins}</green> <dark_gray>•</dark_gray> Поражений: <red>{losses}</red>"
+  - "<gray>Винрейт: <yellow>{winrate}%</yellow>"
+  - "<gray>Текущая серия: <white>{streak}</white> <gray>(Лучшая: {best_streak})</gray>"
+  - "<gray>Королевских побед: <gold>{royal_wins}</gold>"
+  value:
+  - <dark_gray>Статистика поединков
+  - ''
+  - "<gray>Рейтинг Чести: <gold>{honor}</gold>"
+  - "<gray>Побед: <green>{wins}</green> <dark_gray>•</dark_gray> Поражений: <red>{losses}</red>"
+  - "<gray>Винрейт: <yellow>{winrate}%</yellow>"
+  - "<gray>Текущая серия: <white>{streak}</white> <gray>(Лучшая: {best_streak})</gray>"
+  - "<gray>Королевских побед: <gold>{royal_wins}</gold>"
+  preserve-custom: true
+- file: lang.yml
+  path: gui.leaderboard.top_stats_lore
+  before:
+  - "<gray>Рейтинг Чести: <gold>{honor}</gold>"
+  - "<gray>Побед: <green>{wins}</green> <dark_gray>•</dark_gray> Поражений: <red>{losses}</red>"
+  - "<gray>Винрейт: <yellow>{winrate}%</yellow>"
+  - "<gray>Серия побед: <white>{streak}</white>"
+  - "<gray>Королевских побед: <gold>{royal_wins}</gold>"
+
+  value:
+  - <dark_gray>Статистика поединков
+  - ''
+  - "<gray>Рейтинг Чести: <gold>{honor}</gold>"
+  - "<gray>Побед: <green>{wins}</green> <dark_gray>•</dark_gray> Поражений: <red>{losses}</red>"
+  - "<gray>Винрейт: <yellow>{winrate}%</yellow>"
+  - "<gray>Серия побед: <white>{streak}</white>"
+  - "<gray>Королевских побед: <gold>{royal_wins}</gold>"
+  preserve-custom: true
+- file: lang.yml
+  path: gui.post_duel.stats_lore
+  before:
+  - "<gray>Причина завершения: <white>{reason}</white>"
+  - "<gray>Длительность: <white>{duration}с</white>"
+  - "<gray>Нанесённый урон: <red>{damage}❤</red>"
+  - "<gray>Набранные очки: <yellow>{points}</yellow>"
+  value:
+  - <dark_gray>Итоги поединка
+  - ''
+  - "<gray>Причина завершения: <white>{reason}</white>"
+  - "<gray>Длительность: <white>{duration}с</white>"
+  - "<gray>Нанесённый урон: <red>{damage}❤</red>"
+  - "<gray>Набранные очки: <yellow>{points}</yellow>"
+  preserve-custom: true
+- file: lang.yml
+  path: gui.post_duel.draw_lore
+  before:
+  - "<gray>Исход: <yellow>{reason}</yellow>"
+  - "<gray>Деньги: {money}"
+  - "<gray>Честь: <white>Без изменений</white>"
+  value:
+  - <dark_gray>Итоги поединка
+  - ''
+  - "<gray>Исход: <yellow>{reason}</yellow>"
+  - "<gray>Деньги: {money}"
+  - "<gray>Честь: <white>Без изменений</white>"
+  preserve-custom: true
+- file: lang.yml
+  path: gui.post_duel.win_lore
+  before:
+  - "<gray>Деньги: <green>+</green>{money}"
+  - "<gray>Честь: <gold>+{honor}</gold>"
+  value:
+  - <dark_gray>Итоги поединка
+  - ''
+  - "<gray>Деньги: <green>+</green>{money}"
+  - "<gray>Честь: <gold>+{honor}</gold>"
+  preserve-custom: true
+- file: lang.yml
+  path: gui.post_duel.defeat_lore
+  before:
+  - "<gray>Деньги: <red>Потеряна ставка</red>"
+  - "<gray>Честь: <gray>-{honor}</gray>"
+  value:
+  - <dark_gray>Итоги поединка
+  - ''
+  - "<gray>Деньги: <red>Потеряна ставка</red>"
+  - "<gray>Честь: <gray>-{honor}</gray>"
+  preserve-custom: true
+- file: lang.yml
+  path: gui.post_duel.rematch_lore
+  before:
+  - "<gray>Соперник: <gold>{opponent}</gold>"
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<green>ЛКМ</green> <dark_gray>—</dark_gray> <gray>предложить реванш</gray>"
+  value:
+  - <dark_gray>Итоги поединка
+  - ''
+  - "<gray>Соперник: <gold>{opponent}</gold>"
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<green>ЛКМ</green> <dark_gray>—</dark_gray> <gray>предложить реванш</gray>"
+  preserve-custom: true
+- file: lang.yml
+  path: gui.readiness.status_lore
+  before:
+  - "<gray>Оба бойца должны подтвердить"
+  - "<gray>готовность перед началом поединка."
+  value:
+  - <dark_gray>Готовность к поединку
+  - ''
+  - "<gray>Оба бойца должны подтвердить"
+  - "<gray>готовность перед началом поединка."
+  preserve-custom: true
+- file: lang.yml
+  path: gui.readiness.toggle_lore
+  before:
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<green>ЛКМ</green> <dark_gray>—</dark_gray> <gray>изменить статус готовности</gray>"
+  value:
+  - <dark_gray>Готовность к поединку
+  - ''
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<green>ЛКМ</green> <dark_gray>—</dark_gray> <gray>изменить статус готовности</gray>"
+  preserve-custom: true
+- file: lang.yml
+  path: gui.readiness.cancel_lore
+  before:
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<gray>Отказаться от поединка и закрыть окно</gray>"
+
+  value:
+  - <dark_gray>Готовность к поединку
+  - ''
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<gray>Отказаться от поединка и закрыть окно</gray>"
+  preserve-custom: true
+- file: lang.yml
+  path: gui.royal_duel.rules_lore
+  before:
+  - "<gray>Самый престижный турнирный бой."
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<yellow>▪</yellow> <gray>Обязательная ставка деньгами</gray>"
+  - "<yellow>▪</yellow> <gray>Серверные оповещения Глашатая</gray>"
+  - "<yellow>▪</yellow> <gray>Победитель забирает банк + <gold>25%</gold> бонус</gray>"
+  - "<yellow>▪</yellow> <gray>Увеличенный прирост Чести (<green>+150%</green>)</gray>"
+  - "<yellow>▪</yellow> <gray>Оповещение в канале Discord</gray>"
+  - "<yellow>▪</yellow> <gray>Ограничение: 1 дуэль на сервер одновременно</gray>"
+  value:
+  - <dark_gray>Королевский турнир
+  - ''
+  - "<gray>Самый престижный турнирный бой."
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<yellow>▪</yellow> <gray>Обязательная ставка деньгами</gray>"
+  - "<yellow>▪</yellow> <gray>Серверные оповещения Глашатая</gray>"
+  - "<yellow>▪</yellow> <gray>Победитель забирает банк + <gold>25%</gold> бонус</gray>"
+  - "<yellow>▪</yellow> <gray>Увеличенный прирост Чести (<green>+150%</green>)</gray>"
+  - "<yellow>▪</yellow> <gray>Оповещение в канале Discord</gray>"
+  - "<yellow>▪</yellow> <gray>Ограничение: 1 дуэль на сервер одновременно</gray>"
+  preserve-custom: true
+- file: lang.yml
+  path: gui.royal_duel.status_lore
+  before:
+  - "<gray>Наличие билета: {ticket}"
+  - "<gray>Статус турнира: {arena}"
+  - "<gray>Кулдаун билета: {cd}"
+  value:
+  - <dark_gray>Королевский турнир
+  - ''
+  - "<gray>Наличие билета: {ticket}"
+  - "<gray>Статус турнира: {arena}"
+  - "<gray>Кулдаун билета: {cd}"
+  preserve-custom: true
+- file: lang.yml
+  path: gui.royal_duel.btn_lore_available
+  before:
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<green>ЛКМ</green> <dark_gray>—</dark_gray> <gray>выбрать оппонента</gray>"
+  value:
+  - <dark_gray>Королевский турнир
+  - ''
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<green>ЛКМ</green> <dark_gray>—</dark_gray> <gray>выбрать оппонента</gray>"
+  preserve-custom: true
+- file: lang.yml
+  path: gui.royal_duel.btn_lore_unavailable
+  before:
+  - "<gray>Проверьте условия готовности"
+  value:
+  - <dark_gray>Королевский турнир
+  - ''
+  - "<gray>Проверьте условия готовности"
+  preserve-custom: true
+- file: lang.yml
+  path: gui.spectate_list.no_matches_lore
+  before:
+  - "<gray>Сейчас все арены свободны."
+  - "<yellow>Вы можете бросить вызов сами!</yellow>"
+  value:
+  - <dark_gray>Наблюдение за боем
+  - ''
+  - "<gray>Сейчас все арены свободны."
+  - "<yellow>Вы можете бросить вызов сами!</yellow>"
+  preserve-custom: true
+- file: lang.yml
+  path: gui.spectate_list.match_card_lore
+  before:
+  - "<gray>Режим: <white>{type}</white>"
+  - "<gray>Арена: <yellow>{arena}</yellow>"
+  - "<gray>Зрителей: <aqua>{spectators}</aqua>"
+  - "<gray>Цена билета: {fee}"
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<green>ЛКМ</green> <dark_gray>—</dark_gray> <gray>перейти на трибуны</gray>"
+
+  value:
+  - <dark_gray>Наблюдение за боем
+  - ''
+  - "<gray>Режим: <white>{type}</white>"
+  - "<gray>Арена: <yellow>{arena}</yellow>"
+  - "<gray>Зрителей: <aqua>{spectators}</aqua>"
+  - "<gray>Цена билета: {fee}"
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<green>ЛКМ</green> <dark_gray>—</dark_gray> <gray>перейти на трибуны</gray>"
+  preserve-custom: true
+- file: lang.yml
+  path: gui.stake_confirm.params_lore
+  before:
+  - "<gray>Режим: </gray>{type}"
+  - "<gray>Честь: <yellow>{honor}</yellow>"
+  value:
+  - <dark_gray>Условия поединка
+  - ''
+  - "<gray>Режим: </gray>{type}"
+  - "<gray>Честь: <yellow>{honor}</yellow>"
+  preserve-custom: true
+- file: lang.yml
+  path: gui.stake_confirm.status_lore
+  before:
+  - "<gray>Оба должны подтвердить"
+  value:
+  - <dark_gray>Условия поединка
+  - ''
+  - "<gray>Оба должны подтвердить"
+  preserve-custom: true
+- file: lang.yml
+  path: gui.stake_confirm.ready_btn_lore
+  before:
+  - "<gray>Когда оба готовы — старт"
+  value:
+  - <dark_gray>Условия поединка
+  - ''
+  - "<gray>Когда оба готовы — старт"
+  preserve-custom: true
+- file: lang.yml
+  path: gui.stake_confirm.cancel_lore
+  before:
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<gray>Отказаться от дуэли"
+  value:
+  - <dark_gray>Условия поединка
+  - ''
+  - "<dark_gray><st>─────────────────────</st></dark_gray>"
+  - "<gray>Отказаться от дуэли"
+  preserve-custom: true
+- file: lang.yml
+  path: gui.readiness.toggle_ready
+  before: "<green>ВЫ ГОТОВЫ!</green> <dark_gray>(нажмите для отмены)</dark_gray>"
+  value: <gold>Готовность <dark_gray>| <green>Подтверждена
+  preserve-custom: true
+- file: lang.yml
+  path: gui.readiness.toggle_not_ready
+  before: "<yellow>НАЖМИТЕ: Я ГОТОВ!</yellow>"
+  value: <gold>Готовность <dark_gray>| <yellow>Ожидает подтверждения
+  preserve-custom: true
+- file: lang.yml
+  path: gui.stake_confirm.ready_btn_done
+  before: "<green>Вы готовы</green> <dark_gray>(клик — отменить)</dark_gray>"
+  value: <gold>Готовность <dark_gray>| <green>Подтверждена
+  preserve-custom: true
+- file: lang.yml
+  path: gui.stake_confirm.ready_btn_normal
+  before: "<yellow>Нажмите: готов</yellow>"
+  value: <gold>Готовность <dark_gray>| <yellow>Ожидает подтверждения
+  preserve-custom: true
+- file: lang.yml
+  path: gui.stake_confirm.ready_btn_royal
+  before: "<gold>Готов к королевскому поединку</gold>"
+  value: <gold>Готовность к турниру <dark_gray>| <yellow>Ожидает подтверждения
+  preserve-custom: true
+- file: lang.yml
+  path: gui.stake_confirm.controls_shift
+  before: "<yellow>Shift</yellow> <dark_gray>—</dark_gray> <gray>сменить номинал</gray>"
+  value: <yellow>Shift+ЛКМ <dark_gray>— <gray>сменить номинал
+  preserve-custom: true
+- file: lang.yml
+  path: gui.royal_duel.btn_lore_unavailable
+  before:
+  - <dark_gray>Королевский турнир
+  - ''
+  - "<gray>Проверьте условия готовности"
+  value:
+  - <dark_gray>Королевский турнир
+  - ''
+  - <dark_gray><st>─────────────────────</st>
+  - <red>✕ Вызов недоступен
+  - '<red>Причина: <gray>нужен билет, свободная арена и завершённая перезарядка.'
+  - <dark_gray>ЛКМ — выбрать соперника (заблокировано)
+  preserve-custom: true
+- file: lang.yml
+  path: gui.style.subtitle
+  before:
+  value: <dark_gray>Турниры и дуэли
+  preserve-custom: true
+- file: lang.yml
+  path: gui.style.separator
+  before:
+  value: <dark_gray><st>─────────────────────</st>
+  preserve-custom: true
+- file: lang.yml
+  path: gui.duel_setup.money_bet.controls
+  before: "<yellow>Shift</yellow> <dark_gray>—</dark_gray> <gray>сменить</gray>  <dark_gray>•</dark_gray>  <green>ЛКМ</green> <dark_gray>—</dark_gray> <gray>+</gray>  <dark_gray>•</dark_gray>  <gold>ПКМ</gold> <dark_gray>—</dark_gray> <gray>−</gray>"
+  value: <yellow>Shift+ЛКМ <dark_gray>— <gray>сменить номинал
+  preserve-custom: true
+- file: lang.yml
+  path: gui.duel_setup.money_bet.controls_plus
+  before:
+  value: <green>ЛКМ <dark_gray>— <gray>увеличить ставку
+  preserve-custom: true
+- file: lang.yml
+  path: gui.duel_setup.money_bet.controls_minus
+  before:
+  value: <gold>ПКМ <dark_gray>— <gray>уменьшить ставку
+  preserve-custom: true
+- file: lang.yml
+  path: gui.post_duel.draw_name
+  before: "<yellow>НИЧЬЯ</yellow>"
+  value: <gold>Итог <dark_gray>| <yellow>Ничья
+  preserve-custom: true
+- file: lang.yml
+  path: gui.post_duel.win_name
+  before: "<green>ВЫ ПОБЕДИЛИ!</green>"
+  value: <gold>Итог <dark_gray>| <green>Победа
+  preserve-custom: true
+- file: lang.yml
+  path: gui.post_duel.defeat_name
+  before: "<red>ПОРАЖЕНИЕ</red>"
+  value: <gold>Итог <dark_gray>| <red>Поражение
+  preserve-custom: true

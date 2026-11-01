@@ -55,8 +55,10 @@ public final class HeadTextures {
     public static final String DEFAULT_RESET = urlToBase64("1a6f1ca5bb421d09e863339bf4f9d2d0b67bf5ab5ff9a3a936a6db9d18");
     public static final String DEFAULT_SCROLL = urlToBase64("b517743015a9951ee19cd8e411b026cc3dbb1e42bfae1bc97e74288b8fa7");
     public static final String DEFAULT_SKULL = urlToBase64("e5d59ce51e39b7d85c88b9bf92bb3bfa8be80a6b57df332d7ba5ab4ebc8");
-    public static final String DEFAULT_PREVIOUS = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmQ2OWUwNmU1ZGFkZmQ4NGU1ZjNkMWMyMWYyZjhjY2ZlYTA0MzIzZDkxMWIzNTIxYTdhZmQ3MTc5YTA3YWU3OSJ9fX0=";
-    public static final String DEFAULT_NEXT = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMTliZjMyOTJlMTI2YTEwNWI1NGViYTcxM2FhMWIxNTJkNTQxYTFkODkzODgyOWM1NjM2NTZkMjMyNjZiZCJ9fX0=";
+    public static final String DEFAULT_PREVIOUS =
+            "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZjZkYWI3MjcxZjRmZjA0ZDU0NDAyMTkwNjdhMTA5YjVjMGMxZDFlMDFlYzYwMmMwMDIwNDc2ZjdlYjYxMjE4MCJ9fX0=";
+    public static final String DEFAULT_NEXT =
+            "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvOGFhMTg3ZmVkZTg4ZGUwMDJjYmQ5MzA1NzVlYjdiYTQ4ZDNiMWEwNmQ5NjFiZGM1MzU4MDA3NTBhZjc2NDkyNiJ9fX0=";
     public static final String DEFAULT_CLOCK = urlToBase64("853c80e3c21934e650ef3164cb89547cb0b5cc4ab7cb9345094d4d62b66d48");
 
     // =========================================================================
@@ -212,7 +214,7 @@ public final class HeadTextures {
         SkullMeta meta = (SkullMeta) item.getItemMeta();
         if (meta != null) {
             if (player != null) {
-                meta.setOwningPlayer(player);
+                copyKnownTexture(meta, player.getPlayerProfile());
             }
             if (name != null) {
                 meta.displayName(name.decoration(TextDecoration.ITALIC, false));
@@ -233,7 +235,7 @@ public final class HeadTextures {
         if (meta != null) {
             if (uuid != null) {
                 OfflinePlayer op = Bukkit.getOfflinePlayer(uuid);
-                meta.setOwningPlayer(op);
+                copyKnownTexture(meta, op.getPlayerProfile());
             }
             if (name != null) {
                 meta.displayName(name.decoration(TextDecoration.ITALIC, false));
@@ -248,9 +250,19 @@ public final class HeadTextures {
         return item;
     }
 
+    private static void copyKnownTexture(SkullMeta meta, PlayerProfile profile) {
+        profile.getProperties().stream()
+                .filter(p -> p.getName().equals("textures"))
+                .findFirst()
+                .ifPresent(property -> applyBase64(meta, property.getValue()));
+    }
+
     private static void applyBase64(SkullMeta meta, String base64) {
         try {
-            PlayerProfile profile = Bukkit.createProfile(UUID.nameUUIDFromBytes(base64.getBytes(StandardCharsets.UTF_8)));
+            PlayerProfile profile =
+                    Bukkit.createProfile(
+                            UUID.nameUUIDFromBytes(base64.getBytes(StandardCharsets.UTF_8)),
+                            "LoveTexture");
             profile.setProperty(new ProfileProperty("textures", base64));
             meta.setPlayerProfile(profile);
         } catch (Exception ignored) {

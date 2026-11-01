@@ -388,6 +388,8 @@ public final class DuelSetupGUI extends CustomGUI {
             lore.add(dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.money_bet.controls"));
         }
 
+        lore.add(dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.money_bet.controls_plus"));
+        lore.add(dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.money_bet.controls_minus"));
         String balance = CoinFormat.formatBalanceLine(duelManager.getEconomyBridge(),
                 duelManager.getEconomyBridge().getBalance(player));
         lore.add("");
