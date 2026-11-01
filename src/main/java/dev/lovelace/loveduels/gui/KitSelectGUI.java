@@ -13,11 +13,12 @@ import java.util.function.Consumer;
 
 public final class KitSelectGUI extends CustomGUI {
 
+    private int page;
     private final DuelManager duelManager;
     private final Consumer<Kit> onSelect;
 
     public KitSelectGUI(Player player, DuelManager duelManager, Consumer<Kit> onSelect) {
-        super(player, 45, dev.lovelace.loveduels.util.Lang.component("gui.kit_select.title"));
+        super(player, 54, dev.lovelace.loveduels.util.Lang.component("gui.kit_select.title"));
         this.duelManager = duelManager;
         this.onSelect = onSelect;
     }
@@ -26,8 +27,8 @@ public final class KitSelectGUI extends CustomGUI {
     protected void build() {
         applyStandardBorders(true, () -> new MainMenuGUI(player, duelManager).open());
 
-        Collection<Kit> kits = duelManager.getKitManager().getAllKits();
-        int[] slots = new int[]{20, 21, 22, 23, 24, 29, 30, 31, 32, 33};
+        var kits = new java.util.ArrayList<>(duelManager.getKitManager().getAllKits());
+        int[] slots = {19,20,21,22,23,24,25,28,29,30,31,32,33,34,37,38,39,40,41,42,43};
 
         if (kits.isEmpty()) {
             setItem(22, HeadTextures.head(
@@ -38,8 +39,15 @@ public final class KitSelectGUI extends CustomGUI {
             return;
         }
 
+        page = PageMath.clampPage(page, kits.size(), slots.length);
+        int from = page * slots.length;
+        int to = Math.min(kits.size(), from + slots.length);
+        if (page > 0) setItem(36, HeadTextures.head(HeadTextures.PREVIOUS,
+                dev.lovelace.loveduels.util.Lang.get("gui.common.previous"), List.of()), e -> { page--; build(); });
+        if (to < kits.size()) setItem(44, HeadTextures.head(HeadTextures.NEXT,
+                dev.lovelace.loveduels.util.Lang.get("gui.common.next"), List.of()), e -> { page++; build(); });
         int idx = 0;
-        for (Kit kit : kits) {
+        for (Kit kit : kits.subList(from,to)) {
             if (idx >= slots.length) break;
             int slot = slots[idx++];
 

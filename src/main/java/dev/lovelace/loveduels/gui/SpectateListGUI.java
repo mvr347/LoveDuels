@@ -14,10 +14,11 @@ import java.util.List;
 
 public final class SpectateListGUI extends CustomGUI {
 
+    private int page;
     private final DuelManager duelManager;
 
     public SpectateListGUI(Player player, DuelManager duelManager) {
-        super(player, 45, dev.lovelace.loveduels.util.Lang.component("gui.spectate_list.title"));
+        super(player, 54, dev.lovelace.loveduels.util.Lang.component("gui.spectate_list.title"));
         this.duelManager = duelManager;
     }
 
@@ -25,16 +26,23 @@ public final class SpectateListGUI extends CustomGUI {
     protected void build() {
         applyStandardBorders(true, () -> new MainMenuGUI(player, duelManager).open());
 
-        Collection<Match> matches = duelManager.getMatchManager().getActiveMatches();
-        int[] slots = new int[]{20, 21, 22, 23, 24, 29, 30, 31, 32, 33};
+        var matches = new java.util.ArrayList<>(duelManager.getMatchManager().getActiveMatches());
+        int[] slots = {19,20,21,22,23,24,25,28,29,30,31,32,33,34,37,38,39,40,41,42,43};
 
         if (matches.isEmpty()) {
             setItem(22, createNoMatchesItem(), null);
             return;
         }
 
+        page = PageMath.clampPage(page, matches.size(), slots.length);
+        int from = page * slots.length;
+        int to = Math.min(matches.size(), from + slots.length);
+        if (page > 0) setItem(36, HeadTextures.head(HeadTextures.PREVIOUS,
+                dev.lovelace.loveduels.util.Lang.get("gui.common.previous"), List.of()), e -> { page--; build(); });
+        if (to < matches.size()) setItem(44, HeadTextures.head(HeadTextures.NEXT,
+                dev.lovelace.loveduels.util.Lang.get("gui.common.next"), List.of()), e -> { page++; build(); });
         int idx = 0;
-        for (Match match : matches) {
+        for (Match match : matches.subList(from,to)) {
             if (idx >= slots.length) break;
             int slot = slots[idx++];
 

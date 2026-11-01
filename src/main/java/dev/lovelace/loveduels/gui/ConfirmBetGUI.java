@@ -8,7 +8,7 @@ import org.bukkit.inventory.ItemStack;
 import java.util.List;
 
 /**
- * Hopper-style 9-slot confirm/cancel (gui-gen-5 Exception 1).
+ * Подтверждение ставки: компактное меню gui-gen-6.
  */
 public final class ConfirmBetGUI extends CustomGUI {
 
@@ -18,7 +18,7 @@ public final class ConfirmBetGUI extends CustomGUI {
     private final Runnable onCancel;
 
     public ConfirmBetGUI(Player player, long moneyBet, int honorBet, Runnable onConfirm, Runnable onCancel) {
-        super(player, 9, dev.lovelace.loveduels.util.Lang.component("gui.confirm_bet.title"));
+        super(player, 27, dev.lovelace.loveduels.util.Lang.component("gui.confirm_bet.title"));
         this.moneyBet = moneyBet;
         this.honorBet = honorBet;
         this.onConfirm = onConfirm;
@@ -27,11 +27,7 @@ public final class ConfirmBetGUI extends CustomGUI {
 
     @Override
     protected void build() {
-        ItemStack glass = createGlass();
-        setItem(0, glass, null);
-        setItem(2, glass, null);
-        setItem(6, glass, null);
-        setItem(8, glass, null);
+        applyStandardBorders(false, null);
 
         String honorStr = honorBet > 0
                 ? dev.lovelace.loveduels.util.Lang.get("gui.confirm_bet.honor_line", "honor", String.valueOf(honorBet))
@@ -43,7 +39,7 @@ public final class ConfirmBetGUI extends CustomGUI {
                 "honor", honorStr
         );
 
-        setItem(1, HeadTextures.head(
+        setItem(12, HeadTextures.head(
                 HeadTextures.CONFIRM,
                 dev.lovelace.loveduels.util.Lang.get("gui.confirm_bet.confirm_name"),
                 CoinFormat.resolveGlyphs(player, confirmLore)
@@ -52,7 +48,7 @@ public final class ConfirmBetGUI extends CustomGUI {
             if (onConfirm != null) onConfirm.run();
         });
 
-        setItem(7, HeadTextures.head(
+        setItem(14, HeadTextures.head(
                 HeadTextures.CANCEL,
                 dev.lovelace.loveduels.util.Lang.get("gui.confirm_bet.cancel_name"),
                 dev.lovelace.loveduels.util.Lang.list("gui.confirm_bet.cancel_lore")

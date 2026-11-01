@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 /**
- * Base GUI conforming strictly to gui-gen-5 Love* unified standard:
+ * Base GUI conforming strictly to gui-gen-6 Love* unified standard:
  * - Sizes: 27, 36, 45, 54
  * - Glass ONLY in Header (row 0, and row 1 if size >= 45) and Footer (last 9 slots)
  * - Work area: NO glass, side columns empty (AIR)
@@ -29,6 +29,8 @@ import java.util.function.Consumer;
  */
 public abstract class CustomGUI implements InventoryHolder {
 
+    private static final ThreadLocal<CustomGUI> ACTION_PARENT = new ThreadLocal<>();
+    private final CustomGUI parent = ACTION_PARENT.get();
     protected final Player player;
     protected final int size;
     protected final Component title;
@@ -36,8 +38,8 @@ public abstract class CustomGUI implements InventoryHolder {
     protected final Map<Integer, Consumer<InventoryClickEvent>> clickHandlers = new HashMap<>();
 
     public CustomGUI(Player player, int size, Component title) {
-        if (size != 9 && size != 27 && size != 36 && size != 45 && size != 54) {
-            throw new IllegalArgumentException("Invalid GUI size according to gui-gen-5: " + size);
+        if (size != 27 && size != 36 && size != 45 && size != 54) {
+            throw new IllegalArgumentException("Invalid GUI size according to gui-gen-6: " + size);
         }
         this.player = player;
         this.size = size;
@@ -54,11 +56,18 @@ public abstract class CustomGUI implements InventoryHolder {
 
     public void handleClick(InventoryClickEvent event) {
         event.setCancelled(true);
+        var click = event.getClick();
+        if (click != org.bukkit.event.inventory.ClickType.LEFT
+                && click != org.bukkit.event.inventory.ClickType.RIGHT
+                && click != org.bukkit.event.inventory.ClickType.SHIFT_LEFT
+                && click != org.bukkit.event.inventory.ClickType.SHIFT_RIGHT) return;
         int slot = event.getRawSlot();
         if (slot >= 0 && slot < size) {
             Consumer<InventoryClickEvent> handler = clickHandlers.get(slot);
             if (handler != null) {
-                handler.accept(event);
+                ACTION_PARENT.set(this);
+                try { handler.accept(event); }
+                finally { ACTION_PARENT.remove(); }
             }
         }
     }
@@ -72,6 +81,8 @@ public abstract class CustomGUI implements InventoryHolder {
     }
 
     protected void applyStandardBorders(boolean hasBackButton, Runnable onBack) {
+        inventory.clear();
+        clickHandlers.clear();
         ItemStack glass = createGlass();
 
         for (int i = 0; i <= 8; i++) {
@@ -91,10 +102,8 @@ public abstract class CustomGUI implements InventoryHolder {
             setItem(i, glass, null);
         }
 
-        if (hasBackButton) {
-            setItem(size - 2, createBackButton(), e -> {
-                if (onBack != null) onBack.run();
-            });
+        if (hasBackButton && parent != null) {
+            setItem(size - 2, createBackButton(), e -> parent.open());
         }
 
         setItem(size - 1, createCloseButton(), e -> player.closeInventory());
@@ -135,7 +144,7 @@ public abstract class CustomGUI implements InventoryHolder {
         return HeadTextures.head(
                 HeadTextures.BACK,
                 dev.lovelace.loveduels.util.Lang.get("gui.common.back.name"),
-                dev.lovelace.loveduels.util.Lang.list("gui.common.back.lore")
+                List.of()
         );
     }
 
@@ -143,7 +152,7 @@ public abstract class CustomGUI implements InventoryHolder {
         return HeadTextures.head(
                 HeadTextures.CLOSE,
                 dev.lovelace.loveduels.util.Lang.get("gui.common.close.name"),
-                dev.lovelace.loveduels.util.Lang.list("gui.common.close.lore")
+                List.of()
         );
     }
 
