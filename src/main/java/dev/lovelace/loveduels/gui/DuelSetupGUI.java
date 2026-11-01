@@ -51,7 +51,7 @@ public final class DuelSetupGUI extends CustomGUI {
     }
 
     public DuelSetupGUI(Player player, Player opponent, DuelManager duelManager, ChallengeMode mode) {
-        super(player, 36, titleFor(mode));
+        super(player, mode.isTraining() ? 27 : 36, titleFor(mode));
         this.opponent = opponent;
         this.duelManager = duelManager;
         this.mode = mode;
@@ -90,14 +90,14 @@ public final class DuelSetupGUI extends CustomGUI {
 
         setItem(4, createOpponentInfoItem(), null);
 
-        setItem(11, createCategoryItem(), e -> {
+        setItem(mode.isTraining() ? 11 : 10, createCategoryItem(), e -> {
             category = e.isRightClick() ? category.prev() : category.next();
             selectedType = category.firstSubtype();
             player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 1.0f);
             build();
         });
 
-        setItem(12, createSubtypeItem(), e -> {
+        setItem(mode.isTraining() ? 13 : 12, createSubtypeItem(), e -> {
             selectedType = e.isRightClick()
                     ? category.prevSubtype(selectedType)
                     : category.nextSubtype(selectedType);
@@ -107,7 +107,7 @@ public final class DuelSetupGUI extends CustomGUI {
 
         if (mode.isTraining()) {
             // только режим + отправить — без чести и монет
-            setItem(22, createSendButton(), e -> sendChallenge());
+            setItem(15, createSendButton(), e -> sendChallenge());
             return;
         }
 
@@ -139,7 +139,7 @@ public final class DuelSetupGUI extends CustomGUI {
             build();
         });
 
-        setItem(15, createHonorBetItem(), e -> {
+        setItem(16, createHonorBetItem(), e -> {
             if (e.isRightClick()) {
                 if (honorBet > BASE_HONOR && honorBet % 2 == 0) {
                     honorBet = honorBet / 2;

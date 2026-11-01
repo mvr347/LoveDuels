@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 import java.util.List;
 
 /**
- * Главное меню: только вызов и наблюдение (gui-gen-6, 45 слотов).
+ * Главное меню: только вызов и наблюдение (gui-gen-6, 27 слотов).
  */
 public final class MainMenuGUI extends CustomGUI {
 
@@ -22,7 +22,7 @@ public final class MainMenuGUI extends CustomGUI {
     protected void build() {
         applyStandardBorders(false, null);
 
-        // Рабочая зона: два пункта по центру (слоты 21 и 23)
+        // Рабочая зона: два пункта по центру (слоты 12 и 14)
         setItem(12, HeadTextures.head(HeadTextures.SWORD,
                 dev.lovelace.loveduels.util.Lang.get("gui.main_menu.challenge.name"),
                 dev.lovelace.loveduels.util.Lang.list("gui.main_menu.challenge.lore")
