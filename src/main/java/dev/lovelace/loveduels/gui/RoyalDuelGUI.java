@@ -12,7 +12,7 @@ public final class RoyalDuelGUI extends CustomGUI {
     private final DuelManager duelManager;
 
     public RoyalDuelGUI(Player player, DuelManager duelManager) {
-        super(player, 45, dev.lovelace.loveduels.util.Lang.component("gui.royal_duel.title"));
+        super(player, 27, dev.lovelace.loveduels.util.Lang.component("gui.royal_duel.title"));
         this.duelManager = duelManager;
     }
 
@@ -25,13 +25,13 @@ public final class RoyalDuelGUI extends CustomGUI {
         long cd = duelManager.getCooldownManager().getRoyalTicketRemainingSeconds(player.getUniqueId());
 
         // Overview Scroll (Slot 20)
-        setItem(20, createOverviewItem(), null);
+        setItem(11, createOverviewItem(), null);
 
         // Status Item (Slot 22)
-        setItem(22, createStatusItem(hasTicket, serverActive, cd), null);
+        setItem(13, createStatusItem(hasTicket, serverActive, cd), null);
 
         // Challenge Button (Slot 24)
-        setItem(24, createChallengeButtonItem(hasTicket, serverActive, cd), e -> {
+        setItem(15, createChallengeButtonItem(hasTicket, serverActive, cd), e -> {
             if (!hasTicket) {
                 dev.lovelace.loveduels.util.Lang.send(player, "gui.royal_duel.err_no_ticket");
                 return;

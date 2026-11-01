@@ -1,0 +1,7 @@
+# Однократное обновление оформления; исходные файлы сохраняются рядом как .pre-style-20261101.bak.
+version: 20261101
+updates:
+- file: lang.yml
+  path: prefix
+  before: "<gradient:#FFD700:#C9A227>[LoveDuels]</gradient> "
+  value: '<gradient:#FFD700:#C9A227>Дуэли</gradient> <white>»</white> '

@@ -18,7 +18,7 @@ public final class LeaderboardGUI extends CustomGUI {
     private final DuelManager duelManager;
 
     public LeaderboardGUI(Player player, DuelManager duelManager) {
-        super(player, 54, dev.lovelace.loveduels.util.Lang.component("gui.leaderboard.title"));
+        super(player, 36, dev.lovelace.loveduels.util.Lang.component("gui.leaderboard.title"));
         this.duelManager = duelManager;
     }
 
@@ -29,16 +29,18 @@ public final class LeaderboardGUI extends CustomGUI {
         // Player's personal stats at slot 4
         duelManager.getPlayerStorage().getOrCreatePlayer(player.getUniqueId(), player.getName()).thenAccept(myData -> {
             Bukkit.getScheduler().runTask(duelManager.getPlugin(), () -> {
-                setItem(4, createMyStatsItem(myData), null);
+                if (player.getOpenInventory().getTopInventory() != inventory) return;
+                setItem(0, createMyStatsItem(myData), null);
             });
         });
 
         // Top 10 duelists
         duelManager.getPlayerStorage().getTopPlayersByHonor(10).thenAccept(topList -> {
             Bukkit.getScheduler().runTask(duelManager.getPlugin(), () -> {
+                if (player.getOpenInventory().getTopInventory() != inventory) return;
                 int[] slots = new int[]{
-                        20, 21, 22, 23, 24,
-                        29, 30, 31, 32, 33
+                        11, 12, 13, 14, 15,
+                        20, 21, 22, 23, 24
                 };
 
                 for (int i = 0; i < Math.min(topList.size(), slots.length); i++) {

@@ -12,7 +12,12 @@ public final class GuiListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onClick(InventoryClickEvent event) {
         if (event.getInventory().getHolder() instanceof CustomGUI gui) {
-            gui.handleClick(event);
+            event.setCancelled(true);
+            org.bukkit.Bukkit.getScheduler().runTask(
+                    org.bukkit.plugin.java.JavaPlugin.getProvidingPlugin(CustomGUI.class), () -> {
+                        if (event.getWhoClicked().getOpenInventory().getTopInventory() == gui.getInventory())
+                            gui.handleClick(event);
+                    });
         }
     }
 

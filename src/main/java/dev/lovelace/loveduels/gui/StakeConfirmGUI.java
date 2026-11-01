@@ -29,7 +29,7 @@ public final class StakeConfirmGUI extends CustomGUI {
     private int selectedDenomIndex = 0;
 
     public StakeConfirmGUI(Player viewer, DuelManager duelManager, StakeConfirmSession session) {
-        super(viewer, 27, dev.lovelace.loveduels.util.Lang.component(
+        super(viewer, 36, dev.lovelace.loveduels.util.Lang.component(
                 session.getRequest().royal()
                         ? "gui.stake_confirm.title_royal"
                         : "gui.stake_confirm.title_normal"
