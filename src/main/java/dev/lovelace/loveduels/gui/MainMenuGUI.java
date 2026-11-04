@@ -21,14 +21,25 @@ public final class MainMenuGUI extends CustomGUI {
     @Override
     protected void build() {
         applyStandardBorders(false, null);
+        var cached = duelManager.getPlayerStorage().getCachedPlayer(player.getUniqueId());
+        var info = cached.map(data -> dev.lovelace.loveduels.util.Lang.list("gui.main_menu.info.lore",
+                "honor", String.valueOf(data.honor()), "wins", String.valueOf(data.wins()),
+                "losses", String.valueOf(data.losses()), "streak", String.valueOf(data.currentStreak()),
+                "best", String.valueOf(data.bestStreak()), "royal", String.valueOf(data.royalWins()),
+                "active", String.valueOf(duelManager.getMatchManager().getActiveMatches().size())))
+                .orElse(List.of("<gray>Статистика загружается…</gray>"));
+        var mini = MiniMessage.miniMessage();
+        setItem(0, HeadTextures.playerHead(player,
+                dev.lovelace.loveduels.util.Lang.component("gui.main_menu.info.name", "player", player.getName()),
+                info.stream().map(mini::deserialize).toList()), null);
 
         // Рабочая зона: два пункта по центру (слоты 12 и 14)
-        setItem(12, HeadTextures.head(HeadTextures.SWORD,
+        setItem(12, HeadTextures.head("actions.challenge",
                 dev.lovelace.loveduels.util.Lang.get("gui.main_menu.challenge.name"),
                 dev.lovelace.loveduels.util.Lang.list("gui.main_menu.challenge.lore")
         ), e -> new ChallengeModeGUI(player, duelManager).open());
 
-        setItem(14, HeadTextures.head(HeadTextures.EYE,
+        setItem(14, HeadTextures.head(duelManager.getMatchManager().getActiveMatches().isEmpty() ? "actions.spectate_empty" : "actions.spectate",
                 dev.lovelace.loveduels.util.Lang.get("gui.main_menu.spectate.name"),
                 dev.lovelace.loveduels.util.Lang.list("gui.main_menu.spectate.lore")
         ), e -> new SpectateListGUI(player, duelManager).open());

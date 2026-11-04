@@ -32,7 +32,7 @@ public final class KitSelectGUI extends CustomGUI {
 
         if (kits.isEmpty()) {
             setItem(22, HeadTextures.head(
-                    HeadTextures.CHEST,
+                    "duel_types.kit",
                     dev.lovelace.loveduels.util.Lang.get("gui.kit_select.no_kits_name"),
                     dev.lovelace.loveduels.util.Lang.list("gui.kit_select.no_kits_lore")
             ), null);
@@ -73,6 +73,6 @@ public final class KitSelectGUI extends CustomGUI {
                 "effects", effectsStr
         );
 
-        return HeadTextures.head(HeadTextures.CHEST, name, lore);
+        return HeadTextures.head("duel_types.kit", name, lore);
     }
 }

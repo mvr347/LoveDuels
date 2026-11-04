@@ -23,17 +23,17 @@ public final class ChallengeModeGUI extends CustomGUI {
     protected void build() {
         applyStandardBorders(true, () -> new MainMenuGUI(player, duelManager).open());
 
-        setItem(11, HeadTextures.head(HeadTextures.READY,
+        setItem(11, HeadTextures.head("modes.training",
                 dev.lovelace.loveduels.util.Lang.get("gui.challenge_mode.training.name"),
                 dev.lovelace.loveduels.util.Lang.list("gui.challenge_mode.training.lore")
         ), e -> new PlayerSelectGUI(player, duelManager, ChallengeMode.TRAINING).open());
 
-        setItem(13, HeadTextures.head(HeadTextures.SWORD,
+        setItem(13, HeadTextures.head("modes.normal",
                 dev.lovelace.loveduels.util.Lang.get("gui.challenge_mode.normal.name"),
                 dev.lovelace.loveduels.util.Lang.list("gui.challenge_mode.normal.lore")
         ), e -> new PlayerSelectGUI(player, duelManager, ChallengeMode.NORMAL).open());
 
-        setItem(15, HeadTextures.head(HeadTextures.CROWN,
+        setItem(15, HeadTextures.head("modes.royal",
                 dev.lovelace.loveduels.util.Lang.get("gui.challenge_mode.royal.name"),
                 dev.lovelace.loveduels.util.Lang.list("gui.challenge_mode.royal.lore")
         ), e -> new PlayerSelectGUI(player, duelManager, ChallengeMode.ROYAL).open());
