@@ -73,6 +73,19 @@ gui:
       - "<gray>Смотрите идущие поединки с трибун."
       - "<dark_gray><st>─────────────────────</st></dark_gray>"
       - "<green>ЛКМ</green> <dark_gray>—</dark_gray> <gray>список боёв</gray>"
+    info:
+      name: <white>Дуэли · {player}</white>
+      lore:
+      - <dark_gray>Ваши результаты</dark_gray>
+      - ''
+      - '<gray>Честь: <white>{honor}</white></gray>'
+      - '<gray>Победы / поражения: <white>{wins} / {losses}</white></gray>'
+      - '<gray>Текущая / лучшая серия: <white>{streak} / {best}</white></gray>'
+      - '<gray>Королевские победы: <white>{royal}</white></gray>'
+      - ''
+      - '<gray>Сейчас идут дуэли: <white>{active}</white></gray>'
+      - <dark_gray>─────────────────────</dark_gray>
+      - <gray>Выберите вызов или наблюдение ниже.</gray>
   challenge_mode:
     title: "<gold>Выбор режима вызова</gold>"
     training:

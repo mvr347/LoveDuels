@@ -1,4 +1,4 @@
-version: 20261102
+version: 20261104
 updates:
 - file: heads.yml
   path: navigation.previous
@@ -564,4 +564,89 @@ updates:
   path: gui.post_duel.defeat_name
   before: "<red>ПОРАЖЕНИЕ</red>"
   value: <gold>Итог <dark_gray>| <red>Поражение
+  preserve-custom: true
+- file: heads.yml
+  path: actions.challenge
+  before: null
+  value: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZGFlZjZhZTE2OWNjNGYzZTM5Yzc2ZDA5NzE5OTNiOTJhYmU1MTBkOTZjOWJiNDk3YzFhYjlhMmI0YzJkYThhMSJ9fX0=
+  preserve-custom: true
+- file: heads.yml
+  path: actions.spectate
+  before: null
+  value: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzZmNTlkYTY3YjM2YThkZjMzNjRiYjY0YWViN2YwNzRiYWE0NjBkNTk2NjE0ZjNhNThiZTkwY2RjYTI3MjI5NyJ9fX0=
+  preserve-custom: true
+- file: heads.yml
+  path: actions.spectate_empty
+  before: null
+  value: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmRkMmViMGM2ZjhhOTU0M2VmNWZkNzI1MjVjYzJmYWIzNTY2M2NkNzA5MTM1ZTQzYjhlMjU3ZGMwYjc1ODk0OCJ9fX0=
+  preserve-custom: true
+- file: heads.yml
+  path: categories.melee
+  before: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzdhZWU5YTc1YmYwZGY3ODk3MTgzMDE1Y2NhMGIyZDdiNzliYjNjMzRlYTU0MjRjNjc5NGJiNGZhOTVjMTZiZiJ9fX0=
+  value: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNmJhOWIyZjA2ZDE3Nzg1ZWE4YzE0Mjk0YzBlNjFkZWYyNDdiY2M3ZWNkNmU1OWNjODA3M2EzNjBlN2U5Y2NmYSJ9fX0=
+  preserve-custom: true
+- file: heads.yml
+  path: categories.ranged
+  before: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjVjYTA5YmY5MjExY2U2OTM2NzkzY2NjYmNmODFjOWE1ZmQ1YmYxNTVmNGUxNTY0ZjY0OGY1YTE4NDhkIn19fQ==
+  value: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZTg3MDhkNGI0YWIxMGI5YmE4NWVkMWE5MjQyYmY4MTEwNWM1NTk2ZDc0M2YyY2EyMGEzMzg3ZTI5ZDA2MzM0NSJ9fX0=
+  preserve-custom: true
+- file: heads.yml
+  path: categories.mounted
+  before: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNTY3YTFjOGRmY2ExMTM3Nzg0Nzg5MzU1NzU0YzFiMmIzMjQyMmU3N2E2ZWMzYzg5N2FmMTgzZjhhYmIxYTYifX19
+  value: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNTA5NTdhYWE3NjljYTUwYjMwNTQ3MzMzZGVkZTYwY2Y5NWRjNGIxODJmM2Q2YjU3M2RiM2NiOWM2ZmY0MjJlZiJ9fX0=
+  preserve-custom: true
+- file: heads.yml
+  path: duel_types.bow
+  before: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjVjYTA5YmY5MjExY2U2OTM2NzkzY2NjYmNmODFjOWE1ZmQ1YmYxNTVmNGUxNTY0ZjY0OGY1YTE4NDhkIn19fQ==
+  value: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZDNkYWM3YzNjMWU2YzljNzA3Yjg1NWI4NDM3YjEzNWY5M2Y5M2Y5MmEzMmQ0MzAwODIzMmRmMjcxZjg1YmVhIn19fQ==
+  preserve-custom: true
+- file: heads.yml
+  path: duel_types.horse_spear
+  before: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNTY3YTFjOGRmY2ExMTM3Nzg0Nzg5MzU1NzU0YzFiMmIzMjQyMmU3N2E2ZWMzYzg5N2FmMTgzZjhhYmIxYTYifX19
+  value: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNzRhNzNhYzhjMTUyZDgwZGJlNTYyNGQ5YWQ0MzFjNTA2MzhjMzU4Mjk2OGE1YmZmZmRkYjVhY2RmYzZjOGI5YSJ9fX0=
+  preserve-custom: true
+- file: heads.yml
+  path: duel_types.fists
+  before: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZTVkNTljZTUxZTM5YjdkNTVjODhiOWJmOTJiYjNiZmE4YmU4MGE2YjU3ZGYzMzJkN2JhNWFiNGViYzgifX19
+  value: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWM3OTljZWQ2MzkxYjU0YTc0OTM3YmEyNDAzNTAwZDI0NjBlOGNlMmY0ZmQyMjBkOGVhYjc3OGFjYWEzN2ZhOCJ9fX0=
+  preserve-custom: true
+- file: heads.yml
+  path: duel_types.own_inventory
+  before: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjc4ZWYyZTRjZjJjNDFhMmQxNDJjOTA1N2IxNmUyMmNiODRlMzQ4ZmNmZWY3OTgzMzJjNjdlMzZkOWYxZDhlIn19fQ==
+  value: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNTg0NTlmM2I2NWIyM2NmYThjOWIxNDQzMjViOWJhODE0MDdiZTkzODJjZDg1OTkyZWY5NzljZjBlNzgzZjYifX19
+  preserve-custom: true
+- file: heads.yml
+  path: duel_types.kit
+  before: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNDQ4MWRmZTJiMmY5OWUzZGVjZTRjMzQ3MjY0MzM1ZjUzMTgzZjEzYjE4YTkxN2RkYjcyMzEzZTlkMDc0NjNmZCJ9fX0=
+  value: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYTIwMDdjMzczMmIxOTg2YzZhZDBkZmYwZGM2YmJkYzQyNDBjMmU1NWUwYzYzODYxNGM1MzNlZDg2OWRiM2RiYSJ9fX0=
+  preserve-custom: true
+- file: heads.yml
+  path: duel_types.crossbow
+  before: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYjVjYTA5YmY5MjExY2U2OTM2NzkzY2NjYmNmODFjOWE1ZmQ1YmYxNTVmNGUxNTY0ZjY0OGY1YTE4NDhkIn19fQ==
+  value: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMThlNTc4NDE2MDdmNDQ5ZTc2YjdjODIwZmNiZDE5MTNlYzFiODBjNGFjODE3Mjg4NzRkYjIzMGY1ZGYyYjNiIn19fQ==
+  preserve-custom: true
+- file: heads.yml
+  path: modes
+  before: null
+  value:
+    training: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNDQ5NGYwNTEyNGUwZjM3YjdjNTFhNTgxMDIzODZmNWMzYTMwMjhlMmM3MzM4YTJkYThmNzE5ZmNmNTRhYWE2YyJ9fX0=
+    normal: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzczMTY1OTdkYTNmNDFjNmViOWFjMTI4MTUxZjE3NWEzYWM4OWNkN2M4Mjg5ZTI5YTU3OTYyYWQ5YWUwZGEyOSJ9fX0=
+    royal: eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNTliMzNiYzdiNmY5ODBhZGQ1ODZlMWI1NzcxNDQ3NTljZWZkNDcyODRkY2Y5Njc4ODUxYTdlNDg3ZTI4ODA4ZiJ9fX0=
+  preserve-custom: true
+- file: lang.yml
+  path: gui.main_menu.info
+  before: null
+  value:
+    name: <white>Дуэли · {player}</white>
+    lore:
+    - <dark_gray>Ваши результаты</dark_gray>
+    - ''
+    - '<gray>Честь: <white>{honor}</white></gray>'
+    - '<gray>Победы / поражения: <white>{wins} / {losses}</white></gray>'
+    - '<gray>Текущая / лучшая серия: <white>{streak} / {best}</white></gray>'
+    - '<gray>Королевские победы: <white>{royal}</white></gray>'
+    - ''
+    - '<gray>Сейчас идут дуэли: <white>{active}</white></gray>'
+    - <dark_gray>─────────────────────</dark_gray>
+    - <gray>Выберите вызов или наблюдение ниже.</gray>
   preserve-custom: true

@@ -326,9 +326,9 @@ public final class DuelSetupGUI extends CustomGUI {
                 dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.category.hint_next"),
                 dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.category.hint_prev"));
         String tex = switch (category) {
-            case MELEE -> HeadTextures.SWORD;
-            case RANGED -> HeadTextures.BOW;
-            case MOUNTED -> HeadTextures.HORSE;
+            case MELEE -> "categories.melee";
+            case RANGED -> "categories.ranged";
+            case MOUNTED -> "categories.mounted";
         };
         return HeadTextures.head(tex, name, lore);
     }
@@ -350,11 +350,13 @@ public final class DuelSetupGUI extends CustomGUI {
             lore.add(dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.subtype.only_one"));
         }
         String tex = switch (selectedType) {
-            case FISTS -> HeadTextures.SKULL;
-            case KIT, SWORD -> HeadTextures.SWORD;
-            case OWN_INVENTORY -> HeadTextures.BACKPACK;
-            case BOW, CROSSBOW -> HeadTextures.BOW;
-            case HORSE_SPEAR -> HeadTextures.HORSE;
+            case FISTS -> "duel_types.fists";
+            case KIT -> "duel_types.kit";
+            case SWORD -> "duel_types.sword";
+            case OWN_INVENTORY -> "duel_types.own_inventory";
+            case BOW -> "duel_types.bow";
+            case CROSSBOW -> "duel_types.crossbow";
+            case HORSE_SPEAR -> "duel_types.horse_spear";
             default -> HeadTextures.SWORD;
         };
         return HeadTextures.head(tex, name, lore);
