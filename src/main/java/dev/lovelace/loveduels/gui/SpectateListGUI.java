@@ -14,6 +14,11 @@ import java.util.List;
 
 public final class SpectateListGUI extends CustomGUI {
 
+    @Override
+    protected String sectionKey() {
+        return "spectate_list";
+    }
+
     private int page;
     private final DuelManager duelManager;
 
@@ -95,7 +100,7 @@ public final class SpectateListGUI extends CustomGUI {
 
     private ItemStack createNoMatchesItem() {
         return HeadTextures.head(
-                HeadTextures.EYE,
+                HeadTextures.NO_PLAYERS,
                 dev.lovelace.loveduels.util.Lang.get("gui.spectate_list.no_matches_name"),
                 dev.lovelace.loveduels.util.Lang.list("gui.spectate_list.no_matches_lore")
         );

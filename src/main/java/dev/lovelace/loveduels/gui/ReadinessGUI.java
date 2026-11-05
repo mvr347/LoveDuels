@@ -12,6 +12,11 @@ import java.util.List;
 
 public final class ReadinessGUI extends CustomGUI {
 
+    @Override
+    protected String sectionKey() {
+        return "readiness";
+    }
+
     private final ReadinessSession session;
     private final Player player1;
     private final Player player2;

@@ -9,6 +9,11 @@ import java.util.List;
 
 public final class RoyalDuelGUI extends CustomGUI {
 
+    @Override
+    protected String sectionKey() {
+        return "royal";
+    }
+
     private final DuelManager duelManager;
 
     public RoyalDuelGUI(Player player, DuelManager duelManager) {

@@ -13,6 +13,11 @@ import java.util.function.Consumer;
 
 public final class KitSelectGUI extends CustomGUI {
 
+    @Override
+    protected String sectionKey() {
+        return "kit_select";
+    }
+
     private int page;
     private final DuelManager duelManager;
     private final Consumer<Kit> onSelect;

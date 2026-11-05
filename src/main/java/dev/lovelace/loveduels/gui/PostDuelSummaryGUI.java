@@ -14,6 +14,11 @@ import java.util.UUID;
 
 public final class PostDuelSummaryGUI extends CustomGUI {
 
+    @Override
+    protected String sectionKey() {
+        return "post_duel";
+    }
+
     private final MatchResult result;
     private final DuelManager duelManager;
 

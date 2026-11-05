@@ -92,7 +92,7 @@ public abstract class CustomGUI implements InventoryHolder {
             }
         }
 
-        setItem(0, createPlayerHead(player), null);
+        setItem(0, createSectionHead(), null);
 
         int footerStart = size - 9;
         for (int i = footerStart; i < size; i++) {
@@ -142,13 +142,18 @@ public abstract class CustomGUI implements InventoryHolder {
         return item;
     }
 
-    protected ItemStack createPlayerHead(Player p) {
-        return HeadTextures.playerHead(
-                p,
-                dev.lovelace.loveduels.util.Lang.component(
-                        "gui.common.profile.name", "player", p.getName()),
-                dev.lovelace.loveduels.util.Lang.componentList(
-                        "gui.common.profile.lore", "player", p.getName()));
+    /** Key of this menu in {@code gui.section.<key>} of lang.yml (name and short description of the section). */
+    protected String sectionKey() {
+        return "default";
+    }
+
+    /** Slot 0 of every menu: the LoveDuels head and a short description of what this section is for. */
+    protected ItemStack createSectionHead() {
+        String key = "gui.section." + sectionKey();
+        return HeadTextures.head(
+                HeadTextures.THEME,
+                dev.lovelace.loveduels.util.Lang.component(key + ".name"),
+                dev.lovelace.loveduels.util.Lang.componentList(key + ".lore"));
     }
 
     protected ItemStack createBackButton() {

@@ -11,6 +11,11 @@ import java.util.List;
  */
 public final class MainMenuGUI extends CustomGUI {
 
+    @Override
+    protected String sectionKey() {
+        return "main_menu";
+    }
+
     private final DuelManager duelManager;
 
     public MainMenuGUI(Player player, DuelManager duelManager) {
@@ -29,9 +34,14 @@ public final class MainMenuGUI extends CustomGUI {
                 "active", String.valueOf(duelManager.getMatchManager().getActiveMatches().size())))
                 .orElse(List.of("<gray>Статистика загружается…</gray>"));
         var mini = MiniMessage.miniMessage();
-        setItem(0, HeadTextures.playerHead(player,
+        // Slot 0 keeps the section description first and appends the player's own duel statistics.
+        java.util.List<net.kyori.adventure.text.Component> head0 = new java.util.ArrayList<>(
+                dev.lovelace.loveduels.util.Lang.componentList("gui.section.main_menu.lore"));
+        head0.add(net.kyori.adventure.text.Component.empty());
+        info.stream().map(mini::deserialize).forEach(head0::add);
+        setItem(0, HeadTextures.head(HeadTextures.THEME,
                 dev.lovelace.loveduels.util.Lang.component("gui.main_menu.info.name", "player", player.getName()),
-                info.stream().map(mini::deserialize).toList()), null);
+                head0), null);
 
         // Рабочая зона: два пункта по центру (слоты 12 и 14)
         setItem(12, HeadTextures.head("actions.challenge",

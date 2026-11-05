@@ -15,6 +15,11 @@ import java.util.List;
 
 public final class LeaderboardGUI extends CustomGUI {
 
+    @Override
+    protected String sectionKey() {
+        return "leaderboard";
+    }
+
     private final DuelManager duelManager;
 
     public LeaderboardGUI(Player player, DuelManager duelManager) {

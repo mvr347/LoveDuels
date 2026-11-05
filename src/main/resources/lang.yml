@@ -55,6 +55,98 @@ gui:
       - ''
       - "<dark_gray><st>─────────────────────</st></dark_gray>"
       - "<gray>Ваш профиль в LoveDuels</gray>"
+  section:
+    default:
+      name: "<gold>Дуэли</gold>"
+      lore:
+      - "<dark_gray>Дуэли</dark_gray>"
+      - ""
+      - "<gray>Рыцарские поединки</gray>"
+      - "<gray>со ставками и Честью.</gray>"
+    main_menu:
+      name: "<gold>Турниры и дуэли</gold>"
+      lore:
+      - "<dark_gray>Главное меню дуэлей</dark_gray>"
+      - ""
+      - "<gray>Бросайте вызов игрокам, смотрите чужие поединки</gray>"
+      - "<gray>и следите за своей Честью.</gray>"
+    challenge_mode:
+      name: "<gold>Выбор режима</gold>"
+      lore:
+      - "<dark_gray>Режим вызова</dark_gray>"
+      - ""
+      - "<gray>Тренировка — без ставок, обычная дуэль</gray>"
+      - "<gray>и королевская со ставкой монет.</gray>"
+    player_select:
+      name: "<gold>Выбор соперника</gold>"
+      lore:
+      - "<dark_gray>Кого вызвать</dark_gray>"
+      - ""
+      - "<gray>Выберите игрока из списка:</gray>"
+      - "<gray>ему придёт вызов на дуэль.</gray>"
+    duel_setup:
+      name: "<gold>Настройка дуэли</gold>"
+      lore:
+      - "<dark_gray>Условия поединка</dark_gray>"
+      - ""
+      - "<gray>Вид оружия, ставка монет и Честь.</gray>"
+      - "<gray>Проверьте условия и отправьте вызов.</gray>"
+    kit_select:
+      name: "<gold>Выбор набора</gold>"
+      lore:
+      - "<dark_gray>Снаряжение дуэли</dark_gray>"
+      - ""
+      - "<gray>Набор определяет, чем вы и соперник</gray>"
+      - "<gray>будете биться в поединке.</gray>"
+    stake_confirm:
+      name: "<gold>Подтверждение ставки</gold>"
+      lore:
+      - "<dark_gray>Ставка вызова</dark_gray>"
+      - ""
+      - "<gray>Проверьте ставку монет и Чести,</gray>"
+      - "<gray>прежде чем принять дуэль.</gray>"
+    confirm_bet:
+      name: "<gold>Подтверждение ставки</gold>"
+      lore:
+      - "<dark_gray>Ваши ставки</dark_gray>"
+      - ""
+      - "<gray>Убедитесь, что ставка вас устраивает:</gray>"
+      - "<gray>проигравший её теряет.</gray>"
+    readiness:
+      name: "<gold>Готовность</gold>"
+      lore:
+      - "<dark_gray>Перед боем</dark_gray>"
+      - ""
+      - "<gray>Оба дуэлянта должны подтвердить готовность,</gray>"
+      - "<gray>после чего начнётся отсчёт.</gray>"
+    post_duel:
+      name: "<gold>Итоги дуэли</gold>"
+      lore:
+      - "<dark_gray>Результат поединка</dark_gray>"
+      - ""
+      - "<gray>Победитель, ставки и изменение Чести.</gray>"
+      - "<gray>Здесь же можно запросить реванш.</gray>"
+    leaderboard:
+      name: "<gold>Рейтинг дуэлянтов</gold>"
+      lore:
+      - "<dark_gray>Таблица Чести</dark_gray>"
+      - ""
+      - "<gray>Лучшие дуэлянты сервера</gray>"
+      - "<gray>по количеству Чести.</gray>"
+    royal:
+      name: "<gold>Королевская дуэль</gold>"
+      lore:
+      - "<dark_gray>Поединок на высокие ставки</dark_gray>"
+      - ""
+      - "<gray>Минимальная ставка выше, а Честь</gray>"
+      - "<gray>ценится дороже обычной дуэли.</gray>"
+    spectate_list:
+      name: "<gold>Наблюдение</gold>"
+      lore:
+      - "<dark_gray>Идущие дуэли</dark_gray>"
+      - ""
+      - "<gray>Выберите поединок, чтобы</gray>"
+      - "<gray>понаблюдать за ним со стороны.</gray>"
   main_menu:
     title: "<gold>Турниры и дуэли</gold>"
     challenge:
@@ -204,6 +296,7 @@ gui:
       offline: "<red>Игрок покинул сервер."
       in_match: "<red>Этот игрок уже в бою."
       cooldown: "<red>Кулдаун вызова: <gold>{cd}с</gold>."
+      no_kits: "<red>Нет ни одного набора для дуэли на снаряжении."
       no_arena: "<red>Для режима <white>{type}</white><red> нет настроенной арены."
       royal_active: "<red>Уже идёт королевская дуэль."
       royal_ticket_cd: "<red>Кулдаун билета: <gold>{cd}</gold>."

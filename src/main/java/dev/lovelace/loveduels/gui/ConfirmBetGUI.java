@@ -12,6 +12,11 @@ import java.util.List;
  */
 public final class ConfirmBetGUI extends CustomGUI {
 
+    @Override
+    protected String sectionKey() {
+        return "confirm_bet";
+    }
+
     private final long moneyBet;
     private final int honorBet;
     private final Runnable onConfirm;

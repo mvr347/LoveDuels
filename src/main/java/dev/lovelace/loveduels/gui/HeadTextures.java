@@ -51,7 +51,11 @@ public final class HeadTextures {
     public static final String DEFAULT_CANCEL = urlToBase64("bc8614d1094da73169801129b0ff943fa4956314be934171d6111f7144d15f");
 
     public static final String DEFAULT_BACK = urlToBase64("8650e27a93696213bd3a34177d6118b7e28dd719a6b6f0088921b79148dc67f7");
-    public static final String DEFAULT_CLOSE = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYWZkMjQwMDAwMmFkOWZiYmJkMDA2Njk0MWViNWIxYTM4NGFiOWIwZTQ4YTE3OGVlOTZlNGQxMjlhNTIwODY1NCJ9fX0=";
+    public static final String DEFAULT_CLOSE = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvM2VkMWFiYTczZjYzOWY0YmM0MmJkNDgxOTZjNzE1MTk3YmUyNzEyYzNiOTYyYzk3ZWJmOWU5ZWQ4ZWZhMDI1In19fQ==";
+    public static final String DEFAULT_NO_PLAYERS = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmRkMmViMGM2ZjhhOTU0M2VmNWZkNzI1MjVjYzJmYWIzNTY2M2NkNzA5MTM1ZTQzYjhlMjU3ZGMwYjc1ODk0OCJ9fX0=";
+    public static final String DEFAULT_MONEY_BET = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvOWZkMTA4MzgzZGZhNWIwMmU4NjYzNTYwOTU0MTUyMGU0ZTE1ODk1MmQ2OGMxYzhmOGYyMDBlYzdlODg2NDJkIn19fQ==";
+    public static final String DEFAULT_HONOR_BET = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNWZkZWMyYTA5ODE4NWQ4M2Q5NjUyNGQzMDM0ODA5NTNkZTBkZTY4ZjE1MDJjOTZiMzZhNDExNmU2OWZjMjdkNyJ9fX0=";
+    public static final String DEFAULT_SEND_CHALLENGE = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvOTMwZjQ1MzdkMjE0ZDM4NjY2ZTYzMDRlOWM4NTFjZDZmN2U0MWEwZWI3YzI1MDQ5YzlkMjJjOGM1ZjY1NDVkZiJ9fX0=";
     public static final String DEFAULT_RESET = urlToBase64("1a6f1ca5bb421d09e863339bf4f9d2d0b67bf5ab5ff9a3a936a6db9d18");
     public static final String DEFAULT_SCROLL = urlToBase64("b517743015a9951ee19cd8e411b026cc3dbb1e42bfae1bc97e74288b8fa7");
     public static final String DEFAULT_SKULL = urlToBase64("e5d59ce51e39b7d85c88b9bf92bb3bfa8be80a6b57df332d7ba5ab4ebc8");
@@ -82,6 +86,14 @@ public final class HeadTextures {
     public static final String CONFIRM = "confirm";
     public static final String CANCEL = "cancel";
 
+    /** Empty states: no players to challenge, no duels to watch. */
+    /** Slot 0 of every menu: the common LoveDuels head. */
+    public static final String THEME = "navigation.theme";
+    public static final String NO_PLAYERS = "actions.spectate_empty";
+    public static final String MONEY_BET = "economy.money_bet";
+    public static final String HONOR_BET = "economy.honor_bet";
+    public static final String SEND_CHALLENGE = "actions.send_challenge";
+
     public static final String BACK = "back";
     public static final String CLOSE = "close";
     public static final String RESET = "reset";
@@ -110,6 +122,11 @@ public final class HeadTextures {
         FALLBACKS.put(CANCEL, DEFAULT_CANCEL);
         FALLBACKS.put(BACK, DEFAULT_BACK);
         FALLBACKS.put(CLOSE, DEFAULT_CLOSE);
+        FALLBACKS.put(THEME, DEFAULT_SWORD);
+        FALLBACKS.put(NO_PLAYERS, DEFAULT_NO_PLAYERS);
+        FALLBACKS.put(MONEY_BET, DEFAULT_MONEY_BET);
+        FALLBACKS.put(HONOR_BET, DEFAULT_HONOR_BET);
+        FALLBACKS.put(SEND_CHALLENGE, DEFAULT_SEND_CHALLENGE);
         FALLBACKS.put(RESET, DEFAULT_RESET);
         FALLBACKS.put(SCROLL, DEFAULT_SCROLL);
         FALLBACKS.put(SKULL, DEFAULT_SKULL);
