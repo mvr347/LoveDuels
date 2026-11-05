@@ -147,11 +147,16 @@ public abstract class CustomGUI implements InventoryHolder {
         return "default";
     }
 
-    /** Slot 0 of every menu: the LoveDuels head and a short description of what this section is for. */
+    /** Texture key of slot 0; menus tied to a chosen challenge mode show that mode's head instead of the theme one. */
+    protected String sectionTexture() {
+        return HeadTextures.THEME;
+    }
+
+    /** Slot 0 of every menu: a LoveDuels head and a short description of what this section is for. */
     protected ItemStack createSectionHead() {
         String key = "gui.section." + sectionKey();
         return HeadTextures.head(
-                HeadTextures.THEME,
+                sectionTexture(),
                 dev.lovelace.loveduels.util.Lang.component(key + ".name"),
                 dev.lovelace.loveduels.util.Lang.componentList(key + ".lore"));
     }

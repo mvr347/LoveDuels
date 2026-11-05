@@ -24,21 +24,30 @@ public final class ChallengeModeGUI extends CustomGUI {
         this.duelManager = duelManager;
     }
 
+    /** The texture key of a mode's head: used by its button here and by slot 0 of the menus opened for that mode. */
+    static String textureOf(ChallengeMode mode) {
+        return switch (mode) {
+            case TRAINING -> "modes.training";
+            case NORMAL -> "modes.normal";
+            case ROYAL -> "modes.royal";
+        };
+    }
+
     @Override
     protected void build() {
         applyStandardBorders(true, () -> new MainMenuGUI(player, duelManager).open());
 
-        setItem(11, HeadTextures.head("modes.training",
+        setItem(11, HeadTextures.head(textureOf(ChallengeMode.TRAINING),
                 dev.lovelace.loveduels.util.Lang.get("gui.challenge_mode.training.name"),
                 dev.lovelace.loveduels.util.Lang.list("gui.challenge_mode.training.lore")
         ), e -> new PlayerSelectGUI(player, duelManager, ChallengeMode.TRAINING).open());
 
-        setItem(13, HeadTextures.head("modes.normal",
+        setItem(13, HeadTextures.head(textureOf(ChallengeMode.NORMAL),
                 dev.lovelace.loveduels.util.Lang.get("gui.challenge_mode.normal.name"),
                 dev.lovelace.loveduels.util.Lang.list("gui.challenge_mode.normal.lore")
         ), e -> new PlayerSelectGUI(player, duelManager, ChallengeMode.NORMAL).open());
 
-        setItem(15, HeadTextures.head("modes.royal",
+        setItem(15, HeadTextures.head(textureOf(ChallengeMode.ROYAL),
                 dev.lovelace.loveduels.util.Lang.get("gui.challenge_mode.royal.name"),
                 dev.lovelace.loveduels.util.Lang.list("gui.challenge_mode.royal.lore")
         ), e -> new PlayerSelectGUI(player, duelManager, ChallengeMode.ROYAL).open());

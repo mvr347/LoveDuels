@@ -13,6 +13,12 @@ import java.util.List;
 
 public final class PlayerSelectGUI extends CustomGUI {
 
+    /** Slot 0 carries the head of the chosen mode (training, normal, royal), the same as in the mode menu. */
+    @Override
+    protected String sectionTexture() {
+        return ChallengeModeGUI.textureOf(mode);
+    }
+
     @Override
     protected String sectionKey() {
         return "player_select";

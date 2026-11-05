@@ -43,6 +43,19 @@ class MenuResourcesTest {
     }
 
     @Test
+    void slotZeroOfTheModeMenusUsesTheHeadOfTheChosenMode() {
+        var heads = resource("heads.yml");
+        var seen = new java.util.HashSet<String>();
+        for (var mode : dev.lovelace.loveduels.core.ChallengeMode.values()) {
+            String key = ChallengeModeGUI.textureOf(mode);
+            assertTrue(seen.add(key), "one texture per mode: " + key);
+            String path = key;
+            assertNotNull(heads.getString(path), path);
+        }
+        assertEquals(3, seen.size());
+    }
+
+    @Test
     void theSetupKeysAreInTheConfig() {
         var config = resource("config.yml");
         assertTrue(config.getInt("settings.challenge_cooldown_seconds") > 0);
