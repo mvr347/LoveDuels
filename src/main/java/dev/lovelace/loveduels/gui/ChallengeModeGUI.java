@@ -12,6 +12,11 @@ import java.util.List;
  */
 public final class ChallengeModeGUI extends CustomGUI {
 
+    @Override
+    protected String sectionKey() {
+        return "challenge_mode";
+    }
+
     private final DuelManager duelManager;
 
     public ChallengeModeGUI(Player player, DuelManager duelManager) {

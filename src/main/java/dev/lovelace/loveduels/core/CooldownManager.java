@@ -11,13 +11,40 @@ import java.util.UUID;
  */
 public final class CooldownManager {
 
+    /**
+     * The value of a cooldown entry is its own deadline in epoch millis, so the entry lives exactly until then.
+     * A fixed expireAfterWrite cut configured cooldowns short (a 24 h ticket cooldown vanished after 2 h).
+     */
+    private static <K> com.github.benmanes.caffeine.cache.Expiry<K, Long> untilDeadline() {
+        return new com.github.benmanes.caffeine.cache.Expiry<>() {
+            private long remainingNanos(Long deadline) {
+                return java.util.concurrent.TimeUnit.MILLISECONDS.toNanos(Math.max(0L, deadline - System.currentTimeMillis()));
+            }
+
+            @Override
+            public long expireAfterCreate(K key, Long deadline, long currentTime) {
+                return remainingNanos(deadline);
+            }
+
+            @Override
+            public long expireAfterUpdate(K key, Long deadline, long currentTime, long currentDuration) {
+                return remainingNanos(deadline);
+            }
+
+            @Override
+            public long expireAfterRead(K key, Long deadline, long currentTime, long currentDuration) {
+                return currentDuration;
+            }
+        };
+    }
+
     private final Cache<String, Long> challengeCooldowns = Caffeine.newBuilder()
-            .expireAfterWrite(Duration.ofMinutes(15))
+            .expireAfter(CooldownManager.<String>untilDeadline())
             .maximumSize(50000)
             .build();
 
     private final Cache<UUID, Long> royalTicketCooldowns = Caffeine.newBuilder()
-            .expireAfterWrite(Duration.ofHours(2))
+            .expireAfter(CooldownManager.<UUID>untilDeadline())
             .maximumSize(10000)
             .build();
 

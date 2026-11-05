@@ -13,6 +13,11 @@ import java.util.List;
 
 public final class PlayerSelectGUI extends CustomGUI {
 
+    @Override
+    protected String sectionKey() {
+        return "player_select";
+    }
+
     private final DuelManager duelManager;
     private final ChallengeMode mode;
     private int page = 0;
@@ -119,7 +124,7 @@ public final class PlayerSelectGUI extends CustomGUI {
 
     private ItemStack createNoPlayersItem() {
         return HeadTextures.head(
-                HeadTextures.EYE,
+                HeadTextures.NO_PLAYERS,
                 dev.lovelace.loveduels.util.Lang.get("gui.player_select.no_players.name"),
                 dev.lovelace.loveduels.util.Lang.list("gui.player_select.no_players.lore")
         );

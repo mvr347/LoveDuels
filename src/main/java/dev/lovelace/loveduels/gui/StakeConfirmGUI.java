@@ -24,6 +24,11 @@ import java.util.Optional;
  */
 public final class StakeConfirmGUI extends CustomGUI {
 
+    @Override
+    protected String sectionKey() {
+        return "stake_confirm";
+    }
+
     private final DuelManager duelManager;
     private final StakeConfirmSession session;
     private int selectedDenomIndex = 0;

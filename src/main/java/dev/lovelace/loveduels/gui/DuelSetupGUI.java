@@ -30,7 +30,19 @@ import java.util.Optional;
  */
 public final class DuelSetupGUI extends CustomGUI {
 
-    private static final int BASE_HONOR = 10;
+    @Override
+    protected String sectionKey() {
+        return "duel_setup";
+    }
+
+    /** Fallback values when config.yml lacks the keys (see settings.* and royal_duel.* there). */
+    private static final int DEFAULT_BASE_HONOR_BET = 10;
+    private static final int DEFAULT_CHALLENGE_COOLDOWN = 600;
+    private static final int DEFAULT_TICKET_COOLDOWN = 3600;
+    private static final long DEFAULT_REQUEST_TIMEOUT_SECONDS = 90L;
+
+    private final int baseHonor;
+    private String selectedKitId;
 
     private final Player opponent;
     private final DuelManager duelManager;
@@ -52,6 +64,7 @@ public final class DuelSetupGUI extends CustomGUI {
 
     public DuelSetupGUI(Player player, Player opponent, DuelManager duelManager, ChallengeMode mode) {
         super(player, mode.isTraining() ? 27 : 36, titleFor(mode));
+        this.baseHonor = Math.max(1, duelManager.getPlugin().getConfig().getInt("settings.base_honor_bet", DEFAULT_BASE_HONOR_BET));
         this.opponent = opponent;
         this.duelManager = duelManager;
         this.mode = mode;
@@ -60,16 +73,11 @@ public final class DuelSetupGUI extends CustomGUI {
             this.honorBet = 0;
         } else if (mode.isRoyal()) {
             this.moneyBet = minRoyalBet();
-            this.honorBet = BASE_HONOR;
+            this.honorBet = baseHonor;
         } else {
             this.moneyBet = 0L;
-            this.honorBet = BASE_HONOR;
+            this.honorBet = baseHonor;
         }
-    }
-
-    @Deprecated
-    public DuelSetupGUI(Player player, Player opponent, DuelManager duelManager, boolean royal) {
-        this(player, opponent, duelManager, royal ? ChallengeMode.ROYAL : ChallengeMode.NORMAL);
     }
 
     private long minRoyalBet() {
@@ -141,19 +149,48 @@ public final class DuelSetupGUI extends CustomGUI {
 
         setItem(16, createHonorBetItem(), e -> {
             if (e.isRightClick()) {
-                if (honorBet > BASE_HONOR && honorBet % 2 == 0) {
+                if (honorBet > baseHonor && honorBet % 2 == 0) {
                     honorBet = honorBet / 2;
                 } else {
-                    honorBet = BASE_HONOR;
+                    honorBet = baseHonor;
                 }
             } else {
-                honorBet = Math.max(BASE_HONOR, honorBet * 2);
+                honorBet = Math.max(baseHonor, honorBet * 2);
             }
             player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.7f, 1.4f);
             build();
         });
 
         setItem(22, createSendButton(), e -> sendChallenge());
+    }
+
+    private org.bukkit.configuration.file.FileConfiguration config() {
+        return duelManager.getPlugin().getConfig();
+    }
+
+    /**
+     * Makes sure a kit is chosen for a kit duel. One kit is taken automatically, several open the kit
+     * menu and come back here; no kits at all is an error the player can read.
+     */
+    private boolean ensureKitSelected() {
+        var manager = duelManager.getKitManager();
+        if (selectedKitId != null && manager.getKit(selectedKitId).isPresent()) {
+            return true;
+        }
+        var kits = new ArrayList<>(manager.getAllKits());
+        if (kits.isEmpty()) {
+            dev.lovelace.loveduels.util.Lang.send(player, "gui.duel_setup.errors.no_kits");
+            return false;
+        }
+        if (kits.size() == 1) {
+            selectedKitId = kits.getFirst().id();
+            return true;
+        }
+        new KitSelectGUI(player, duelManager, kit -> {
+            selectedKitId = kit.id();
+            this.open();
+        }).open();
+        return false;
     }
 
     private void sendChallenge() {
@@ -205,26 +242,33 @@ public final class DuelSetupGUI extends CustomGUI {
             }
         }
 
+        // A kit duel needs a concrete kit: pick it first (the choice is kept when this menu is reopened).
+        if (selectedType == DuelType.KIT && !ensureKitSelected()) {
+            return;
+        }
+
         long effectiveMoney = training ? 0L : moneyBet;
         int effectiveHonor = training ? 0 : honorBet;
 
         if (royal) {
             consumeRoyalTicket(player);
-            duelManager.getCooldownManager().setRoyalTicketCooldown(player.getUniqueId(), 3600);
+            duelManager.getCooldownManager().setRoyalTicketCooldown(player.getUniqueId(),
+                    config().getInt("royal_duel.ticket_cooldown_seconds", DEFAULT_TICKET_COOLDOWN));
         }
 
-        duelManager.getCooldownManager().setChallengeCooldown(player.getUniqueId(), opponent.getUniqueId(), 600);
+        duelManager.getCooldownManager().setChallengeCooldown(player.getUniqueId(), opponent.getUniqueId(),
+                config().getInt("settings.challenge_cooldown_seconds", DEFAULT_CHALLENGE_COOLDOWN));
 
         DuelBet bet = new DuelBet(effectiveMoney, effectiveHonor);
         DuelRequest req = DuelRequest.of(
                 player.getUniqueId(),
                 opponent.getUniqueId(),
                 selectedType,
-                selectedType == DuelType.KIT ? "default" : null,
+                selectedType == DuelType.KIT ? selectedKitId : null,
                 bet,
                 royal,
                 training,
-                90_000L);
+                Math.max(5L, config().getLong("settings.request_timeout_seconds", DEFAULT_REQUEST_TIMEOUT_SECONDS)) * 1000L);
 
         duelManager.getMatchManager().sendRequest(req);
         player.closeInventory();
@@ -400,7 +444,7 @@ public final class DuelSetupGUI extends CustomGUI {
         String name = mode.isRoyal()
                 ? dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.money_bet.name_royal")
                 : dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.money_bet.name_normal");
-        return HeadTextures.head(mode.isRoyal() ? HeadTextures.CROWN : HeadTextures.COIN, name,
+        return HeadTextures.head(HeadTextures.MONEY_BET, name,
                 CoinFormat.resolveGlyphs(player, lore));
     }
 
@@ -414,7 +458,7 @@ public final class DuelSetupGUI extends CustomGUI {
         lore.add("");
         lore.add(dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.honor_bet.hint_multiply"));
         lore.add(dev.lovelace.loveduels.util.Lang.get("gui.duel_setup.honor_bet.hint_divide"));
-        return HeadTextures.head(HeadTextures.STAR, name, lore);
+        return HeadTextures.head(HeadTextures.HONOR_BET, name, lore);
     }
 
     private ItemStack createSendButton() {
@@ -426,6 +470,6 @@ public final class DuelSetupGUI extends CustomGUI {
         List<String> lore = mode.isTraining()
                 ? dev.lovelace.loveduels.util.Lang.list("gui.duel_setup.send_button.lore_training")
                 : dev.lovelace.loveduels.util.Lang.list("gui.duel_setup.send_button.lore_normal");
-        return HeadTextures.head(mode.isRoyal() ? HeadTextures.CROWN : HeadTextures.SWORD, name, lore);
+        return HeadTextures.head(HeadTextures.SEND_CHALLENGE, name, lore);
     }
 }
