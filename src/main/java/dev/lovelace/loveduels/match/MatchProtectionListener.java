@@ -98,8 +98,10 @@ public final class MatchProtectionListener implements Listener {
                 held.setYaw(to.getYaw());
                 held.setPitch(to.getPitch());
                 event.setTo(held);
+                to = held;
             }
-            return;
+            // No return: the frozen destination still goes through the combat-bounds check below, so a fighter who
+            // falls out of the arena (a broken floor) is stopped exactly as before the freeze existed.
         }
 
         if (!arena.isInCombatBounds(to)) {
