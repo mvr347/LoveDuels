@@ -86,6 +86,24 @@ public final class MatchProtectionListener implements Listener {
         Location to = event.getTo();
         if (to == null) return;
 
+        // Preparation countdown: the fighters stand on their spawns and may only look around. Teleports are let
+        // through because the match itself teleports both players to the spawns while it is in this state.
+        if (match.getState() == MatchState.PREPARATION
+                && !(event instanceof PlayerTeleportEvent)
+                && plugin.getConfig().getBoolean("settings.freeze_during_preparation", true)) {
+            Location from = event.getFrom();
+            if (PreparationFreeze.forbids(from.getX(), from.getY(), from.getZ(), to.getX(), to.getY(), to.getZ())) {
+                Location held = from.clone();
+                held.setY(PreparationFreeze.allowedY(from.getY(), to.getY()));
+                held.setYaw(to.getYaw());
+                held.setPitch(to.getPitch());
+                event.setTo(held);
+                to = held;
+            }
+            // No return: the frozen destination still goes through the combat-bounds check below, so a fighter who
+            // falls out of the arena (a broken floor) is stopped exactly as before the freeze existed.
+        }
+
         if (!arena.isInCombatBounds(to)) {
             event.setCancelled(true);
             Location from = event.getFrom();
