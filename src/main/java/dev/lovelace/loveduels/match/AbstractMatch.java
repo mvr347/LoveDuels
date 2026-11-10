@@ -667,6 +667,9 @@ public abstract class AbstractMatch implements Match {
             economyBridge.giveTo(loserId, finalLoserRefund);
         }
 
+        // Achievement counters for both fighters, online or not; this runs on the main thread, which the contract needs.
+        dev.lovelace.loveduels.integration.AchievementsBridge.matchFinished(player1Id, player2Id, loserId);
+
         // Process winner rewards & loser penalties
         if (winner != null && winner.isOnline()) {
             playerStorage.getOrCreatePlayer(winnerId, winner.getName()).thenAccept(data -> {
