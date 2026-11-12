@@ -19,6 +19,11 @@ public final class PostDuelSummaryGUI extends CustomGUI {
         return "post_duel";
     }
 
+    @Override
+    protected String sectionTexture() {
+        return HeadTextures.SUMMARY_SECTION;
+    }
+
     private final MatchResult result;
     private final DuelManager duelManager;
 
@@ -67,7 +72,7 @@ public final class PostDuelSummaryGUI extends CustomGUI {
                 "points", String.valueOf(myPts)
         );
 
-        return HeadTextures.head(HeadTextures.SCROLL, name, lore);
+        return HeadTextures.head(HeadTextures.SUMMARY_STATS, name, lore);
     }
 
     private ItemStack createOutcomeItem(boolean isWinner) {
@@ -92,14 +97,14 @@ public final class PostDuelSummaryGUI extends CustomGUI {
                     "money", CoinFormat.amount(result.moneyPrizeWon()),
                     "honor", String.valueOf(result.honorWon())
             );
-            return HeadTextures.head(HeadTextures.TROPHY, name, CoinFormat.resolveGlyphs(player, lore));
+            return HeadTextures.head(HeadTextures.SUMMARY_WIN, name, CoinFormat.resolveGlyphs(player, lore));
         } else {
             String name = dev.lovelace.loveduels.util.Lang.get("gui.post_duel.defeat_name");
             List<String> lore = dev.lovelace.loveduels.util.Lang.list(
                     "gui.post_duel.defeat_lore",
                     "honor", String.valueOf(result.honorLost())
             );
-            return HeadTextures.head(HeadTextures.SKULL, name, lore);
+            return HeadTextures.head(HeadTextures.SUMMARY_DEFEAT, name, lore);
         }
     }
 
@@ -107,6 +112,6 @@ public final class PostDuelSummaryGUI extends CustomGUI {
         String oppName = opp != null ? opp.getName() : "---";
         String name = dev.lovelace.loveduels.util.Lang.get("gui.post_duel.rematch_name");
         List<String> lore = dev.lovelace.loveduels.util.Lang.list("gui.post_duel.rematch_lore", "opponent", oppName);
-        return HeadTextures.head(HeadTextures.SWORD, name, lore);
+        return HeadTextures.head(HeadTextures.SUMMARY_REMATCH, name, lore);
     }
 }

@@ -53,6 +53,10 @@ public final class LoveDuels extends JavaPlugin {
         var pm = getServer().getPluginManager();
         PayoutListener payoutListener = new PayoutListener(this, duelManager.getEconomyBridge());
         pm.registerEvents(payoutListener, this);
+        dev.lovelace.loveduels.integration.StatsPreloadListener statsPreload =
+                new dev.lovelace.loveduels.integration.StatsPreloadListener(duelManager.getPlayerStorage());
+        pm.registerEvents(statsPreload, this);
+        statsPreload.preloadOnlinePlayers();
         payoutListener.deliverToOnlinePlayers();
         pm.registerEvents(new GuiListener(), this);
         pm.registerEvents(new MatchProtectionListener(

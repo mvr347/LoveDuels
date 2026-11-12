@@ -63,6 +63,15 @@ public interface Match {
     /** Immediately restores fighters of an already-ended match (onDisable); idempotent. */
     default void restoreNow() {}
 
+    /**
+     * Completes (on any thread) once every online fighter has been restored AND teleported back, so anything
+     * that must happen "after the duel" (the summary GUI) does not race the asynchronous teleport.
+     * Already completed for matches that do not restore asynchronously.
+     */
+    default java.util.concurrent.CompletableFuture<Void> whenRestored() {
+        return java.util.concurrent.CompletableFuture.completedFuture(null);
+    }
+
     void registerDamage(Player attacker, Player victim, double damage);
 
     double getDamageDealt(UUID player);

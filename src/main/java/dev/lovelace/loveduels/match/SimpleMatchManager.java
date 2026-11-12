@@ -246,7 +246,9 @@ public final class SimpleMatchManager implements MatchManager {
             lastMatchResults.put(match.getPlayer2Id(), res);
 
             if (postDuelSummaryOpener != null) {
-                postDuelSummaryOpener.accept(res);
+                // Teleport the fighters back first, then open the summary: opening it while the
+                // asynchronous teleport is still in flight could close it or open it on the wrong side.
+                match.whenRestored().whenComplete((ok, error) -> postDuelSummaryOpener.accept(res));
             }
         }
     }

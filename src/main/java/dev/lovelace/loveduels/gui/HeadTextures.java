@@ -63,6 +63,12 @@ public final class HeadTextures {
             "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZjZkYWI3MjcxZjRmZjA0ZDU0NDAyMTkwNjdhMTA5YjVjMGMxZDFlMDFlYzYwMmMwMDIwNDc2ZjdlYjYxMjE4MCJ9fX0=";
     public static final String DEFAULT_NEXT =
             "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvOGFhMTg3ZmVkZTg4ZGUwMDJjYmQ5MzA1NzVlYjdiYTQ4ZDNiMWEwNmQ5NjFiZGM1MzU4MDA3NTBhZjc2NDkyNiJ9fX0=";
+    public static final String DEFAULT_MAIN_MENU = urlToBase64("d34e063cafb467a5c8de43ec78619399f369f4a52434da8017a983cdd92516a0");
+    public static final String DEFAULT_SUMMARY_SECTION = urlToBase64("46178ad51fd52b19d0a3888710bd92068e933252aac6b13c76e7e6ea5d3226");
+    public static final String DEFAULT_SUMMARY_STATS = urlToBase64("e47ae209e8a52591cc20ac0c9ec6a5cb3dc04f238ac2d743b1d54f11e9c5c85");
+    public static final String DEFAULT_SUMMARY_WIN = urlToBase64("e3e45831c1ea817f7477bcaebfa3d2ee3a936ee8ea2b8bde29006b7e9bdf58");
+    public static final String DEFAULT_SUMMARY_DEFEAT = urlToBase64("29da13bf43599dd42f75b6e6548ead40c7ff488b22ef3d931e6c004de1fa978b");
+    public static final String DEFAULT_SUMMARY_REMATCH = urlToBase64("d98bf29467e01762245c27faddd95ffac9d2ab63a47b6ca2eba8392f8f937af9");
     public static final String DEFAULT_CLOCK = urlToBase64("853c80e3c21934e650ef3164cb89547cb0b5cc4ab7cb9345094d4d62b66d48");
 
     // =========================================================================
@@ -89,6 +95,13 @@ public final class HeadTextures {
     /** Empty states: no players to challenge, no duels to watch. */
     /** Slot 0 of every menu: the common LoveDuels head. */
     public static final String THEME = "navigation.theme";
+    /** Slot 0 of the main menu and of the post-duel summary have their own heads. */
+    public static final String MAIN_MENU = "navigation.main_menu";
+    public static final String SUMMARY_SECTION = "post_duel.summary_section";
+    public static final String SUMMARY_STATS = "post_duel.summary_stats";
+    public static final String SUMMARY_WIN = "post_duel.summary_win";
+    public static final String SUMMARY_DEFEAT = "post_duel.summary_defeat";
+    public static final String SUMMARY_REMATCH = "post_duel.summary_rematch";
     public static final String NO_PLAYERS = "actions.spectate_empty";
     public static final String MONEY_BET = "economy.money_bet";
     public static final String HONOR_BET = "economy.honor_bet";
@@ -123,6 +136,12 @@ public final class HeadTextures {
         FALLBACKS.put(BACK, DEFAULT_BACK);
         FALLBACKS.put(CLOSE, DEFAULT_CLOSE);
         FALLBACKS.put(THEME, DEFAULT_SWORD);
+        FALLBACKS.put(MAIN_MENU, DEFAULT_MAIN_MENU);
+        FALLBACKS.put(SUMMARY_SECTION, DEFAULT_SUMMARY_SECTION);
+        FALLBACKS.put(SUMMARY_STATS, DEFAULT_SUMMARY_STATS);
+        FALLBACKS.put(SUMMARY_WIN, DEFAULT_SUMMARY_WIN);
+        FALLBACKS.put(SUMMARY_DEFEAT, DEFAULT_SUMMARY_DEFEAT);
+        FALLBACKS.put(SUMMARY_REMATCH, DEFAULT_SUMMARY_REMATCH);
         FALLBACKS.put(NO_PLAYERS, DEFAULT_NO_PLAYERS);
         FALLBACKS.put(MONEY_BET, DEFAULT_MONEY_BET);
         FALLBACKS.put(HONOR_BET, DEFAULT_HONOR_BET);
