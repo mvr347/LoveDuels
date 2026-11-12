@@ -56,6 +56,9 @@ public abstract class AbstractMatch implements Match {
     protected final Set<UUID> spectators = ConcurrentHashMap.newKeySet();
 
     protected volatile MatchState state = MatchState.PREPARATION;
+    // Completes when both fighters are restored and teleported back (see Match#whenRestored)
+    private volatile java.util.concurrent.CompletableFuture<Void> restored =
+            java.util.concurrent.CompletableFuture.completedFuture(null);
     protected final AtomicBoolean ended = new AtomicBoolean(false);
     protected long startTime;
     protected MatchResult result;
@@ -838,14 +841,21 @@ public abstract class AbstractMatch implements Match {
      * before restoring, so the delayed cleanup, a quit and onDisable can all call this safely.
      */
     private void restoreFighters() {
-        restoreIfOnline(player1, player1Id);
-        restoreIfOnline(player2, player2Id);
+        restored = java.util.concurrent.CompletableFuture.allOf(
+                restoreIfOnline(player1, player1Id),
+                restoreIfOnline(player2, player2Id));
     }
 
-    private void restoreIfOnline(Player player, UUID id) {
+    private java.util.concurrent.CompletableFuture<Boolean> restoreIfOnline(Player player, UUID id) {
         if (player != null && player.isOnline()) {
-            restoreFighter(player, snapshots.remove(id));
+            return restoreFighter(player, snapshots.remove(id));
         }
+        return java.util.concurrent.CompletableFuture.completedFuture(true);
+    }
+
+    @Override
+    public java.util.concurrent.CompletableFuture<Void> whenRestored() {
+        return restored;
     }
 
     /**
@@ -862,10 +872,11 @@ public abstract class AbstractMatch implements Match {
         }
     }
 
-    protected void restoreFighter(Player player, InventorySnapshot snapshot) {
+    protected java.util.concurrent.CompletableFuture<Boolean> restoreFighter(Player player, InventorySnapshot snapshot) {
         if (player != null && player.isOnline() && snapshot != null) {
-            snapshot.restore(player);
+            return snapshot.restore(player);
         }
+        return java.util.concurrent.CompletableFuture.completedFuture(true);
     }
 
     @Override

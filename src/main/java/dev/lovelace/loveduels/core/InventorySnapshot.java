@@ -100,8 +100,10 @@ public final class InventorySnapshot {
 
     /**
      * Fully resets and restores the player to their previous state.
+     *
+     * @return completes when the teleport back has finished (already completed if there is none)
      */
-    public void restore(Player player) {
+    public java.util.concurrent.CompletableFuture<Boolean> restore(Player player) {
         // Clean current state first
         player.getInventory().clear();
         player.getInventory().setArmorContents(null);
@@ -141,8 +143,9 @@ public final class InventorySnapshot {
 
         // Teleport back if valid
         if (returnLocation != null && returnLocation.getWorld() != null) {
-            player.teleportAsync(returnLocation);
+            return player.teleportAsync(returnLocation);
         }
+        return java.util.concurrent.CompletableFuture.completedFuture(true);
     }
 
     public Location getReturnLocation() {
